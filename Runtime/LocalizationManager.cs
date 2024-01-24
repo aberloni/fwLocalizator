@@ -6,11 +6,12 @@ using System;
 using UnityEditor;
 #endif
 
-namespace fwp.localization
+namespace fwp.localizator
 {
     /// <summary>
     /// Manager qui s'occupe de la loca au editor/runtime
     /// 
+    /// # NiN info
     /// https://developer.nintendo.com/group/development/g1kr9vj6/forums/english/-/gts_message_boards/thread/269684575#636486
     /// 
     /// pour les espaces insécables : Alt+0160 pour l'écrire dans excel mais \u00A0 dans TMPro.
@@ -18,38 +19,28 @@ namespace fwp.localization
     /// </summary>
     public class LocalizationManager
     {
-        static protected LocalizationManager instance;
-
+        static public LocalizationManager instance;
+        
         /// <summary>
-        /// must be created in context
+        /// list of reactor candidates to lang change
         /// </summary>
-        static public LocalizationManager get()
-        {
-            if (instance == null) new LocalizationManager();
-            return instance;
-        }
-
-        //au runtime il  faut que les candidates s'inscrivent !
         static public List<iLanguageChangeReact> reacts = new List<iLanguageChangeReact>();
 
         public const string LANG_PREFIX = "lang";
 
         public const IsoLanguages languageFallback = IsoLanguages.en; // si la langue du system est pas supportée
 
-        static public IsoLanguages[] allSupportedLanguages = new IsoLanguages[]
-        {
-            IsoLanguages.en, IsoLanguages.fr, IsoLanguages.de, IsoLanguages.es, IsoLanguages.it
-        };
-
         /// <summary>
         /// subfolder within Resources/
         /// </summary>
         public const string folder_localization = "localization/";
-        
+
         /// <summary>
         /// where all txt files is located in the project
         /// </summary>
         public const string path_resource_localization = "Resources/" + folder_localization;
+
+        LocaDataSheet[] sheets;
 
         LocalizationFile[] lang_files;
 
@@ -71,34 +62,56 @@ namespace fwp.localization
             //checkIntegrity();
         }
 
+        virtual public IsoLanguages[] getSupportedLanguages()
+        {
+            return new IsoLanguages[]{
+                IsoLanguages.en, IsoLanguages.fr, IsoLanguages.de, IsoLanguages.es, IsoLanguages.it
+            };
+        }
+
+        public bool isIsoLanguageSupported(IsoLanguages iso)
+        {
+            var sups = getSupportedLanguages();
+            for (int i = 0; i < sups.Length; i++)
+            {
+                if (sups[i] == iso) return true;
+            }
+            return false;
+        }
+
         /// <summary>
         /// must implem a way to solve sheet labels
         /// can be extended with custom sheets
         /// </summary>
-        virtual public LocaDataSheetsIdLabel getSheetLabels()
+        public LocaDataSheet[] getSheets(bool clearCache = false)
         {
-            return null;
+            if (sheets == null || clearCache)
+            {
+                sheets = LocalizatorUtils.getScriptableObjectsInEditor<LocaDataSheet>();
+            }
+            return sheets;
         }
 
         protected void loadFiles()
         {
 
             List<LocalizationFile> tmp = new List<LocalizationFile>();
-            for (int i = 0; i < allSupportedLanguages.Length; i++)
+            var sups = getSupportedLanguages();
+            for (int i = 0; i < sups.Length; i++)
             {
-                LocalizationFile file = new LocalizationFile(allSupportedLanguages[i]);
+                LocalizationFile file = new LocalizationFile(sups[i]);
                 if (file != null && file.isLoaded()) tmp.Add(file);
             }
             lang_files = tmp.ToArray();
 
         }
 
-        static public void applySavedLanguage() => applyLanguage(getSavedIsoLanguage());
+        public void applySavedLanguage() => applyLanguage(getSavedIsoLanguage());
 
         /// <summary>
         /// A apl quand on change la lang
         /// </summary>
-        static public void applyLanguage(IsoLanguages newLang)
+        public void applyLanguage(IsoLanguages newLang)
         {
             Debug.Log("<color=cyan>applyLanguage</color> to <b>" + newLang + "</b>!");
 
@@ -193,12 +206,12 @@ namespace fwp.localization
         public string getContentSafe(string id, bool warning = false)
         {
             string output = getContent(id);
-            if(output.Length <= 0)
+            if (output.Length <= 0)
             {
                 output = getContent(id, languageFallback, warning);
             }
 
-            if(output.Length <= 0)
+            if (output.Length <= 0)
             {
                 Debug.LogError("could not safe get content : " + id);
                 return string.Empty;
@@ -227,32 +240,15 @@ namespace fwp.localization
 
 
 
-        /// <summary>
-        /// on SWITCH platform there is a specific setup for this to work
-        /// https://developer.nintendo.com/group/development/g1kr9vj6/forums/english/-/gts_message_boards/thread/269684575#636486
-        /// none defined language in player settings won't work
-        /// </summary>
-        static public SystemLanguage getSystemLanguage() => Application.systemLanguage;
-
-        static public int getLanguageIndex() => getLanguageIndex(getSavedIsoLanguage());
-
-        static public int getLanguageIndex(IsoLanguages lang)
-        {
-            for (int i = 0; i < allSupportedLanguages.Length; i++)
-            {
-                if (allSupportedLanguages[i] == lang) return i;
-            }
-            return -1;
-        }
-
-        static public void nextLanguage()
+        public void nextLanguage()
         {
             IsoLanguages cur = getSavedIsoLanguage();
 
             int supportIndex = -1;
-            for (int i = 0; i < allSupportedLanguages.Length; i++)
+            var sups = instance.getSupportedLanguages();
+            for (int i = 0; i < sups.Length; i++)
             {
-                if (cur == allSupportedLanguages[i])
+                if (cur == sups[i])
                 {
                     supportIndex = i;
                 }
@@ -262,14 +258,14 @@ namespace fwp.localization
 
             supportIndex++;
 
-            if (supportIndex >= allSupportedLanguages.Length)
+            if (supportIndex >= sups.Length)
             {
                 supportIndex = 0;
             }
 
-            cur = allSupportedLanguages[supportIndex];
+            cur = sups[supportIndex];
 
-            Debug.Log("next language is : " + cur + " / " + allSupportedLanguages.Length);
+            Debug.Log("next language is : " + cur + " / " + sups.Length);
 
             setSavedLanguage(cur, true);
         }
@@ -289,53 +285,22 @@ namespace fwp.localization
         }
 
         /// <summary>
-        /// https://docs.microsoft.com/en-us/dotnet/api/system.globalization.cultureinfo.twoletterisolanguagename?view=net-5.0
-        /// </summary>
-        static IsoLanguages sysToIso(SystemLanguage sys)
-        {
-            switch (sys)
-            {
-                case SystemLanguage.English: return IsoLanguages.en;
-                case SystemLanguage.French: return IsoLanguages.fr;
-                case SystemLanguage.German: return IsoLanguages.de;
-                case SystemLanguage.Italian: return IsoLanguages.it;
-                case SystemLanguage.Chinese: return IsoLanguages.zh;
-                case SystemLanguage.Portuguese: return IsoLanguages.po;
-                case SystemLanguage.Spanish: return IsoLanguages.es;
-                default:
-                    Debug.LogWarning("language " + sys + " is not supported ; returning system");
-                    break;
-            }
-
-            return languageFallback;
-        }
-
-        /// <summary>
         /// in : language
         /// out : label of language
         /// </summary>
-        static public string isoToLabel(IsoLanguages lang)
+        public string isoToLabel(IsoLanguages lang)
         {
-            return instance?.getContent("menu_" + lang.ToString());
+            return getContent("menu_" + lang.ToString());
         }
 
         static string sysToIsoString(SystemLanguage sys) => sysToIso(sys).ToString();
 
-        static public bool isIsoLanguageSupported(IsoLanguages iso)
-        {
-            for (int i = 0; i < allSupportedLanguages.Length; i++)
-            {
-                if (allSupportedLanguages[i] == iso) return true;
-            }
-            return false;
-        }
-
-        static IsoLanguages getSystemLanguageToIso()
+        IsoLanguages getSystemLanguageToIso()
         {
             return sysToIso(Application.systemLanguage);
         }
 
-        static public void setSavedLanguage(IsoLanguages iso, bool applySwap = false)
+        public void setSavedLanguage(IsoLanguages iso, bool applySwap = false)
         {
             //how to save
             //...
@@ -347,7 +312,7 @@ namespace fwp.localization
         /// <summary>
         /// uses sys language as default
         /// </summary>
-        static public IsoLanguages getSavedIsoLanguage()
+        public IsoLanguages getSavedIsoLanguage()
         {
             SystemLanguage langDefault = Application.systemLanguage;
 
@@ -371,6 +336,36 @@ namespace fwp.localization
             }
 
             return lang;
+        }
+
+
+        /// <summary>
+        /// on SWITCH platform there is a specific setup for this to work
+        /// https://developer.nintendo.com/group/development/g1kr9vj6/forums/english/-/gts_message_boards/thread/269684575#636486
+        /// none defined language in player settings won't work
+        /// </summary>
+        static public SystemLanguage getSystemLanguage() => Application.systemLanguage;
+
+        /// <summary>
+        /// https://docs.microsoft.com/en-us/dotnet/api/system.globalization.cultureinfo.twoletterisolanguagename?view=net-5.0
+        /// </summary>
+        static IsoLanguages sysToIso(SystemLanguage sys)
+        {
+            switch (sys)
+            {
+                case SystemLanguage.English: return IsoLanguages.en;
+                case SystemLanguage.French: return IsoLanguages.fr;
+                case SystemLanguage.German: return IsoLanguages.de;
+                case SystemLanguage.Italian: return IsoLanguages.it;
+                case SystemLanguage.Chinese: return IsoLanguages.zh;
+                case SystemLanguage.Portuguese: return IsoLanguages.po;
+                case SystemLanguage.Spanish: return IsoLanguages.es;
+                default:
+                    Debug.LogWarning("language " + sys + " is not supported ; returning system");
+                    break;
+            }
+
+            return languageFallback;
         }
 
     }

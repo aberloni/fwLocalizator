@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace fwp.localization
+namespace fwp.localizator
 {
     [System.Serializable]
     public class LocaDialogLineId
@@ -16,12 +16,14 @@ namespace fwp.localization
 
         //FOR DEBUG ONLY
         [SerializeField]
-        readonly string[] _previews = new string[LocalizationManager.allSupportedLanguages.Length];
+        readonly string[] _previews;
 
         public LocaDialogLineId(string uid)
         {
             this.uid = uid;
             this.fuid = uid;
+
+            _previews = new string[LocalizationManager.instance.getSupportedLanguages().Length];
         }
 
         [ContextMenu("debug update preview")]
@@ -38,10 +40,10 @@ namespace fwp.localization
         //THIS IS WHAT SHOULD PROVIDE LOCA
         public string getSolvedLineByUID(bool useFallback = false)
         {
-            return useFallback ? LocalizationManager.get().getContentSafe(uid) : LocalizationManager.get().getContent(uid);
+            return useFallback ? LocalizationManager.instance.getContentSafe(uid) : LocalizationManager.instance.getContent(uid);
         }
 
-        public string getSolvedLineByFUID() => LocalizationManager.get().getContent(fuid);
+        public string getSolvedLineByFUID() => LocalizationManager.instance.getContent(fuid);
 
         /// <summary>
         /// do not use
@@ -80,7 +82,9 @@ namespace fwp.localization
 
         static public string getLocaByUID(string uid, bool fallbackIfMissing = false, bool emptyOnMissing = false)
         {
-            string content = fallbackIfMissing ? LocalizationManager.get().getContentSafe(uid) : LocalizationManager.get().getContent(uid);
+            string content = fallbackIfMissing ? 
+                LocalizationManager.instance.getContentSafe(uid) : 
+                LocalizationManager.instance.getContent(uid);
             return getFilteredLocaLine(content, emptyOnMissing);
         }
 

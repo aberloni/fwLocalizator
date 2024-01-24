@@ -16,7 +16,7 @@ using Microsoft.VisualBasic;
 /// https://docs.google.com/spreadsheets/d/1UMlSlXTysA39zt0yRJljwTX2dPp5vQOo9plhI7YYCVU/export?format=tsv&gid=1605195944
 /// </summary>
 
-namespace fwp.localization
+namespace fwp.localizator
 {
 
     public class LocaSpreadsheetBridge : MonoBehaviour

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace fwp.localization
+namespace fwp.localizator
 {
     static public class LocalizationMenuItems
     {
@@ -28,7 +28,7 @@ namespace fwp.localization
 
         public static void editor_switchLanguage(IsoLanguages newLang, bool swap = true)
         {
-            LocalizationManager.setSavedLanguage(newLang, swap);
+            LocalizationManager.instance.setSavedLanguage(newLang, swap);
         }
     }
 

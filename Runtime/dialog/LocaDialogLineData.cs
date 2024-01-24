@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace fwp.localization
+namespace fwp.localizator
 {
     [System.Serializable]
     public class LocaDialogLineData

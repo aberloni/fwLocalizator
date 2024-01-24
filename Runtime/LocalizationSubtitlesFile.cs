@@ -5,7 +5,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 
 
-namespace fwp.localization
+namespace fwp.localizator
 {
 
     /// <summary>
@@ -198,7 +198,7 @@ namespace fwp.localization
 
             //content
             rawLine = rawLines[2];
-            buffLine = LocalizationManager.get().getContent(rawLine, true);
+            buffLine = LocalizationManager.instance.getContent(rawLine, true);
 
             Debug.Log("  generated subtitle line #" + rawLine + " [" + timecode_start + " , " + timecode_end + "]   : " + buffLine);
         }

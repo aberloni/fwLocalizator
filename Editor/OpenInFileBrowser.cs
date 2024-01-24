@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace fwp.localization
+namespace fwp.localizator
 {
     public static class OpenInFileBrowser
     {

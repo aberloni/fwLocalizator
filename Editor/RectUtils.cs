@@ -3,7 +3,7 @@ using UnityEditor;
 
 //http://www.luispedrofonseca.com/unity-custom-rect-editor/
 
-namespace fwp.localization
+namespace fwp.localizator
 {
 
     public class RectUtils

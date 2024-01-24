@@ -7,7 +7,7 @@ using System.Text;
 /// MAISONNNN
 /// </summary>
 
-namespace fwp.localization.editor
+namespace fwp.localizator.editor
 {
     public class CsvParser
     {

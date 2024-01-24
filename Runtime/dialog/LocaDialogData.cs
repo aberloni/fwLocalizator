@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace fwp.localization
+namespace fwp.localizator
 {
     /// <summary>
     /// dialog UID is name of scriptable
@@ -72,7 +72,7 @@ namespace fwp.localization
             do
             {
                 string fullId = locaId + "_" + ((index < 10) ? "0" + index : index.ToString());
-                ct = LocalizationManager.get().getContent(fullId);
+                ct = LocalizationManager.instance.getContent(fullId);
 
                 //Debug.Log("(solving lines) fid ? " + fullId + " => " + ct);
 

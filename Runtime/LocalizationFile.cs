@@ -7,20 +7,17 @@ using System;
 using UnityEditor;
 #endif
 
-namespace fwp.localization
+namespace fwp.localizator
 {
     /// <summary>
-    /// La couche qui permet de manipuler un fichier de loca
-    /// 
-    /// quand on download en CSV les \r\n sont les retours a la ligne des lignes du excel
-    /// les \n seul sont les retour a la ligne dans la valeur d'une cellule
-    /// 
+    /// contains raw text (from spreadsheet)
+    /// and parsed lines
     /// </summary>
     public class LocalizationFile
     {
-        public const string SPREADSHEET_LINE_BREAK = "\r\n"; // ce qui sépare deux lignes du excel
-        public const char SPREADSHEET_CELL_BREAK = ','; // ce qui sépare les cellules d'une ligne du excel
-        public const char SPREADSHEET_CELL_LINE_BREAK = '\n'; // le char de la valeur d'une cellule pour line break
+        public const string SPREADSHEET_LINE_BREAK = "\r\n"; // spreadsheet line break
+        public const char SPREADSHEET_CELL_BREAK = ','; // spreadsheet cell separator
+        public const char SPREADSHEET_CELL_LINE_BREAK = '\n'; // spreadsheet cell text line break
 
         public const char LOCALIZ_CHAR_COMMENT = '#'; //id=content
         public const string LOCALIZ_CHAR_COMMENT2 = "\\\\"; //id=content

@@ -9,15 +9,18 @@ using UnityEditor;
 /// <summary>
 /// some enum/const
 /// </summary>
-namespace fwp.localization
+namespace fwp.localizator
 {
+    /// <summary>
+    /// all possible languages
+    /// </summary>
     public enum IsoLanguages
     {
         en, fr, de, es, it, po, ru, zh
     }
 
     /// <summary>
-    /// 
+    /// to react to a language change event
     /// </summary>
     public interface iLanguageChangeReact
     {

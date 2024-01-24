@@ -8,7 +8,7 @@ using System.Text;
 using UnityEditor;
 #endif
 
-namespace fwp.localization.editor
+namespace fwp.localizator.editor
 {
     public class ExportLocalisationToGoogleForm
     {
@@ -16,40 +16,67 @@ namespace fwp.localization.editor
 
         const int KEY_COLUMN = 2;
 
-        static public void ssheet_import(LocaDataSheetsIdLabel sheet)
+        static public string outputFolder => Path.Combine(Application.dataPath, LocalizationManager.path_resource_localization, "import");
+
+        /// <summary>
+        /// returns : path to generated files
+        /// </summary>
+        static public string[] ssheet_import(LocaDataSheet sheet)
         {
             if (sheet == null)
             {
                 Debug.LogError("no scriptable with tabs ids ?");
-                return;
+                return new string[0];
             }
 
-            DataSheetLabel[] tabs = sheet.getAllTabs();
+            DataSheetLabel[] tabs = sheet.sheetTabsIds;
 
-            EditorUtility.DisplayProgressBar("importing loca", "fetching...", 0f);
+            EditorUtility.DisplayProgressBar("importing loca " + sheet.url, "fetching...", 0f);
 
-            for (int i = 0; i < tabs.Length; i++)
+            List<string> output = new List<string>();
+            for (int i = 0; i < sheet.sheetTabsIds.Length; i++)
             {
-                EditorUtility.DisplayProgressBar("importing loca", tabs[i].fieldId + "&" + tabs[i].tabId, (1f * i) / (1f * tabs.Length));
-                importAndSaveSheetTab(sheet.sheetUrl, tabs[i]);
+                var tab = sheet.sheetTabsIds[i];
+
+                EditorUtility.DisplayProgressBar("importing tab"+ tab.displayName, "fetching...", (1f * i) / (1f * tabs.Length));
+                output.Add(tab_import(sheet, tab));
             }
 
             EditorUtility.ClearProgressBar();
 
             AssetDatabase.Refresh();
+
+            return output.ToArray();
+        }
+
+        static public string tab_import(LocaDataSheet sheet, DataSheetLabel tab)
+        {
+            int idx = sheet.getTabIndex(tab);
+
+            //EditorUtility.DisplayProgressBar("importing tab "+tab.displayName, "fetching...", 0f);
+
+            tab.cache = importAndSaveSheetTab(sheet.sheetUrlUid, tab);
+            tab.cache = tab.cache.Substring(Application.dataPath.Length+1);
+
+            sheet.sheetTabsIds[idx] = tab;
+
+            //EditorUtility.ClearProgressBar();
+
+            return tab.cache;
         }
 
         static public void trad_files_generation()
         {
-            Debug.Log("generating for x" + LocalizationManager.allSupportedLanguages.Length + " languages");
+            var sups = LocalizationManager.instance.getSupportedLanguages();
+            Debug.Log("generating for x" + sups.Length + " languages");
 
             EditorUtility.DisplayProgressBar("converting loca", "loading...", 0f);
 
-            for (int i = 0; i < LocalizationManager.allSupportedLanguages.Length; i++)
+            for (int i = 0; i < sups.Length; i++)
             {
-                IsoLanguages lang = LocalizationManager.allSupportedLanguages[i];
+                IsoLanguages lang = sups[i];
 
-                EditorUtility.DisplayProgressBar("converting loca", "langage : " + lang.ToString(), (1f * i) / (1f * LocalizationManager.allSupportedLanguages.Length));
+                EditorUtility.DisplayProgressBar("converting loca", "langage : " + lang.ToString(), (1f * i) / (1f * sups.Length));
 
                 trad_file_generate(lang);
             }
@@ -121,7 +148,7 @@ namespace fwp.localization.editor
         [MenuItem("Localization/import/download AND generate")]
         static void ssheet_down_n_generate()
         {
-            ssheet_import(LocalizationManager.get().getSheetLabels());
+            ssheet_import(LocalizationManager.instance.getSheets()[0]);
             trad_files_generation();
         }
 
@@ -263,17 +290,18 @@ namespace fwp.localization.editor
 
         /// <summary>
         /// where the download and treatment of original CSV is done
+        /// return : complete file path
         /// </summary>
-        static protected void importAndSaveSheetTab(string sheetUrl, DataSheetLabel dt)
+        static protected string importAndSaveSheetTab(string sheetUrl, DataSheetLabel dt)
         {
             //fileContent is raw downloadHandler text
             string fileContent = LocaSpreadsheetBridge.ssheet_import(sheetUrl, dt.tabId);
 
-            string outputFolder = Path.Combine(Application.dataPath, LocalizationManager.path_resource_localization, "import");
+            string _folder = outputFolder;
 
-            if (!Directory.Exists(outputFolder))
+            if (!Directory.Exists(_folder))
             {
-                Directory.CreateDirectory(outputFolder);
+                Directory.CreateDirectory(_folder);
             }
 
             //string fileName = getTabIdFileName(tabId);
@@ -286,11 +314,13 @@ namespace fwp.localization.editor
             //stream.Close();
 
             Debug.Log("  saved : <b>" + fileName + "</b> ; chars saved in file : " + fileContent.Length);
+
+            return filePath;
         }
 
         static protected string getTabIdFileName(string tabId)
         {
-            LocaDataSheetsIdLabel data = LocalizationStatics.getScriptableObjectInEditor<LocaDataSheetsIdLabel>();
+            LocaDataSheet data = LocalizationStatics.getScriptableObjectInEditor<LocaDataSheet>();
 
             if (data == null) return string.Empty;
 
