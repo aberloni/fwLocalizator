@@ -2,15 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 namespace fwp.localizator
 {
     /// <summary>
     /// dialog UID is name of scriptable
     /// </summary>
-    [CreateAssetMenu(menuName = "dialogs/create LocaDialogData", fileName = "DialogData_", order = 100)]
+    [CreateAssetMenu(menuName = LocalizationManager._asset_menu_path + "create dialog data",
+        fileName = "DialogData_",
+        order = LocalizationManager._asset_menu_order)]
     public class LocaDialogData : ScriptableObject
     {
-        public string locaId;
+        public string locaId => name;
 
         [SerializeField]
         public LocaDialogLineData[] lines;
@@ -20,7 +26,7 @@ namespace fwp.localizator
             Debug.Assert(line != null);
 
             Debug.Log(GetType() + " :: " + name + " :: getNextLine() :: searching next line, in x" + lines.Length + " possible lines");
-            Debug.Log("  L from line " + line.lineId.getUID() + " (" + line.lineId.getSolvedLineByUID(false) + ")");
+            Debug.Log("  L from line " + line.lineId.getLineUid() + " (" + line.lineId.getSolvedLineByUID(false) + ")");
 
             for (int i = 0; i < lines.Length; i++)
             {
@@ -63,6 +69,8 @@ namespace fwp.localizator
                 return;
             }
 
+            Debug.Log("[" + LocalizationManager.instance.getSavedIsoLanguage() + "]" + locaId);
+
             List<LocaDialogLineData> tmp = new List<LocaDialogLineData>();
 
             int safe = 50;
@@ -74,7 +82,7 @@ namespace fwp.localizator
                 string fullId = locaId + "_" + ((index < 10) ? "0" + index : index.ToString());
                 ct = LocalizationManager.instance.getContent(fullId);
 
-                //Debug.Log("(solving lines) fid ? " + fullId + " => " + ct);
+                Debug.Log("     fid ? " + fullId + " => " + ct);
 
                 if (ct.IndexOf("['") > -1) ct = string.Empty;
 
@@ -143,15 +151,59 @@ namespace fwp.localizator
             }
         }
 
-        [ContextMenu("use name as loca id")]
-        protected void cmUseNameAsId()
+        [MenuItem(LocalizationManager._menu_item_path + "dialogs/solve all dialog lines")]
+        static protected void solveLines()
         {
-            locaId = (name.Replace("LabyDialogData_", "")).Replace("-", "_env-");
+            LocaDialogData[] all = (LocaDialogData[])LocalizationStatics.getScriptableObjectsInEditor<LocaDialogData>();
 
-            cmSolveLines();
+            bool hasChanged = false;
 
-            UnityEditor.EditorUtility.SetDirty(this);
+            float progress = 0f;
+            for (int i = 0; i < all.Length; i++)
+            {
+                progress = (float)(i + 1f) / Mathf.Max(1f, (float)all.Length);
+                if (EditorUtility.DisplayCancelableProgressBar("Solving all dialog lines", "Solving " + all[i].name + " (" + (i + 1) + "/" + all.Length + ")", progress))
+                {
+                    EditorUtility.ClearProgressBar();
+                    return;
+                }
+
+                all[i].cmSolveLines(out hasChanged);
+
+                if (hasChanged)
+                    EditorUtility.SetDirty(all[i]);
+            }
+            AssetDatabase.SaveAssets();
+
+            EditorUtility.ClearProgressBar();
         }
+
+        [MenuItem(LocalizationManager._menu_item_path + "dialogs/solve all dialog lines NO DIFF")]
+        static protected void solveLinesNoDiff()
+        {
+            LocaDialogData[] all = (LocaDialogData[])LocalizationStatics.getScriptableObjectsInEditor<LocaDialogData>();
+
+            bool hasChanged = false;
+
+            float progress = 0f;
+            for (int i = 0; i < all.Length; i++)
+            {
+                progress = (float)(i + 1f) / Mathf.Max(1f, (float)all.Length);
+                if (EditorUtility.DisplayCancelableProgressBar("Solving all dialog lines", "Solving " + all[i].name + " (" + (i + 1) + "/" + all.Length + ")", progress))
+                {
+                    EditorUtility.ClearProgressBar();
+                    return;
+                }
+
+                all[i].cmSolveLines(out hasChanged);
+
+                EditorUtility.SetDirty(all[i]);
+            }
+            AssetDatabase.SaveAssets();
+
+            EditorUtility.ClearProgressBar();
+        }
+
 #endif
 
     }

@@ -11,58 +11,39 @@ namespace fwp.localizator
         [SerializeField]
         string uid = ""; // l'uid raw
 
-        [SerializeField]
-        string fuid = ""; // readonly, l'uid solutionné après les patterns
-
         //FOR DEBUG ONLY
-        [SerializeField]
-        readonly string[] _previews;
+        public string[] previews;
 
         public LocaDialogLineId(string uid)
         {
             this.uid = uid;
-            this.fuid = uid;
-
-            _previews = new string[LocalizationManager.instance.getSupportedLanguages().Length];
         }
 
         [ContextMenu("debug update preview")]
         public void debugUpdatePreview()
         {
-            for (int i = 0; i < _previews.Length; i++)
+            previews = new string[System.Enum.GetValues(typeof(IsoLanguages)).Length];
+
+            Debug.Log(uid);
+
+            var sups = LocalizationManager.instance.getSupportedLanguages();
+            foreach (IsoLanguages sup in sups)
             {
-                _previews[i] = getSolvedLineByUID(false);
+                Debug.Log(sup);
+                previews[(int)sup] = LocalizationManager.instance.getContent(uid, sup, true);
             }
         }
 
-        public string getUID() => uid;
+        public string getLineUid() => uid;
 
         //THIS IS WHAT SHOULD PROVIDE LOCA
         public string getSolvedLineByUID(bool useFallback = false)
         {
-            return useFallback ? LocalizationManager.instance.getContentSafe(uid) : LocalizationManager.instance.getContent(uid);
+            if (useFallback) return LocalizationManager.instance.getContentSafe(uid);
+            return LocalizationManager.instance.getContent(uid);
         }
 
-        public string getSolvedLineByFUID() => LocalizationManager.instance.getContent(fuid);
-
-        /// <summary>
-        /// do not use
-        /// not working
-        /// </summary>
-        public string getLineUsingPatterns(string[] patterns, string[] replaces)
-        {
-            Debug.Assert(patterns.Length == replaces.Length);
-
-            string tmp = uid;
-            for (int i = 0; i < patterns.Length; i++)
-            {
-                tmp = tmp.Replace(patterns[i], replaces[i]);
-            }
-
-            fuid = tmp;
-
-            return getSolvedLineByFUID();
-        }
+        public string getSolvedLineByFUID() => LocalizationManager.instance.getContent(uid);
 
         public bool hasUID()
         {

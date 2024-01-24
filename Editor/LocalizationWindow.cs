@@ -80,14 +80,26 @@ namespace fwp.localizator
                 return;
             }
 
-            GUILayout.Label(mgr.GetType().ToString());
-
             draw(mgr);
         }
 
         virtual protected void draw(Manager mgr)
         {
-            if(GUILayout.Button("download & generate", GUILayout.Height(30f)))
+            GUILayout.Label(mgr.GetType().ToString());
+            GUILayout.Label("active lang " + mgr.getSavedIsoLanguage().ToString().ToUpper());
+
+            GUILayout.BeginHorizontal();
+            var sups = mgr.getSupportedLanguages();
+            foreach(var s in sups)
+            {
+                if(GUILayout.Button(s.ToString()))
+                {
+                    mgr.setSavedLanguage(s, true);
+                }
+            }
+            GUILayout.EndHorizontal();
+
+            if (GUILayout.Button("download & generate", GUILayout.Height(30f)))
             {
                 var sheets = mgr.getSheets();
                 ExportLocalisationToGoogleForm.ssheets_import(sheets);
@@ -124,7 +136,7 @@ namespace fwp.localizator
 
                     GUILayout.Label("URL    " + sheet.sheetUrlUid);
 
-                    if (GUILayout.Button("browse", btnW)) openUrl(sheet.url);
+                    if (GUILayout.Button("browse", btnW)) OpenInFileBrowser.browseUrl(sheet.url);
 
                     if (GUILayout.Button("download SHEET", btnW))
                     {
@@ -147,7 +159,7 @@ namespace fwp.localizator
 
                         if (GUILayout.Button("browse", btnW))
                         {
-                            openUrl(sheet.url + tab.url);
+                            OpenInFileBrowser.browseUrl(sheet.url + tab.url);
                         }
 
                         if (GUILayout.Button("download TAB", btnW))
@@ -227,15 +239,6 @@ namespace fwp.localizator
             }
 
             EditorGUILayout.EndFoldoutHeaderGroup();
-        }
-
-
-        static public void openUrl(string url)
-        {
-
-            Debug.Log(url);
-            //System.Diagnostics.Process.Start("explorer.exe", url);
-            System.Diagnostics.Process.Start(url);
         }
 
         /// <summary>

@@ -20,10 +20,12 @@ namespace fwp.localizator
             }
         }
 
-        [UnityEditor.MenuItem("Window/Localization/Test OpenInFileBrowser")]
-        public static void Test()
+        //const string prefixUrl = "http";
+
+        static public void browseUrl(string url)
         {
-            Open(Application.dataPath);
+            Debug.Log("browsing @ " + url);
+            System.Diagnostics.Process.Start(url);
         }
 
         public static void OpenInMac(string path)
@@ -88,7 +90,7 @@ namespace fwp.localizator
             }
         }
 
-        public static void Open(string path)
+        public static void OpenLocalFile(string path)
         {
             if (IsInWinOS)
             {

@@ -19,14 +19,18 @@ namespace fwp.localizator
     /// </summary>
     public class LocalizationManager
     {
+        public const string _asset_menu_path = "Localizator/";
+        public const string _menu_item_path = "Window/Localizator/";
+        public const int _asset_menu_order = 100;
+
+        public const string ppref_language = "ppref_language";
+
         static public LocalizationManager instance;
         
         /// <summary>
         /// list of reactor candidates to lang change
         /// </summary>
         static public List<iLanguageChangeReact> reacts = new List<iLanguageChangeReact>();
-
-        public const string LANG_PREFIX = "lang";
 
         public const IsoLanguages languageFallback = IsoLanguages.en; // si la langue du system est pas supportée
 
@@ -203,7 +207,10 @@ namespace fwp.localizator
         /// tries a getContent
         /// if fails return default value (en ?)
         /// </summary>
-        public string getContentSafe(string id, bool warning = false)
+        public string getContentSafe(string id, bool warning = false) 
+            => getContentSafe(id, getSavedIsoLanguage(), warning);
+
+        public string getContentSafe(string id, IsoLanguages lang, bool warning = false)
         {
             string output = getContent(id);
             if (output.Length <= 0)
@@ -220,25 +227,15 @@ namespace fwp.localizator
             return output;
         }
 
-        public string getContent(string id, bool warning = false)
+        public string getContent(string id, bool warning = false) 
+            => getContent(id, getSavedIsoLanguage(), warning);
+        public string getContent(string id, IsoLanguages iso, bool warning = false)
         {
-            IsoLanguages lang = getSavedIsoLanguage();
-
-            LocalizationFile file = instance.getFileByLang(lang);
-            Debug.Assert(file != null, "no file found for language : " + lang);
+            LocalizationFile file = instance.getFileByLang(iso);
+            Debug.Assert(file != null, "no file found for language : " + iso);
 
             return file.getContentById(id, warning);
         }
-
-        public string getContent(string id, IsoLanguages filterLang, bool warning = true)
-        {
-            LocalizationFile file = instance.getFileByLang(filterLang);
-            Debug.Assert(file != null, "no file found for language : " + filterLang);
-
-            return file.getContentById(id, warning);
-        }
-
-
 
         public void nextLanguage()
         {
@@ -293,26 +290,34 @@ namespace fwp.localizator
             return getContent("menu_" + lang.ToString());
         }
 
-        static string sysToIsoString(SystemLanguage sys) => sysToIso(sys).ToString();
-
-        IsoLanguages getSystemLanguageToIso()
-        {
-            return sysToIso(Application.systemLanguage);
-        }
-
         public void setSavedLanguage(IsoLanguages iso, bool applySwap = false)
         {
-            //how to save
-            //...
-            //LabySaveManager.getStream().setOption(LANG_PREFIX, (float)iso); // save
+            setLanguage(iso);
 
             if (applySwap) applyLanguage(iso); // apply
         }
 
+        virtual protected void setLanguage(IsoLanguages iso)
+        {
+            //LabySaveManager.getStream().setOption(LANG_PREFIX, (float)iso); // save
+
+            //how to save
+            EditorPrefs.SetInt(ppref_language, (int)iso);
+        }
+
+        virtual protected IsoLanguages loadLanguage()
+        {
+            int idx = EditorPrefs.GetInt(ppref_language, -1);
+            if (idx >= 0) return (IsoLanguages)idx;
+            return getSystemLanguageToIso();
+        }
+
         /// <summary>
-        /// uses sys language as default
+        /// on SWITCH platform there is a specific setup for this to work
+        /// https://developer.nintendo.com/group/development/g1kr9vj6/forums/english/-/gts_message_boards/thread/269684575#636486
+        /// none defined language in player settings won't work
         /// </summary>
-        public IsoLanguages getSavedIsoLanguage()
+        static public IsoLanguages getSystemLanguageToIso()
         {
             SystemLanguage langDefault = Application.systemLanguage;
 
@@ -324,28 +329,32 @@ namespace fwp.localizator
     langDefault = SystemLanguage.Chinese;
 #endif
 
-            //default value
             IsoLanguages lang = sysToIso(langDefault);
+            return lang;
+        }
+
+        /// <summary>
+        /// uses sys language as default
+        /// </summary>
+        public IsoLanguages getSavedIsoLanguage()
+        {
+
+            //default value
+            IsoLanguages lang = loadLanguage();
 
             //how to load
             //IsoLanguages lang = (IsoLanguages)LabySaveManager.getStream().getOption(LANG_PREFIX, (int)sysToIso(langDefault));
 
             if (!isIsoLanguageSupported(lang))
             {
+                Debug.LogWarning($"{lang} not supported, fallback to system");
+
                 lang = getSystemLanguageToIso(); // sys OR fallback if sys is not supported
             }
 
             return lang;
         }
-
-
-        /// <summary>
-        /// on SWITCH platform there is a specific setup for this to work
-        /// https://developer.nintendo.com/group/development/g1kr9vj6/forums/english/-/gts_message_boards/thread/269684575#636486
-        /// none defined language in player settings won't work
-        /// </summary>
-        static public SystemLanguage getSystemLanguage() => Application.systemLanguage;
-
+        
         /// <summary>
         /// https://docs.microsoft.com/en-us/dotnet/api/system.globalization.cultureinfo.twoletterisolanguagename?view=net-5.0
         /// </summary>

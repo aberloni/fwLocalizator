@@ -46,7 +46,7 @@ namespace fwp.localizator.editor
             {
                 var tab = sheet.sheetTabsIds[i];
 
-                EditorUtility.DisplayProgressBar("importing tab"+ tab.displayName, "fetching...", (1f * i) / (1f * tabs.Length));
+                EditorUtility.DisplayProgressBar("importing tab" + tab.displayName, "fetching...", (1f * i) / (1f * tabs.Length));
                 output.Add(tab_import(sheet, tab));
             }
 
@@ -64,7 +64,7 @@ namespace fwp.localizator.editor
             //EditorUtility.DisplayProgressBar("importing tab "+tab.displayName, "fetching...", 0f);
 
             tab.cache = importAndSaveSheetTab(sheet.sheetUrlUid, tab);
-            tab.cache = tab.cache.Substring(Application.dataPath.Length+1);
+            tab.cache = tab.cache.Substring(Application.dataPath.Length + 1);
 
             sheet.sheetTabsIds[idx] = tab;
 
@@ -94,79 +94,13 @@ namespace fwp.localizator.editor
             AssetDatabase.Refresh();
         }
 
-        [MenuItem("Localization/import/solve all dialog lines")]
-        static protected void solveLines()
-        {
-            LocaDialogData[] all = (LocaDialogData[])LocalizationStatics.getScriptableObjectsInEditor<LocaDialogData>();
-
-            bool hasChanged = false;
-
-            float progress = 0f;
-            for (int i = 0; i < all.Length; i++)
-            {
-                progress = (float)(i + 1f) / Mathf.Max(1f, (float)all.Length);
-                if (EditorUtility.DisplayCancelableProgressBar("Solving all dialog lines", "Solving " + all[i].name + " (" + (i + 1) + "/" + all.Length + ")", progress))
-                {
-                    EditorUtility.ClearProgressBar();
-                    return;
-                }
-
-                all[i].cmSolveLines(out hasChanged);
-
-                if (hasChanged)
-                    EditorUtility.SetDirty(all[i]);
-            }
-            AssetDatabase.SaveAssets();
-
-            EditorUtility.ClearProgressBar();
-        }
-
-        [MenuItem("Localization/import/solve all dialog lines NO DIFF")]
-        static protected void solveLinesNoDiff()
-        {
-            LocaDialogData[] all = (LocaDialogData[])LocalizationStatics.getScriptableObjectsInEditor<LocaDialogData>();
-
-            bool hasChanged = false;
-
-            float progress = 0f;
-            for (int i = 0; i < all.Length; i++)
-            {
-                progress = (float)(i + 1f) / Mathf.Max(1f, (float)all.Length);
-                if (EditorUtility.DisplayCancelableProgressBar("Solving all dialog lines", "Solving " + all[i].name + " (" + (i + 1) + "/" + all.Length + ")", progress))
-                {
-                    EditorUtility.ClearProgressBar();
-                    return;
-                }
-
-                all[i].cmSolveLines(out hasChanged);
-
-                EditorUtility.SetDirty(all[i]);
-            }
-            AssetDatabase.SaveAssets();
-
-            EditorUtility.ClearProgressBar();
-        }
-
-        [MenuItem("Localization/import/generate only EN")]
-        static void gen_only_en()
-        {
-            trad_file_generate(IsoLanguages.en);
-        }
-
-        [MenuItem("Localization/import/download AND generate")]
-        static void ssheet_down_n_generate()
-        {
-            ssheet_import(LocalizationManager.instance.getSheets()[0]);
-            trad_files_generation();
-        }
-
         /// <summary>
         /// merge all tabs into a single file for given language
         /// </summary>
         /// <param name="lang"></param>
         static public void trad_file_generate(IsoLanguages lang)
         {
-            string importPath = Path.Combine(Application.dataPath, 
+            string importPath = Path.Combine(Application.dataPath,
                 LocalizationManager.path_resource_localization, "import");
 
             string[] tabsFiles = Directory.GetFiles(importPath, "*.txt");
@@ -183,10 +117,10 @@ namespace fwp.localizator.editor
 
             //save
 
-            string outputPath = Path.Combine(Application.dataPath, 
+            string outputPath = Path.Combine(Application.dataPath,
                 LocalizationManager.path_resource_localization, "lang_" + lang + ".txt");
 
-            if(verbose)
+            if (verbose)
                 Debug.Log("saving : " + outputPath + " (" + output.Length + " char)");
 
             File.WriteAllText(outputPath, output.ToString());
@@ -199,7 +133,7 @@ namespace fwp.localizator.editor
         {
             string tabContent = File.ReadAllText(filePath);
 
-            if(verbose)
+            if (verbose)
                 Debug.Log("parsing csv file : " + filePath);
 
             CsvParser csv = CsvParser.parse(tabContent);

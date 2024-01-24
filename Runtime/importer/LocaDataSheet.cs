@@ -35,7 +35,7 @@ namespace fwp.localizator
     /// - tabs @ spreadsheet
     /// </summary>
 
-    [CreateAssetMenu(menuName = "Localizator/create sheet", order = 100)]
+    [CreateAssetMenu(menuName = LocalizationManager._asset_menu_path + "create sheet", order = LocalizationManager._asset_menu_order)]
     public class LocaDataSheet : ScriptableObject
     {
         // https://docs.google.com/spreadsheets/d/[my-uid]/edit#gid=[tab-uid]
@@ -65,7 +65,7 @@ namespace fwp.localizator
             if (Application.isPlaying)
                 return;
 
-            if(sheetUrlUid.StartsWith(LocaSpreadsheetBridge.sheetUrlPrefix))
+            if (sheetUrlUid.StartsWith(LocaSpreadsheetBridge.sheetUrlPrefix))
             {
                 sheetUrlUid = sheetUrlUid.Replace(LocaSpreadsheetBridge.sheetUrlPrefix, string.Empty);
             }
