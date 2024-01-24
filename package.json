@@ -1,0 +1,20 @@
+{
+  "name": "com.ab.fwp.localizator",
+  "version": "0.0.1",
+  "displayName": "ab:localizator",
+  "description": "framework to import localization",
+  "keywords": [
+    "prototype",
+    "framework"
+  ],
+  "category": "tools",
+  "repository": {
+    "url": "https://github.com/Legogo/fwLocalizator.git",
+    "type": "git"
+  },
+  "author": {
+    "name": "Andrei Berloni",
+    "email": "dev@andreberlemont.com",
+    "url": "http://www.andreberlemont.com"
+  }
+}
