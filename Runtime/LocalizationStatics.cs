@@ -130,9 +130,21 @@ namespace fwp.localizator
             return output.ToArray();
         }
 
+        static public T[] getScriptableObjectsInEditor<T>() where T : ScriptableObject
+        {
+            System.Type scriptableType = typeof(T);
+            string[] all = AssetDatabase.FindAssets("t:" + scriptableType.Name);
 
-        static public ScriptableObject[] getScriptableObjectsInEditor<T>() where T : ScriptableObject
-            => getScriptableObjectsInEditor(typeof(T));
+            List<T> output = new List<T>();
+            for (int i = 0; i < all.Length; i++)
+            {
+                Object obj = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(all[i]), scriptableType);
+                T so = obj as T;
+                if (so == null) continue;
+                output.Add(so);
+            }
+            return output.ToArray();
+        }
 
         static public T getScriptableObjectInEditor<T>(string nameContains = "") where T : ScriptableObject
         {

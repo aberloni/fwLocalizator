@@ -9,24 +9,26 @@ using UnityEditor;
 namespace fwp.localizator
 {
     /// <summary>
-    /// dialog UID is name of scriptable
+    /// 
+    /// dialog UID in spreadsheet must match name of scriptable
+    /// 
     /// </summary>
     [CreateAssetMenu(menuName = LocalizationManager._asset_menu_path + "create dialog data",
         fileName = "DialogData_",
         order = LocalizationManager._asset_menu_order)]
-    public class LocaDialogData : ScriptableObject
+    public class LocaDialogData<LineData> : ScriptableObject where LineData : LocaDialogLineData
     {
         public string locaId => name;
 
         [SerializeField]
-        public LocaDialogLineData[] lines;
+        public LineData[] lines;
 
-        public LocaDialogLineData getNextLine(LocaDialogLineData line)
+        public LineData getNextLine(LineData line)
         {
             Debug.Assert(line != null);
 
             Debug.Log(GetType() + " :: " + name + " :: getNextLine() :: searching next line, in x" + lines.Length + " possible lines");
-            Debug.Log("  L from line " + line.lineId.getLineUid() + " (" + line.lineId.getSolvedLineByUID(false) + ")");
+            Debug.Log("  L from line " + line.uid + " (" + line.getSolvedLineByUID(false) + ")");
 
             for (int i = 0; i < lines.Length; i++)
             {
@@ -46,14 +48,7 @@ namespace fwp.localizator
         }
 
 #if UNITY_EDITOR
-        [ContextMenu("solve lines")]
-        public void cmSolveLines()
-        {
-            bool osef = false;
-            cmSolveLines(out osef);
-        }
-
-        public void cmSolveLines(out bool hasChanged)
+        public void editorSolveLines(out bool hasChanged)
         {
             hasChanged = false;
 
@@ -71,7 +66,7 @@ namespace fwp.localizator
 
             Debug.Log("[" + LocalizationManager.instance.getSavedIsoLanguage() + "]" + locaId);
 
-            List<LocaDialogLineData> tmp = new List<LocaDialogLineData>();
+            List<LineData> tmp = new List<LineData>();
 
             int safe = 50;
             int index = 1;
@@ -88,7 +83,8 @@ namespace fwp.localizator
 
                 if (ct.Length > 0)
                 {
-                    LocaDialogLineData line = new LocaDialogLineData(fullId);
+                    LineData line = System.Activator.CreateInstance<LineData>();
+                    line.uid = fullId;
                     tmp.Add(line);
                 }
 
@@ -110,13 +106,13 @@ namespace fwp.localizator
             }
             else
             {
-                List<LocaDialogLineData> merged = new List<LocaDialogLineData>();
+                List<LineData> merged = new List<LineData>();
 
                 for (int i = 0; i < tmp.Count; i++)
                 {
                     if (i < lines.Length)
                     {
-                        if (lines[i].lineId.getSolvedLineByFUID() == tmp[i].lineId.getSolvedLineByFUID())
+                        if (lines[i].getSolvedLineByFUID() == tmp[i].getSolvedLineByFUID())
                             merged.Add(lines[i]);
                         else
                         {
@@ -142,19 +138,25 @@ namespace fwp.localizator
                 Debug.Log("(solving lines) solved x" + tmp.Count + " lines for " + locaId + " " + mergeLog + " - changed =" + hasChanged);
         }
 
-        [ContextMenu("update cached")]
-        protected void cmUpdateCached()
+        public void cmSolveLines() => editorSolveLines(out bool tmp);
+
+        public void cmUpdateCached()
         {
             for (int i = 0; i < lines.Length; i++)
             {
-                lines[i].debugUpdateCached();
+                lines[i].debugUpdatePreview();
             }
+        }
+
+        static public LocaDialogData<LineData>[] getScriptables()
+        {
+            return LocalizationStatics.getScriptableObjectsInEditor<LocaDialogData<LineData>>();
         }
 
         [MenuItem(LocalizationManager._menu_item_path + "dialogs/solve all dialog lines")]
         static protected void solveLines()
         {
-            LocaDialogData[] all = (LocaDialogData[])LocalizationStatics.getScriptableObjectsInEditor<LocaDialogData>();
+            LocaDialogData<LineData>[] all = getScriptables();
 
             bool hasChanged = false;
 
@@ -168,7 +170,7 @@ namespace fwp.localizator
                     return;
                 }
 
-                all[i].cmSolveLines(out hasChanged);
+                all[i].editorSolveLines(out hasChanged);
 
                 if (hasChanged)
                     EditorUtility.SetDirty(all[i]);
@@ -181,7 +183,7 @@ namespace fwp.localizator
         [MenuItem(LocalizationManager._menu_item_path + "dialogs/solve all dialog lines NO DIFF")]
         static protected void solveLinesNoDiff()
         {
-            LocaDialogData[] all = (LocaDialogData[])LocalizationStatics.getScriptableObjectsInEditor<LocaDialogData>();
+            LocaDialogData<LineData>[] all = getScriptables();
 
             bool hasChanged = false;
 
@@ -195,7 +197,7 @@ namespace fwp.localizator
                     return;
                 }
 
-                all[i].cmSolveLines(out hasChanged);
+                all[i].editorSolveLines(out hasChanged);
 
                 EditorUtility.SetDirty(all[i]);
             }

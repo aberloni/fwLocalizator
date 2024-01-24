@@ -7,40 +7,72 @@ namespace fwp.localizator
     [System.Serializable]
     public class LocaDialogLineData
     {
-        [Tooltip("matching id in trad file text")]
-        public LocaDialogLineId lineId;
+        public string uid;
 
-        [Header("params")]
+        //FOR DEBUG ONLY
+        public string[] previews;
 
-        //déduit auto pour les checkpoints
-        [Tooltip("is using bubble")]
-        public bool usePhylactere = true;
-
-        [Tooltip("name of talking entity (for head sprite) ; laisser vide pour utiliser celui du filter")]
-        //public DialogCharacters whoIsTalking = DialogCharacters.None;
-        [SerializeField]
-        public string bubblePivotName = default;
-
-        [Tooltip("la tete du mec qui parle, duh ; laisser vide pour utiliser celui du filter")]
-        public Sprite talkerHead;
-
-        [Tooltip("will auto skip after N secondes")]
-        public float autoSkipTime = 4f;
-
-        //on avait un skip pour lle timing out mais paul a décider que c'était deprecated
-
-        public LocaDialogLineData(string lineId)
+        [ContextMenu("debug update preview")]
+        public void debugUpdatePreview()
         {
-            this.lineId = new LocaDialogLineId(lineId);
-            //this.lineId = lineId;
+            previews = new string[System.Enum.GetValues(typeof(IsoLanguages)).Length];
+
+            Debug.Log(uid);
+
+            var sups = LocalizationManager.instance.getSupportedLanguages();
+            foreach (IsoLanguages sup in sups)
+            {
+                Debug.Log(sup);
+                previews[(int)sup] = LocalizationManager.instance.getContent(uid, sup, true);
+            }
         }
 
-        /// <summary>
-        /// si on a ref une durée dans l'editeur
-        /// </summary>
-        public bool hasAutoSkipSetup() => autoSkipTime > 0f;
+        //THIS IS WHAT SHOULD PROVIDE LOCA
+        public string getSolvedLineByUID(bool useFallback = false)
+        {
+            if (useFallback) return LocalizationManager.instance.getContentSafe(uid);
+            return LocalizationManager.instance.getContent(uid);
+        }
 
-        public void debugUpdateCached() => lineId.debugUpdatePreview();
+        public string getSolvedLineByFUID() => LocalizationManager.instance.getContent(uid);
+
+        public bool hasUID()
+        {
+            //for loading issues .......
+            if (uid == null) return false;
+
+            return uid.Length > 0;
+        }
+
+        static public string getLocaByUID(string uid, bool fallbackIfMissing = false, bool emptyOnMissing = false)
+        {
+            string content = fallbackIfMissing ?
+                LocalizationManager.instance.getContentSafe(uid) :
+                LocalizationManager.instance.getContent(uid);
+            return getFilteredLocaLine(content, emptyOnMissing);
+        }
+
+        static public string getFilteredLocaLine(string contentLocalized, bool emptyOnMissing = false)
+        {
+            // 2 parce qu'il y a deux charactères qui trainent dans l'export
+            if (contentLocalized.Length <= 1)
+            {
+                contentLocalized = "[empty]";
+                //Debug.LogWarning("no text given ?");
+            }
+
+            //missing ?
+            if (contentLocalized.Length > 0)
+            {
+                if (contentLocalized[0] == '[')
+                {
+                    if (emptyOnMissing) contentLocalized = string.Empty;
+                }
+            }
+
+            return contentLocalized;
+        }
+
     }
 
 }
