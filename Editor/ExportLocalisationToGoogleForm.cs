@@ -18,6 +18,14 @@ namespace fwp.localizator.editor
 
         static public string outputFolder => Path.Combine(Application.dataPath, LocalizationManager.path_resource_localization, "import");
 
+        static public void ssheets_import(LocaDataSheet[] sheets)
+        {
+            for (int i = 0; i < sheets.Length; i++)
+            {
+                ssheet_import(sheets[i]);
+            }
+        }
+
         /// <summary>
         /// returns : path to generated files
         /// </summary>
@@ -156,7 +164,7 @@ namespace fwp.localizator.editor
         /// merge all tabs into a single file for given language
         /// </summary>
         /// <param name="lang"></param>
-        static protected void trad_file_generate(IsoLanguages lang)
+        static public void trad_file_generate(IsoLanguages lang)
         {
             string importPath = Path.Combine(Application.dataPath, 
                 LocalizationManager.path_resource_localization, "import");

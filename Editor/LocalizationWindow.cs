@@ -12,15 +12,9 @@ namespace fwp.localizator
     /// </summary>
     abstract public class LocalizationWindow<Manager> : EditorWindow where Manager : LocalizationManager
     {
-        /*
-        [MenuItem("Localization/viewer")]
-        static void init()
-        {
-            EditorWindow.GetWindow(typeof(LocalizationWindow));
-        }
-        */
-
-        string output = string.Empty;
+        GUIStyle foldHeaderTitle;
+        GUIStyle foldTitle;
+        GUILayoutOption btnW;
 
         /// <summary>
         /// in usage context
@@ -28,14 +22,57 @@ namespace fwp.localizator
         /// </summary>
         public Manager getManager() => LocalizationManager.instance as Manager;
 
+        void checkStyles()
+        {
+            btnW = GUILayout.MaxWidth(150f);
+            foldHeaderTitle = new GUIStyle(EditorStyles.foldoutHeader);
+            foldTitle = new GUIStyle(EditorStyles.foldout);
+
+            if (foldHeaderTitle != null)
+            {
+                foldHeaderTitle.fontStyle = FontStyle.Bold;
+
+                foldHeaderTitle.normal.textColor = Color.white;
+
+                foldHeaderTitle.onFocused.textColor = Color.gray;
+                foldHeaderTitle.focused.textColor = Color.gray;
+
+                //foldTitle.onActive.textColor = Color.red;
+                //foldTitle.active.textColor = Color.red;
+
+                foldHeaderTitle.fontSize = 20;
+                //foldHeaderTitle.richText = true;
+                //foldHeaderTitle.alignment = TextAnchor.MiddleCenter;
+
+                //foldTitle.padding = new RectOffset(0, 0, 100, 100);
+                //foldHeaderTitle.margin = new RectOffset(20,0,0,0);
+
+            }
+
+            if(foldTitle != null)
+            {
+                //foldTitle.richText = true;
+                foldTitle.fontSize = 20;
+            }
+        }
+
+        private void OnEnable()
+        {
+            //checkStyles();
+        }
+
         private void OnFocus()
         {
             if (LocalizationManager.instance == null)
                 LocalizationManager.instance = System.Activator.CreateInstance<Manager>();
+
+            //checkStyles();
         }
 
         private void OnGUI()
         {
+            checkStyles();
+
             Manager mgr = getManager();
             if (mgr == null)
             {
@@ -50,26 +87,15 @@ namespace fwp.localizator
 
         virtual protected void draw(Manager mgr)
         {
-            drawSheetSection(mgr);
-
-            if (GUILayout.Button("generate trad files"))
+            if(GUILayout.Button("download & generate", GUILayout.Height(30f)))
             {
+                var sheets = mgr.getSheets();
+                ExportLocalisationToGoogleForm.ssheets_import(sheets);
                 ExportLocalisationToGoogleForm.trad_files_generation();
             }
 
-            if (GUILayout.Button("solve chinese"))
-            {
-                LocalizationFile file = mgr.getFileByLang(IsoLanguages.zh.ToString());
-
-                output = string.Empty;
-
-                var lines = file.getLines();
-                foreach (var line in lines)
-                {
-                    output += line + "\n";
-                }
-            }
-
+            drawSheetSection(mgr);
+            drawLangFiles(mgr);
         }
 
         bool foldDownload;
@@ -78,15 +104,16 @@ namespace fwp.localizator
         {
             var sheets = mgr.getSheets();
 
+            GUILayout.Space(10f);
+
             EditorGUI.BeginChangeCheck();
-            foldDownload = EditorGUILayout.Foldout(foldDownload, "sheets x" + sheets.Length);
+            foldDownload = EditorGUILayout.BeginFoldoutHeaderGroup(foldDownload, "sheets x" + sheets.Length, foldHeaderTitle);
             if (EditorGUI.EndChangeCheck())
             {
                 if (foldDownload)
                 {
                     sheets = mgr.getSheets(true);
                 }
-
             }
 
             if (foldDownload)
@@ -97,9 +124,9 @@ namespace fwp.localizator
 
                     GUILayout.Label("URL    " + sheet.sheetUrlUid);
 
-                    if (GUILayout.Button("open")) openUrl(sheet.url);
+                    if (GUILayout.Button("browse", btnW)) openUrl(sheet.url);
 
-                    if (GUILayout.Button("download SHEET"))
+                    if (GUILayout.Button("download SHEET", btnW))
                     {
                         string[] outputs = ExportLocalisationToGoogleForm.ssheet_import(sheet);
                         for (int i = 0; i < sheet.sheetTabsIds.Length; i++)
@@ -118,12 +145,12 @@ namespace fwp.localizator
 
                         GUILayout.Label("TAB    " + tab.fieldId + "#" + tab.tabId);
 
-                        if (GUILayout.Button("open"))
+                        if (GUILayout.Button("browse", btnW))
                         {
                             openUrl(sheet.url + tab.url);
                         }
 
-                        if (GUILayout.Button("download TAB"))
+                        if (GUILayout.Button("download TAB", btnW))
                         {
                             ExportLocalisationToGoogleForm.tab_import(sheet, tab);
                         }
@@ -135,16 +162,73 @@ namespace fwp.localizator
                         {
                             GUILayout.Label(tab.cache);
 
-                            if (GUILayout.Button("select"))
+                            if (GUILayout.Button(" > ", btnW))
                                 UnityEditor.Selection.activeObject = AssetDatabase.LoadAssetAtPath(tab.cacheAsset, typeof(TextAsset));
                         }
                         GUILayout.EndHorizontal();
                     }
                 }
+
             }
 
-            GUILayout.TextArea(output);
+            EditorGUILayout.EndFoldoutHeaderGroup();
         }
+
+        bool foldLang;
+        Vector2 scrollLang;
+
+        void drawLangFiles(Manager mgr)
+        {
+            GUILayout.Space(10f);
+
+            var langs = mgr.lang_files;
+
+            EditorGUI.BeginChangeCheck();
+            foldLang = EditorGUILayout.BeginFoldoutHeaderGroup(foldLang, "langs x" + langs.Length, foldHeaderTitle);
+            if (EditorGUI.EndChangeCheck())
+            {
+                if (foldLang)
+                {
+                }
+                else
+                {
+                    scrollLang = Vector2.zero;
+                    foreach (var l in langs) l.editor_fold = false;
+                }
+            }
+
+            if (foldLang)
+            {
+                if (GUILayout.Button("generate trad files"))
+                {
+                    ExportLocalisationToGoogleForm.trad_files_generation();
+                }
+
+                foreach (var l in langs)
+                {
+                    GUILayout.BeginHorizontal();
+
+                    GUILayout.Label(l.iso.ToString());
+                    GUILayout.Label("char x"+l.textAsset.text.Length, btnW);
+
+                    if (GUILayout.Button("generate", btnW))
+                    {
+                        LocalizationFile file = mgr.getFileByLang(l.iso);
+                        ExportLocalisationToGoogleForm.trad_file_generate(l.iso);
+                    }
+
+                    if (GUILayout.Button(" > ", btnW))
+                    {
+                        UnityEditor.Selection.activeObject = l.textAsset;
+                    }
+
+                    GUILayout.EndHorizontal();
+                }
+            }
+
+            EditorGUILayout.EndFoldoutHeaderGroup();
+        }
+
 
         static public void openUrl(string url)
         {
@@ -152,6 +236,39 @@ namespace fwp.localizator
             Debug.Log(url);
             //System.Diagnostics.Process.Start("explorer.exe", url);
             System.Diagnostics.Process.Start(url);
+        }
+
+        /// <summary>
+        /// draw a label with speficic style
+        /// </summary>
+        static public void drawSectionTitle(string label, float spaceMargin = 20f, int leftMargin = 10)
+        {
+            if (spaceMargin > 0f)
+                GUILayout.Space(spaceMargin);
+
+            GUILayout.Label(label, getSectionTitle(15, TextAnchor.UpperLeft, leftMargin));
+        }
+
+        static private GUIStyle gSectionTitle;
+        static public GUIStyle getSectionTitle(int size = 15, TextAnchor anchor = TextAnchor.MiddleCenter, int leftMargin = 10)
+        {
+            if (gSectionTitle == null)
+            {
+                gSectionTitle = new GUIStyle();
+
+                gSectionTitle.richText = true;
+                gSectionTitle.alignment = anchor;
+                gSectionTitle.normal.textColor = Color.white;
+
+                gSectionTitle.fontStyle = FontStyle.Bold;
+                gSectionTitle.margin = new RectOffset(leftMargin, 10, 10, 10);
+                //gWinTitle.padding = new RectOffset(30, 30, 30, 30);
+
+            }
+
+            gSectionTitle.fontSize = size;
+
+            return gSectionTitle;
         }
     }
 

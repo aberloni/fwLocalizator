@@ -42,7 +42,7 @@ namespace fwp.localizator
 
         LocaDataSheet[] sheets;
 
-        LocalizationFile[] lang_files;
+        public LocalizationFile[] lang_files;
 
         public LocalizationManager()
         {
@@ -132,14 +132,14 @@ namespace fwp.localizator
 
         }
 
-        public LocalizationFile getFileByLang(string lang)
+        public LocalizationFile getFileByLang(IsoLanguages lang)
         {
             for (int i = 0; i < lang_files.Length; i++)
             {
                 //debug, NOT runtime, to be sure content is updated
                 if (!Application.isPlaying) lang_files[i].debugRefresh();
 
-                if (lang_files[i].lang_name == lang)
+                if (lang_files[i].iso == lang)
                 {
                     return lang_files[i];
                 }
@@ -156,7 +156,7 @@ namespace fwp.localizator
                 {
                     if (lang_files[i].compare(lang_files[j]))
                     {
-                        Debug.LogError("Issue comparing " + lang_files[i].lang_name + " VS " + lang_files[j].lang_name);
+                        Debug.LogError("Issue comparing " + lang_files[i].iso + " VS " + lang_files[j].iso);
                     }
                 }
             }
@@ -189,13 +189,13 @@ namespace fwp.localizator
             return file;
         }
 
-        protected LocalizationFile getLangFileByLangLabel(string langLabel)
+        protected LocalizationFile getLangFileByLangLabel(string label)
         {
             for (int i = 0; i < lang_files.Length; i++)
             {
-                if (lang_files[i].lang_name == langLabel) return lang_files[i];
+                if (lang_files[i].iso.ToString() == label) return lang_files[i];
             }
-            Debug.LogWarning(" !!! <color=red>no file</color> for current lang : " + langLabel);
+            Debug.LogWarning(" !!! <color=red>no file</color> for current lang : " + label);
             return null;
         }
 
@@ -224,7 +224,7 @@ namespace fwp.localizator
         {
             IsoLanguages lang = getSavedIsoLanguage();
 
-            LocalizationFile file = instance.getFileByLang(lang.ToString());
+            LocalizationFile file = instance.getFileByLang(lang);
             Debug.Assert(file != null, "no file found for language : " + lang);
 
             return file.getContentById(id, warning);
@@ -232,7 +232,7 @@ namespace fwp.localizator
 
         public string getContent(string id, IsoLanguages filterLang, bool warning = true)
         {
-            LocalizationFile file = instance.getFileByLang(filterLang.ToString());
+            LocalizationFile file = instance.getFileByLang(filterLang);
             Debug.Assert(file != null, "no file found for language : " + filterLang);
 
             return file.getContentById(id, warning);

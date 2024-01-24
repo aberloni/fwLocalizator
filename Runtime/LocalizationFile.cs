@@ -26,24 +26,28 @@ namespace fwp.localizator
         public const string LOCALIZ_MULTIPLE_END = "</multiple>"; //id=content
         public const string FILESEPARATOR = "@";
 
-        public string lang_name = ""; // fr, en, ...
+        //public string lang_name = ""; // fr, en, ...
+        public IsoLanguages iso;
 
         public TextAsset textAsset;
+
+        public bool editor_fold;
 
         string[] lines;
 
         public LocalizationFile(IsoLanguages lang)
         {
-            Init(lang.ToString());
+            iso = lang;
+            setup();
         }
 
         public string[] getLines() => lines;
 
-        private void Init(string lang)
+        void setup()
         {
-            lang_name = lang;
+            string lang = iso.ToString();
 
-            string langFilePath = getLangFilePath(lang, false); // path to lang file, no ext
+            string langFilePath = getLangFilePath(iso, false); // path to lang file, no ext
             textAsset = Resources.Load(langFilePath) as TextAsset;
 
             //Debug.Log(ta.name);
@@ -89,7 +93,7 @@ namespace fwp.localizator
 
         public void debugRefresh()
         {
-            Init(lang_name);
+            setup();
         }
 
 
@@ -118,7 +122,7 @@ namespace fwp.localizator
                 }
                 if (!found)
                 {
-                    Debug.LogError("missing id " + ids[i] + " from file " + lang_name + " in file " + other.lang_name);
+                    Debug.LogError("missing id " + ids[i] + " from file " + iso + " in file " + other.iso);
                     output = true; // error
                 }
             }
@@ -152,7 +156,7 @@ namespace fwp.localizator
 
             if (warning) Debug.LogWarning("  ~loca manager~ getContentById() couldn't find trad for id  : <b>" + id + "</b>");
 
-            return "['" + id + "' missing in " + lang_name + "]";
+            return "['" + id + "' missing in " + iso + "]";
         }
 
         public string getContentAtLine(int idx)
@@ -208,7 +212,7 @@ namespace fwp.localizator
 
         public void rewriteAsset()
         {
-            StreamWriter file = new StreamWriter("Assets/Resources/" + getLangFilePath(lang_name));
+            StreamWriter file = new StreamWriter("Assets/Resources/" + getLangFilePath(iso));
 
             string[] rawLines = splitLineBreak(textAsset.text);
             int numberOfRewrite = 0;
@@ -240,9 +244,9 @@ namespace fwp.localizator
             file.Close();
         }
 
-        public string getLangFilePath(string lang, bool ext = true)
+        public string getLangFilePath(IsoLanguages iso, bool ext = true)
         {
-            return LocalizationManager.folder_localization + "lang_" + lang + (ext ? ".txt" : string.Empty);
+            return LocalizationManager.folder_localization + "lang_" + iso + (ext ? ".txt" : string.Empty);
         }
 
         static public string[] splitLineBreak(string fileContent)
