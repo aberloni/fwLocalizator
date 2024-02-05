@@ -103,6 +103,18 @@ namespace fwp.localizator
 
             ExportLocalisationToGoogleForm.verbose = EditorGUILayout.Toggle("verbose", ExportLocalisationToGoogleForm.verbose);
 
+            GUILayout.BeginHorizontal();
+            if(GUILayout.Button("download"))
+            {
+                var sheets = mgr.getSheets();
+                ExportLocalisationToGoogleForm.ssheets_import(sheets);
+            }
+            if(GUILayout.Button("generate"))
+            {
+                ExportLocalisationToGoogleForm.trad_files_generation(sheetParams);
+            }
+            GUILayout.EndHorizontal();
+
             if (GUILayout.Button("download & generate", GUILayout.Height(30f)))
             {
                 var sheets = mgr.getSheets();
@@ -206,12 +218,6 @@ namespace fwp.localizator
             }
 
             EditorGUILayout.EndFoldoutHeaderGroup();
-        }
-
-        bool foldDialogs;
-        void drawDialogs(Manager mgr)
-        {
-
         }
 
         bool foldLang;
