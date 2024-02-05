@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace fwp.localizator
+namespace fwp.localizator.dialog
 {
     [System.Serializable]
     public class LocaDialogLineData
@@ -12,22 +12,30 @@ namespace fwp.localizator
         //FOR DEBUG ONLY
         public string[] previews;
 
-        [ContextMenu("debug update preview")]
-        public void debugUpdatePreview()
+        public void debugUpdatePreview(bool verbose = false)
         {
-            previews = new string[System.Enum.GetValues(typeof(IsoLanguages)).Length];
+            List<string> tmp = new List<string>();
 
-            Debug.Log(uid);
+            if(verbose)
+                Debug.Log("log debug previews @ " + uid);
 
             var sups = LocalizationManager.instance.getSupportedLanguages();
             foreach (IsoLanguages sup in sups)
             {
-                Debug.Log(sup);
-                previews[(int)sup] = LocalizationManager.instance.getContent(uid, sup, true);
+                var val = LocalizationManager.instance.getContent(uid, sup, true);
+                tmp.Add(val);
+
+                if(verbose)
+                    Debug.Log(sup + " => " + val);
             }
+            previews = tmp.ToArray();
         }
 
-        //THIS IS WHAT SHOULD PROVIDE LOCA
+        /// <summary>
+        /// THIS METHOD IS THE ONE THAT SHOULD PROVIDE LOCA
+        /// </summary>
+        /// <param name="useFallback"></param>
+        /// <returns></returns>
         public string getSolvedLineByUID(bool useFallback = false)
         {
             if (useFallback) return LocalizationManager.instance.getContentSafe(uid);

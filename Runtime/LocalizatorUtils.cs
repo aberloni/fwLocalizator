@@ -13,8 +13,17 @@ namespace fwp.localizator
     {
 #if UNITY_EDITOR
 
-        static public LocaDataSheet getSheetData() => getScriptableObjectInEditor<LocaDataSheet>();
-        static public LocaDataSheet[] getSheetsData() => getScriptableObjectsInEditor<LocaDataSheet>();
+        static LocaDataSheet[] sheets; // data to fetch content online
+
+        static public LocaDataSheet getSheetData(bool clearCache = false) 
+            => getSheetsData(clearCache)[0];
+        
+        static public LocaDataSheet[] getSheetsData(bool clearCache = false)
+        {
+            if (clearCache || sheets == null)
+                sheets = getScriptableObjectsInEditor<LocaDataSheet>();
+            return sheets;
+        }
 
         static T getScriptableObjectInEditor<T>(string nameContains = "") where T : ScriptableObject
         {
@@ -40,7 +49,7 @@ namespace fwp.localizator
         /// <summary>
         /// can't cast to T[]
         /// </summary>
-        static T[] getScriptableObjectsInEditor<T>() where T : ScriptableObject
+        static public T[] getScriptableObjectsInEditor<T>() where T : ScriptableObject
         {
             var typ = typeof(T);
             string[] all = AssetDatabase.FindAssets("t:" + typ.Name);

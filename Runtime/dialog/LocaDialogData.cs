@@ -6,18 +6,18 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-namespace fwp.localizator
+namespace fwp.localizator.dialog
 {
     /// <summary>
     /// 
     /// dialog UID in spreadsheet must match name of scriptable
     /// 
     /// </summary>
-    [CreateAssetMenu(menuName = LocalizationManager._asset_menu_path + "create dialog data",
-        fileName = "DialogData_",
-        order = LocalizationManager._asset_menu_order)]
+    //[CreateAssetMenu(menuName = LocalizationManager._asset_menu_path + "create dialog data",fileName = "DialogData_", order = LocalizationManager._asset_menu_order)]
     public class LocaDialogData<LineData> : ScriptableObject where LineData : LocaDialogLineData
     {
+        public const string dialog_line_number_separator = "-";
+
         public string locaId => name;
 
         [SerializeField]
@@ -48,10 +48,47 @@ namespace fwp.localizator
         }
 
 #if UNITY_EDITOR
-        public void editorSolveLines(out bool hasChanged)
-        {
-            hasChanged = false;
 
+        virtual public void solveContent()
+        {
+            editorSolveLines();
+        }
+
+        protected string getCellValue(string lineUid, int cellIndex)
+        {
+            string line = fetchSheetLine(lineUid);
+
+            //Debug.Log(lineUid + " = " + line);
+
+            if(!string.IsNullOrEmpty(line))
+            {
+                //Debug.Log(line);
+                return line.Split(",")[cellIndex];
+            }
+
+            return string.Empty;
+        }
+
+        string fetchSheetLine(string uid)
+        {
+            //Debug.Log(uid);
+            var sheets = LocalizatorUtils.getSheetsData();
+            foreach (var s in sheets)
+            {
+                foreach (var t in s.sheetTabsIds)
+                {
+                    var txt = t.getLine(uid);
+                    if(!string.IsNullOrEmpty(txt))
+                    {
+                        return txt;
+                    }
+                }
+            }
+            return string.Empty;
+        }
+
+        public void editorSolveLines()
+        {
             if (locaId == null)
             {
                 Debug.LogWarning(name + " has no loca id", this);
@@ -64,7 +101,7 @@ namespace fwp.localizator
                 return;
             }
 
-            Debug.Log("[" + LocalizationManager.instance.getSavedIsoLanguage() + "]" + locaId);
+            Debug.Log("[" + LocalizationManager.instance.getSavedIsoLanguage() + "] solve lines @ " + locaId);
 
             List<LineData> tmp = new List<LineData>();
 
@@ -74,10 +111,8 @@ namespace fwp.localizator
 
             do
             {
-                string fullId = locaId + "_" + ((index < 10) ? "0" + index : index.ToString());
+                string fullId = locaId + dialog_line_number_separator + ((index < 10) ? "0" + index : index.ToString());
                 ct = LocalizationManager.instance.getContent(fullId);
-
-                Debug.Log("     fid ? " + fullId + " => " + ct);
 
                 if (ct.IndexOf("['") > -1) ct = string.Empty;
 
@@ -85,6 +120,9 @@ namespace fwp.localizator
                 {
                     LineData line = System.Activator.CreateInstance<LineData>();
                     line.uid = fullId;
+
+                    Debug.Log("     ADD fid ? " + fullId + " => " + ct);
+
                     tmp.Add(line);
                 }
 
@@ -94,14 +132,13 @@ namespace fwp.localizator
             } while (safe > 0 && ct.Length > 0);
 
 
-            string mergeLog = string.Empty;
+            //string mergeLog = string.Empty;
 
             if (lines == null || lines.Length <= 0)
             {
                 if (tmp.Count > 0)
                 {
                     lines = tmp.ToArray();
-                    hasChanged = true;
                 }
             }
             else
@@ -117,34 +154,27 @@ namespace fwp.localizator
                         else
                         {
                             merged.Add(tmp[i]);
-                            hasChanged = true;
                         }
                     }
                     else
                     {
                         merged.Add(tmp[i]);
-                        hasChanged = true;
                     }
                 }
 
                 lines = merged.ToArray();
 
-                mergeLog = "[Merged]";
+                //mergeLog = "[Merged]";
             }
 
             cmUpdateCached();
-
-            if (hasChanged)
-                Debug.Log("(solving lines) solved x" + tmp.Count + " lines for " + locaId + " " + mergeLog + " - changed =" + hasChanged);
         }
-
-        public void cmSolveLines() => editorSolveLines(out bool tmp);
 
         public void cmUpdateCached()
         {
             for (int i = 0; i < lines.Length; i++)
             {
-                lines[i].debugUpdatePreview();
+                lines[i].debugUpdatePreview(false);
             }
         }
 
@@ -158,22 +188,19 @@ namespace fwp.localizator
         {
             LocaDialogData<LineData>[] all = getScriptables();
 
-            bool hasChanged = false;
-
             float progress = 0f;
             for (int i = 0; i < all.Length; i++)
             {
                 progress = (float)(i + 1f) / Mathf.Max(1f, (float)all.Length);
+
                 if (EditorUtility.DisplayCancelableProgressBar("Solving all dialog lines", "Solving " + all[i].name + " (" + (i + 1) + "/" + all.Length + ")", progress))
                 {
                     EditorUtility.ClearProgressBar();
                     return;
                 }
 
-                all[i].editorSolveLines(out hasChanged);
-
-                if (hasChanged)
-                    EditorUtility.SetDirty(all[i]);
+                all[i].cmUpdateCached();
+                EditorUtility.SetDirty(all[i]);
             }
             AssetDatabase.SaveAssets();
 
@@ -185,8 +212,6 @@ namespace fwp.localizator
         {
             LocaDialogData<LineData>[] all = getScriptables();
 
-            bool hasChanged = false;
-
             float progress = 0f;
             for (int i = 0; i < all.Length; i++)
             {
@@ -197,7 +222,7 @@ namespace fwp.localizator
                     return;
                 }
 
-                all[i].editorSolveLines(out hasChanged);
+                all[i].editorSolveLines();
 
                 EditorUtility.SetDirty(all[i]);
             }

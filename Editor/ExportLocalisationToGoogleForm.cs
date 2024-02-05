@@ -82,8 +82,6 @@ namespace fwp.localizator.editor
 
             EditorUtility.DisplayProgressBar("converting loca", "loading...", 0f);
 
-            LocaDataSheet sheet = LocalizatorUtils.getSheetData();
-
             for (int i = 0; i < sups.Length; i++)
             {
                 IsoLanguages lang = sups[i];
@@ -117,7 +115,7 @@ namespace fwp.localizator.editor
 
             for (int i = 0; i < tabsFiles.Length; i++)
             {
-                string tabOutput = solveTab(tabsFiles[i], lang, uidColumn);
+                string tabOutput = solveTabAutoId(tabsFiles[i], lang, uidColumn);
                 output.AppendLine(tabOutput);
             }
 
@@ -235,6 +233,122 @@ namespace fwp.localizator.editor
             }
 
             return output.ToString();
+        }
+
+
+        /// <summary>
+        /// solving whatever was saved in raw files
+        /// </summary>
+        static string solveTabAutoId(string filePath, IsoLanguages lang, int uidColumn)
+        {
+            string tabContent = File.ReadAllText(filePath);
+            CsvParser csv = CsvParser.parse(tabContent);
+
+            int langColumnIndex = getLangColumnIndex(csv, lang); //  search for matching language column
+            if (langColumnIndex < 0) return string.Empty;
+
+            StringBuilder output = new StringBuilder();
+
+            string _uid = string.Empty;
+            int cnt = 0;
+
+            //Debug.Log("UID column #" + uidColumn);
+
+            //first line is languages
+            for (int j = 1; j < csv.lines.Count; j++)
+            {
+                string[] datas = csv.lines[j].cell.ToArray();
+
+                if (datas.Length < 2)
+                {
+                    _uid = string.Empty;
+                    cnt = 0;
+                    continue; // skip empty lines
+                }
+
+                // lang column overflow provided datas
+                if (langColumnIndex >= datas.Length) continue;
+
+                
+                var key = datas[uidColumn]; // uid key
+
+                if (key.Length < 3)
+                {
+                    Debug.Assert(_uid.Length > 0, "need uid here");
+                    key = _uid; // empty key = last known
+                }
+                else
+                {
+                    if (key != _uid)
+                    {
+                        _uid = key;
+                        cnt = 0;
+                    }
+                }
+
+                cnt++;
+                if (cnt < 10) key = key + "-0" + cnt;
+                else key = key + "-" + cnt;
+
+                string langValue = sanitizeValue(datas[langColumnIndex]);
+
+                if(langValue.Length <= 2)
+                {
+                    Debug.LogWarning("empty value @ " + key);
+                    continue;
+                }
+
+                output.AppendLine(key + "=" + langValue);
+            }
+
+            return output.ToString();
+        }
+
+        static string sanitizeValue(string val)
+        {
+            val = val.Trim();
+
+            //remove "" around escaped values
+            val = val.Replace(ParserStatics.SPREAD_CELL_ESCAPE_VALUE.ToString(), string.Empty);
+
+            return val;
+        }
+
+        static int getLangColumnIndex(CsvParser csv, IsoLanguages lang)
+        {
+
+            //after CSV treatment on import, header is removed, language are on first line
+            int LANGUAGE_LINE_INDEX = 0; // languages are stored in column 5
+            string[] langs = csv.lines[LANGUAGE_LINE_INDEX].cell.ToArray(); // each lang of cur line
+
+            int langColumnIndex = -1;
+            for (int j = 0; j < langs.Length; j++)
+            {
+                // is the right language ?
+                if (langs[j].Trim().ToLower() == lang.ToString().ToLower())
+                {
+                    langColumnIndex = j;
+                    //Debug.Log("found lang "+lang+" at column #"+ langColumnIndex);
+                }
+            }
+
+            if (langColumnIndex < 0)
+            {
+                Debug.LogWarning("sheet import : <b>no column</b> for lang : <b>" + lang.ToString().ToUpper() + "</b> | out of x" + langs.Length);
+
+                if (verbose)
+                {
+                    Debug.LogWarning(csv.lines[LANGUAGE_LINE_INDEX].raw);
+                    for (int i = 0; i < langs.Length; i++)
+                    {
+                        Debug.LogWarning(langs[i]);
+                    }
+                }
+
+                return -1;
+            }
+
+            return langColumnIndex;
         }
 
         /// <summary>

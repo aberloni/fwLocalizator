@@ -26,7 +26,7 @@ namespace fwp.localizator
         public const string ppref_language = "ppref_language";
 
         static public LocalizationManager instance;
-        
+
         /// <summary>
         /// list of reactor candidates to lang change
         /// </summary>
@@ -38,13 +38,12 @@ namespace fwp.localizator
         /// subfolder within Resources/
         /// </summary>
         public const string folder_localization = "localization/";
+        public const string folder_localization_import = folder_localization + "/import/";
 
         /// <summary>
         /// where all txt files is located in the project
         /// </summary>
         public const string path_resource_localization = "Resources/" + folder_localization;
-
-        LocaDataSheet[] sheets;
 
         public LocalizationFile[] lang_files;
 
@@ -83,17 +82,9 @@ namespace fwp.localizator
             return false;
         }
 
-        /// <summary>
-        /// must implem a way to solve sheet labels
-        /// can be extended with custom sheets
-        /// </summary>
-        public LocaDataSheet[] getSheets(bool clearCache = false)
+        public void reloadFiles()
         {
-            if (sheets == null || clearCache)
-            {
-                sheets = LocalizatorUtils.getSheetsData();
-            }
-            return sheets;
+            loadFiles();
         }
 
         protected void loadFiles()
@@ -207,7 +198,7 @@ namespace fwp.localizator
         /// tries a getContent
         /// if fails return default value (en ?)
         /// </summary>
-        public string getContentSafe(string id, bool warning = false) 
+        public string getContentSafe(string id, bool warning = false)
             => getContentSafe(id, getSavedIsoLanguage(), warning);
 
         public string getContentSafe(string id, IsoLanguages lang, bool warning = false)
@@ -227,7 +218,7 @@ namespace fwp.localizator
             return output;
         }
 
-        public string getContent(string id, bool warning = false) 
+        public string getContent(string id, bool warning = false)
             => getContent(id, getSavedIsoLanguage(), warning);
         public string getContent(string id, IsoLanguages iso, bool warning = false)
         {
@@ -354,7 +345,7 @@ namespace fwp.localizator
 
             return lang;
         }
-        
+
         /// <summary>
         /// https://docs.microsoft.com/en-us/dotnet/api/system.globalization.cultureinfo.twoletterisolanguagename?view=net-5.0
         /// </summary>

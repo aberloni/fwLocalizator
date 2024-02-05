@@ -17,6 +17,15 @@ namespace fwp.localizator
         public string url => googleSpreadsheetEditPrefix + tabId;
 
         public string cache;
+        public string cacheResources
+        {
+            get
+            {
+                string path = cache.Substring("Resources/".Length);
+                return path.Substring(0, path.LastIndexOf("."));
+            }
+        }
+        
         public string cacheAsset => "Assets/" + cache;
 
         public string displayName => fieldId + "&" + tabId;
@@ -26,6 +35,27 @@ namespace fwp.localizator
             if (fieldId != other.fieldId) return false;
             if (tabId != other.tabId) return false;
             return true;
+        }
+
+        string getTabText()
+        {
+            if (string.IsNullOrEmpty(cache))
+                return string.Empty;
+
+            //Debug.Log(cacheResources);
+
+            return (Resources.Load<TextAsset>(cacheResources) as TextAsset).text;
+        }
+
+        public string getLine(string lineUid)
+        {
+            var lines = getTabText().Split(Environment.NewLine);
+            foreach(var l in lines)
+            {
+                if (l.Contains(lineUid))
+                    return l;
+            }
+            return string.Empty;
         }
     }
 
