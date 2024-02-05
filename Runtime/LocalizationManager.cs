@@ -91,7 +91,7 @@ namespace fwp.localizator
         {
             if (sheets == null || clearCache)
             {
-                sheets = LocalizatorUtils.getScriptableObjectsInEditor<LocaDataSheet>();
+                sheets = LocalizatorUtils.getSheetsData();
             }
             return sheets;
         }

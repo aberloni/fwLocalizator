@@ -9,6 +9,8 @@ using System.Text;
 
 namespace fwp.localizator.editor
 {
+    using fwp.localizator;
+
     public class CsvParser
     {
         string originalRaw;
@@ -35,10 +37,13 @@ namespace fwp.localizator.editor
         /// </summary>
         public List<CsvLine> lines = new List<CsvLine>();
 
-        public CsvParser(string raw)
+        public CsvParser(string raw, int skipLineCount = -1)
         {
             originalRaw = raw;
             //Debug.Log(raw);
+
+            if(skipLineCount < 0)
+                skipLineCount = ParserStatics.HEADER_SKIP_LINE_COUNT;
 
             string[] rawLines = raw.Split(new char[] { ParserStatics.SPREAD_LINE_BREAK }, System.StringSplitOptions.RemoveEmptyEntries);
             for (int i = ParserStatics.HEADER_SKIP_LINE_COUNT; i < rawLines.Length; i++)

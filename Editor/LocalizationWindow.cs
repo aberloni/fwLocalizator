@@ -12,9 +12,16 @@ namespace fwp.localizator
     /// </summary>
     abstract public class LocalizationWindow<Manager> : EditorWindow where Manager : LocalizationManager
     {
+
         GUIStyle foldHeaderTitle;
         GUIStyle foldTitle;
         GUILayoutOption btnW;
+
+        LocalizationSheetParams sheetParams = new LocalizationSheetParams()
+        {
+            uidColumn = ColumnLetter.G,
+            langLineIndex = 3
+        };
 
         /// <summary>
         /// in usage context
@@ -85,29 +92,44 @@ namespace fwp.localizator
 
         virtual protected void draw(Manager mgr)
         {
-            GUILayout.Label(mgr.GetType().ToString());
+            drawSectionTitle(mgr.GetType().ToString());
+
+            drawLangSelector(mgr);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("uid @ " + sheetParams.uidColumn);
+            GUILayout.Label("langs @ " + sheetParams.langLineIndex);
+            GUILayout.EndHorizontal();
+
+            ExportLocalisationToGoogleForm.verbose = EditorGUILayout.Toggle("verbose", ExportLocalisationToGoogleForm.verbose);
+
+            if (GUILayout.Button("download & generate", GUILayout.Height(30f)))
+            {
+                var sheets = mgr.getSheets();
+                ExportLocalisationToGoogleForm.ssheets_import(sheets);
+                ExportLocalisationToGoogleForm.trad_files_generation(sheetParams);
+            }
+
+            drawSheetSection(mgr);
+            drawLangFiles(mgr);
+        }
+
+        void drawLangSelector(Manager mgr)
+        {
+
             GUILayout.Label("active lang " + mgr.getSavedIsoLanguage().ToString().ToUpper());
 
             GUILayout.BeginHorizontal();
             var sups = mgr.getSupportedLanguages();
-            foreach(var s in sups)
+            foreach (var s in sups)
             {
-                if(GUILayout.Button(s.ToString()))
+                if (GUILayout.Button(s.ToString()))
                 {
                     mgr.setSavedLanguage(s, true);
                 }
             }
             GUILayout.EndHorizontal();
 
-            if (GUILayout.Button("download & generate", GUILayout.Height(30f)))
-            {
-                var sheets = mgr.getSheets();
-                ExportLocalisationToGoogleForm.ssheets_import(sheets);
-                ExportLocalisationToGoogleForm.trad_files_generation();
-            }
-
-            drawSheetSection(mgr);
-            drawLangFiles(mgr);
         }
 
         bool foldDownload;
@@ -186,9 +208,13 @@ namespace fwp.localizator
             EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
-        bool foldLang;
-        Vector2 scrollLang;
+        bool foldDialogs;
+        void drawDialogs(Manager mgr)
+        {
 
+        }
+
+        bool foldLang;
         void drawLangFiles(Manager mgr)
         {
             GUILayout.Space(10f);
@@ -196,7 +222,7 @@ namespace fwp.localizator
             var langs = mgr.lang_files;
 
             EditorGUI.BeginChangeCheck();
-            foldLang = EditorGUILayout.BeginFoldoutHeaderGroup(foldLang, "langs x" + langs.Length, foldHeaderTitle);
+            foldLang = EditorGUILayout.BeginFoldoutHeaderGroup(foldLang, "langs files x" + langs.Length, foldHeaderTitle);
             if (EditorGUI.EndChangeCheck())
             {
                 if (foldLang)
@@ -204,7 +230,6 @@ namespace fwp.localizator
                 }
                 else
                 {
-                    scrollLang = Vector2.zero;
                     foreach (var l in langs) l.editor_fold = false;
                 }
             }
@@ -213,7 +238,7 @@ namespace fwp.localizator
             {
                 if (GUILayout.Button("generate trad files"))
                 {
-                    ExportLocalisationToGoogleForm.trad_files_generation();
+                    ExportLocalisationToGoogleForm.trad_files_generation(sheetParams);
                 }
 
                 foreach (var l in langs)
@@ -225,8 +250,9 @@ namespace fwp.localizator
 
                     if (GUILayout.Button("generate", btnW))
                     {
-                        LocalizationFile file = mgr.getFileByLang(l.iso);
-                        ExportLocalisationToGoogleForm.trad_file_generate(l.iso);
+                        //var sheet = mgr.getSheets()[0];
+                        //LocalizationFile file = mgr.getFileByLang(l.iso);
+                        ExportLocalisationToGoogleForm.trad_file_generate(l.iso, (int)sheetParams.uidColumn);
                     }
 
                     if (GUILayout.Button(" > ", btnW))
