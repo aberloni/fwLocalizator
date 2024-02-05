@@ -15,9 +15,16 @@ namespace fwp.localizator
 
         static LocaDataSheet[] sheets; // data to fetch content online
 
-        static public LocaDataSheet getSheetData(bool clearCache = false) 
-            => getSheetsData(clearCache)[0];
-        
+        static public LocaDataSheet getSheetData(bool clearCache = false)
+        {
+            getSheetsData(clearCache);
+            if(sheets != null && sheets.Length > 0)
+            {
+                return sheets[0];
+            }
+            return null;
+        }
+
         static public LocaDataSheet[] getSheetsData(bool clearCache = false)
         {
             if (clearCache || sheets == null)

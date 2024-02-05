@@ -69,15 +69,19 @@ namespace fwp.localizator
         string[] tabs = new string[] { "localization", "dialogs" };
         int selectedTab = 0;
 
-        LocaDialogData<LineData>[] dialogs;
-
         private void OnFocus()
         {
             if (LocalizationManager.instance == null)
                 LocalizationManager.instance = System.Activator.CreateInstance<Manager>();
 
             if (DialogManager<LineData>.instance == null)
+            {
                 DialogManager<LineData>.instance = System.Activator.CreateInstance<DialogManager<LineData>>();
+            }
+            else
+            {
+                DialogManager<LineData>.instance.refresh();
+            }
 
             //checkStyles();
         }
@@ -125,14 +129,17 @@ namespace fwp.localizator
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(d);
                 var dial = dialog.getDialogInstance(d);
-                
+
                 if (dial == null && GUILayout.Button("create"))
                 {
                     var inst = createDialog(d);
                     Debug.Assert(inst != null, "could not create scriptable dialog");
 
-                    AssetDatabase.CreateFolder("Assets", "Data");
-                    AssetDatabase.CreateFolder("Assets/Data", "Dialogs");
+                    if(!AssetDatabase.IsValidFolder("Assets/Data"))
+                        AssetDatabase.CreateFolder("Assets", "Data");
+
+                    if(!AssetDatabase.IsValidFolder("Assets/Data/Dialogs"))
+                        AssetDatabase.CreateFolder("Assets/Data", "Dialogs");
 
                     var path = "Assets/Data/Dialogs/" + d + ".asset";
                     Debug.Log(path);
@@ -143,7 +150,7 @@ namespace fwp.localizator
                     inst.solveContent();
                     EditorUtility.SetDirty(inst);
                 }
-                else if(dial != null && GUILayout.Button("update"))
+                else if (dial != null && GUILayout.Button("update"))
                 {
                     dial.solveContent();
                     EditorUtility.SetDirty(dial);
@@ -152,14 +159,19 @@ namespace fwp.localizator
                 GUILayout.EndHorizontal();
             }
 
+            var dialogs = DialogManager<LineData>.instance.dialogs;
+
             GUILayout.Label("scriptable(s) dialogs x" + dialogs.Length, getSectionTitle());
 
             foreach (var d in dialogs)
             {
-                GUILayout.Label(d.name + " x" + d.lines.Length);
+                if (d == null)
+                    continue;
+
+                GUILayout.Label("dialog#" + d.name + " x" + d.lines.Length);
                 foreach (var line in d.lines)
                 {
-                    GUILayout.Label(line.uid);
+                    GUILayout.Label("       " + line.previews[(int)IsoLanguages.fr]);
                 }
             }
         }
