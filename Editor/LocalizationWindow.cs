@@ -123,7 +123,7 @@ namespace fwp.localizator
             }
         }
 
-        abstract protected LocaDialogData<LineData> createDialog(string nm);
+        abstract protected LocaDialogData<LineData> createDialogInstance(string nm);
 
         Vector2 scrollDialsContent;
         Vector2 scrollDialsScriptables;
@@ -132,6 +132,15 @@ namespace fwp.localizator
             if (dialog == null) return;
 
             GUILayout.Label("in :   loca files x" + dialog.dialogsUids.Length, LocalizationWindowUtils.getSectionTitle());
+
+            if(GUILayout.Button("generate all missing dialogs"))
+            {
+                foreach (var d in dialog.dialogsUids)
+                {
+                    var dial = dialog.getDialogInstance(d);
+                    if(dial == null) createDialog(dialog, d);
+                }
+            }
 
             scrollDialsContent = GUILayout.BeginScrollView(scrollDialsContent);
 
@@ -145,7 +154,7 @@ namespace fwp.localizator
                 {
                     if(GUILayout.Button("create", btnW))
                     {
-                        var inst = createDialog(d);
+                        var inst = createDialogInstance(d);
                         Debug.Assert(inst != null, "could not create scriptable dialog");
 
                         if (!AssetDatabase.IsValidFolder("Assets/Data"))
@@ -210,6 +219,31 @@ namespace fwp.localizator
             }
 
             GUILayout.EndScrollView();
+        }
+
+        void createDialog(DialogManager<LineData> dialog, string uid)
+        {
+
+            var inst = createDialogInstance(uid);
+            Debug.Assert(inst != null, "could not create scriptable dialog");
+
+            if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                AssetDatabase.CreateFolder("Assets", "Data");
+
+            if (!AssetDatabase.IsValidFolder("Assets/Data/Dialogs"))
+                AssetDatabase.CreateFolder("Assets/Data", "Dialogs");
+
+            var path = "Assets/Data/Dialogs/" + uid + ".asset";
+            Debug.Log(path);
+
+            AssetDatabase.CreateAsset(inst, path);
+            AssetDatabase.Refresh();
+
+            inst.solveContent();
+            EditorUtility.SetDirty(inst);
+
+            dialog.refresh();
+            UnityEditor.Selection.activeObject = inst;
         }
 
         void drawLocalization(Manager mgr)
@@ -297,9 +331,11 @@ namespace fwp.localizator
 
                     if (GUILayout.Button("browse", btnW)) OpenInFileBrowser.browseUrl(sheet.url);
 
-                    if (GUILayout.Button("download SHEET", btnW))
+                    if (GUILayout.Button("download TABS", btnW))
                     {
                         string[] outputs = ImportSheetUtils.ssheet_import(sheet);
+
+                        // update all tabs cache paths
                         for (int i = 0; i < sheet.tabs.Length; i++)
                         {
                             var tab = sheet.tabs[i];
@@ -323,7 +359,11 @@ namespace fwp.localizator
 
                         if (GUILayout.Button("download TAB", btnW))
                         {
+                            // import tab
                             ImportSheetUtils.tab_import(sheet, tab);
+
+                            // make sure csv are up to date
+                            GenerateSheetUtils.csv_file_generate(sheetParams);
                         }
 
                         GUILayout.EndHorizontal();
