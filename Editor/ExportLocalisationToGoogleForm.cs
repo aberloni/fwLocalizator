@@ -77,7 +77,7 @@ namespace fwp.localizator.editor
         {
             var sups = LocalizationManager.instance.getSupportedLanguages();
 
-            if(verbose)
+            if (verbose)
                 Debug.Log("generating for x" + sups.Length + " languages");
 
             EditorUtility.DisplayProgressBar("converting loca", "loading...", 0f);
@@ -88,7 +88,7 @@ namespace fwp.localizator.editor
 
                 EditorUtility.DisplayProgressBar("converting loca", "langage : " + lang.ToString(), (1f * i) / (1f * sups.Length));
 
-                trad_file_generate(lang, (int)param.uidColumn);
+                trad_file_generate(lang, param);
             }
 
             EditorUtility.ClearProgressBar();
@@ -100,7 +100,7 @@ namespace fwp.localizator.editor
         /// merge all tabs into a single file for given language
         /// </summary>
         /// <param name="lang"></param>
-        static public void trad_file_generate(IsoLanguages lang, int uidColumn)
+        static public void trad_file_generate(IsoLanguages lang, LocalizationSheetParams param)
         {
             string importPath = Path.Combine(Application.dataPath,
                 LocalizationManager.path_resource_localization, "import");
@@ -108,14 +108,14 @@ namespace fwp.localizator.editor
             // all tabs txt
             string[] tabsFiles = Directory.GetFiles(importPath, "*.txt");
 
-            if(verbose)
+            if (verbose)
                 Debug.Log(" generating trad file for : <b>" + lang.ToString().ToUpper() + "</b>");
 
             StringBuilder output = new StringBuilder();
 
             for (int i = 0; i < tabsFiles.Length; i++)
             {
-                string tabOutput = solveTabAutoId(tabsFiles[i], lang, uidColumn);
+                string tabOutput = solveTabAutoId(tabsFiles[i], lang, param);
                 output.AppendLine(tabOutput);
             }
 
@@ -133,14 +133,14 @@ namespace fwp.localizator.editor
         /// <summary>
         /// solving whatever was saved in raw files
         /// </summary>
-        static string solveTab(string filePath, IsoLanguages lang, int uidColumn)
+        static string solveTab(string filePath, IsoLanguages lang, LocalizationSheetParams param)
         {
             string tabContent = File.ReadAllText(filePath);
 
             if (verbose)
                 Debug.Log("parsing csv file : " + filePath);
 
-            CsvParser csv = CsvParser.parse(tabContent);
+            CsvParser csv = CsvParser.parse(tabContent, param.langLineIndex);
 
             if (verbose)
                 Debug.Log("  solved x" + csv.lines.Count + " lines after CSV parser");
@@ -183,7 +183,7 @@ namespace fwp.localizator.editor
             int cntNotTranslation = 0;
 
             StringBuilder output = new StringBuilder();
-            
+
             //first line is languages
             for (int j = 1; j < csv.lines.Count; j++)
             {
@@ -196,7 +196,7 @@ namespace fwp.localizator.editor
                 if (datas.Length < 2) continue; // empty line
 
                 // uid key
-                var key = datas[uidColumn];
+                var key = datas[(int)param.uidColumn];
                 if (key.Length < 1)
                 {
                     Debug.LogWarning("empty key @ line " + j);
@@ -219,7 +219,7 @@ namespace fwp.localizator.editor
                 //https://www.c-sharpcorner.com/uploadfile/mahesh/trim-string-in-C-Sharp/
                 // remove white spaces on sides
                 string langValue = datas[langColumnIndex].Trim();
-                
+
                 //remove "" around escaped values
                 langValue = langValue.Replace(ParserStatics.SPREAD_CELL_ESCAPE_VALUE.ToString(), string.Empty);
 
@@ -239,10 +239,10 @@ namespace fwp.localizator.editor
         /// <summary>
         /// solving whatever was saved in raw files
         /// </summary>
-        static string solveTabAutoId(string filePath, IsoLanguages lang, int uidColumn)
+        static string solveTabAutoId(string filePath, IsoLanguages lang, LocalizationSheetParams param)
         {
             string tabContent = File.ReadAllText(filePath);
-            CsvParser csv = CsvParser.parse(tabContent);
+            CsvParser csv = CsvParser.parse(tabContent, param.langLineIndex);
 
             int langColumnIndex = getLangColumnIndex(csv, lang); //  search for matching language column
             if (langColumnIndex < 0) return string.Empty;
@@ -252,7 +252,7 @@ namespace fwp.localizator.editor
             string _uid = string.Empty;
             int cnt = 0;
 
-            //Debug.Log("UID column #" + uidColumn);
+            Debug.Log($"solveTabAutoId <b>lang : {lang}</b> , ssheet UIDs column <b>#{param.uidColumn}</b>");
 
             //first line is languages
             for (int j = 1; j < csv.lines.Count; j++)
@@ -269,8 +269,8 @@ namespace fwp.localizator.editor
                 // lang column overflow provided datas
                 if (langColumnIndex >= datas.Length) continue;
 
-                
-                var key = datas[uidColumn]; // uid key
+
+                var key = datas[(int)param.uidColumn]; // uid key
 
                 if (key.Length < 3)
                 {
@@ -292,9 +292,10 @@ namespace fwp.localizator.editor
 
                 string langValue = sanitizeValue(datas[langColumnIndex]);
 
-                if(langValue.Length <= 2)
+                // skipping empty values
+                if (langValue.Length <= 2)
                 {
-                    Debug.LogWarning("empty value @ " + key);
+                    //Debug.LogWarning("empty value @ line #" + key);
                     continue;
                 }
 
@@ -317,15 +318,25 @@ namespace fwp.localizator.editor
         static int getLangColumnIndex(CsvParser csv, IsoLanguages lang)
         {
 
-            //after CSV treatment on import, header is removed, language are on first line
-            int LANGUAGE_LINE_INDEX = 0; // languages are stored in column 5
-            string[] langs = csv.lines[LANGUAGE_LINE_INDEX].cell.ToArray(); // each lang of cur line
+            // after CSV treatment on import, header is removed,
+            // language are on first line
+            string[] langs = csv.lines[0].cell.ToArray(); // each lang of cur line
+
+            string langStr = lang.ToString().ToLower();
 
             int langColumnIndex = -1;
             for (int j = 0; j < langs.Length; j++)
             {
+                string cellLang = langs[j].Trim().ToLower();
+
+                if (cellLang.Length < 2) // empty
+                    continue;
+
+                if(verbose)
+                    Debug.Log(cellLang + " (x" + langs.Length + ") vs " + langStr);
+
                 // is the right language ?
-                if (langs[j].Trim().ToLower() == lang.ToString().ToLower())
+                if (cellLang == langStr)
                 {
                     langColumnIndex = j;
                     //Debug.Log("found lang "+lang+" at column #"+ langColumnIndex);
@@ -338,7 +349,7 @@ namespace fwp.localizator.editor
 
                 if (verbose)
                 {
-                    Debug.LogWarning(csv.lines[LANGUAGE_LINE_INDEX].raw);
+                    Debug.LogWarning("raw : " + csv.lines[0].raw);
                     for (int i = 0; i < langs.Length; i++)
                     {
                         Debug.LogWarning(langs[i]);

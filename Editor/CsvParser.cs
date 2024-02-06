@@ -13,14 +13,14 @@ namespace fwp.localizator.editor
 
     public class CsvParser
     {
-        string originalRaw;
+        public string fileContentRaw;
 
         public struct CsvLine
         {
             public string raw;
             public List<string> cell;
 
-            public string logify()
+            public string stringify()
             {
                 string output = string.Empty;
                 for (int i = 0; i < cell.Count; i++)
@@ -37,16 +37,15 @@ namespace fwp.localizator.editor
         /// </summary>
         public List<CsvLine> lines = new List<CsvLine>();
 
-        public CsvParser(string raw, int skipLineCount = -1)
+        public CsvParser(string raw, int skipLineCount = 0)
         {
-            originalRaw = raw;
+            fileContentRaw = raw;
             //Debug.Log(raw);
 
-            if(skipLineCount < 0)
-                skipLineCount = ParserStatics.HEADER_SKIP_LINE_COUNT;
-
+            // this will split lines endings & remove empty lines
             string[] rawLines = raw.Split(new char[] { ParserStatics.SPREAD_LINE_BREAK }, System.StringSplitOptions.RemoveEmptyEntries);
-            for (int i = ParserStatics.HEADER_SKIP_LINE_COUNT; i < rawLines.Length; i++)
+
+            for (int i = skipLineCount; i < rawLines.Length; i++)
             {
                 CsvLine line = new CsvLine();
                 line.cell = new List<string>();
@@ -73,14 +72,21 @@ namespace fwp.localizator.editor
                 Debug.Log("csv solved x" + lines.Count);
         }
 
+        /// <summary>
+        /// crawl a string line
+        /// catch when value is between quotes ""
+        /// separate when catch ","
+        /// </summary>
         string[] cellsSeparator(string lineRaw)
         {
-            bool inValue = false;
-
+            
             List<string> cells = new List<string>();
 
             StringBuilder sb = new StringBuilder();
 
+            bool inValue = false;
+
+            //browse the string
             for (int i = 0; i < lineRaw.Length; i++)
             {
                 char cur = lineRaw[i];
@@ -90,21 +96,22 @@ namespace fwp.localizator.editor
                     inValue = !inValue;
                 }
 
-                if (cur == ParserStatics.SPREAD_CELL_SEPARATOR && !inValue)
+                if (cur == ParserStatics.SPREAD_CELL_SEPARATOR && !inValue) // ,
                 {
                     cells.Add(sb.ToString());
                     sb.Clear();
+
+                    //Debug.Log("added value : " + sb);
                 }
                 else
                 {
                     //don't add separator "," symbol
                     sb.Append(cur);
                 }
-
-
-
             }
 
+            cells.Add(sb.ToString());
+            
             return cells.ToArray();
         }
 
@@ -114,13 +121,13 @@ namespace fwp.localizator.editor
 
             for (int i = 0; i < lines.Count; i++)
             {
-                sb.AppendLine(lines[i].logify());
+                sb.AppendLine(lines[i].stringify());
             }
 
             return sb.ToString();
         }
 
-        static public CsvParser parse(string raw)
+        static public CsvParser parse(string raw, int skipLineCount)
         {
 
             //search & replace all LINE breaks
@@ -149,7 +156,7 @@ namespace fwp.localizator.editor
 
             raw = sb.ToString();
 
-            return new CsvParser(raw);
+            return new CsvParser(raw, skipLineCount);
         }
 
         static bool isCharLineBreak(string cur)

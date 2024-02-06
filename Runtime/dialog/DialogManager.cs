@@ -23,6 +23,9 @@ namespace fwp.localizator.dialog
         {
             foreach (var d in dialogs)
             {
+                if (d == null)
+                    continue;
+
                 if (d.name == uid)
                     return d;
             }

@@ -18,7 +18,8 @@ namespace fwp.localizator
 
         GUIStyle foldHeaderTitle;
         GUIStyle foldTitle;
-        GUILayoutOption btnW;
+        GUILayoutOption btnW = GUILayout.MaxWidth(150f);
+        GUILayoutOption btnH = GUILayout.Height(30f);
 
         LocalizationSheetParams sheetParams = new LocalizationSheetParams()
         {
@@ -34,7 +35,6 @@ namespace fwp.localizator
 
         void checkStyles()
         {
-            btnW = GUILayout.MaxWidth(150f);
             foldHeaderTitle = new GUIStyle(EditorStyles.foldoutHeader);
             foldTitle = new GUIStyle(EditorStyles.foldout);
 
@@ -102,7 +102,13 @@ namespace fwp.localizator
 
         virtual protected void draw(Manager mgr)
         {
-            drawSectionTitle(mgr.GetType().ToString());
+            LocalizationWindowUtils.drawSectionTitle(mgr.GetType().ToString());
+
+            ExportLocalisationToGoogleForm.verbose = EditorGUILayout.Toggle("verbose", ExportLocalisationToGoogleForm.verbose);
+
+            drawLangSelector(mgr);
+
+            GUILayout.Space(20f);
 
             selectedTab = GUILayout.Toolbar((int)selectedTab, tabs, "LargeButton");
             switch (selectedTab)
@@ -118,19 +124,23 @@ namespace fwp.localizator
 
         abstract protected LocaDialogData<LineData> createDialog(string nm);
 
+        Vector2 scrollDialsContent;
+        Vector2 scrollDialsScriptables;
         void drawDialogs(DialogManager<LineData> dialog)
         {
-            if (dialog == null)
-                return;
+            if (dialog == null) return;
 
-            GUILayout.Label("FR dialog(s) x" + dialog.dialogsUids.Length, getSectionTitle());
+            GUILayout.Label("in :   loca files x" + dialog.dialogsUids.Length, LocalizationWindowUtils.getSectionTitle());
+
+            scrollDialsContent = GUILayout.BeginScrollView(scrollDialsContent);
+
             foreach (var d in dialog.dialogsUids)
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(d);
                 var dial = dialog.getDialogInstance(d);
 
-                if (dial == null && GUILayout.Button("create"))
+                if (dial == null && GUILayout.Button("create", btnW))
                 {
                     var inst = createDialog(d);
                     Debug.Assert(inst != null, "could not create scriptable dialog");
@@ -150,7 +160,7 @@ namespace fwp.localizator
                     inst.solveContent();
                     EditorUtility.SetDirty(inst);
                 }
-                else if (dial != null && GUILayout.Button("update"))
+                else if (dial != null && GUILayout.Button("update", btnW))
                 {
                     dial.solveContent();
                     EditorUtility.SetDirty(dial);
@@ -159,41 +169,51 @@ namespace fwp.localizator
                 GUILayout.EndHorizontal();
             }
 
+            GUILayout.EndScrollView();
+
             var dialogs = DialogManager<LineData>.instance.dialogs;
 
-            GUILayout.Label("scriptable(s) dialogs x" + dialogs.Length, getSectionTitle());
+            GUILayout.Label("in :   scriptables x" + dialogs.Length, LocalizationWindowUtils.getSectionTitle());
+
+            scrollDialsScriptables = GUILayout.BeginScrollView(scrollDialsScriptables);
 
             foreach (var d in dialogs)
             {
                 if (d == null)
                     continue;
 
-                GUILayout.Label("dialog#" + d.name + " x" + d.lines.Length);
-                foreach (var line in d.lines)
+                d.winEdFold = EditorGUILayout.Foldout(d.winEdFold, "dialog#" + d.name, true);
+                if(d.winEdFold)
                 {
-                    GUILayout.Label("       " + line.previews[(int)IsoLanguages.fr]);
+                    foreach (var line in d.lines)
+                    {
+                        GUILayout.Label("       " + line.previews[(int)IsoLanguages.fr]);
+                    }
                 }
+
             }
+
+            GUILayout.EndScrollView();
         }
 
         void drawLocalization(Manager mgr)
         {
-            drawLangSelector(mgr);
+            GUILayout.Label("spreadsheet params", LocalizationWindowUtils.getSectionTitle());
 
             GUILayout.BeginHorizontal();
             GUILayout.Label("uid @ " + sheetParams.uidColumn);
             GUILayout.Label("langs @ " + sheetParams.langLineIndex);
             GUILayout.EndHorizontal();
 
-            ExportLocalisationToGoogleForm.verbose = EditorGUILayout.Toggle("verbose", ExportLocalisationToGoogleForm.verbose);
+            GUILayout.Label("spreadsheet import", LocalizationWindowUtils.getSectionTitle());
 
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("download"))
+            if (GUILayout.Button("download", btnH))
             {
                 var sheets = LocalizatorUtils.getSheetsData();
                 ExportLocalisationToGoogleForm.ssheets_import(sheets);
             }
-            if (GUILayout.Button("generate"))
+            if (GUILayout.Button("generate", btnH))
             {
                 ExportLocalisationToGoogleForm.trad_files_generation(sheetParams);
             }
@@ -340,7 +360,7 @@ namespace fwp.localizator
                     {
                         //var sheet = mgr.getSheets()[0];
                         //LocalizationFile file = mgr.getFileByLang(l.iso);
-                        ExportLocalisationToGoogleForm.trad_file_generate(l.iso, (int)sheetParams.uidColumn);
+                        ExportLocalisationToGoogleForm.trad_file_generate(l.iso, sheetParams);
                     }
 
                     if (GUILayout.Button(" > ", btnW))
@@ -355,38 +375,6 @@ namespace fwp.localizator
             EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
-        /// <summary>
-        /// draw a label with speficic style
-        /// </summary>
-        static public void drawSectionTitle(string label, float spaceMargin = 20f, int leftMargin = 10)
-        {
-            if (spaceMargin > 0f)
-                GUILayout.Space(spaceMargin);
-
-            GUILayout.Label(label, getSectionTitle(15, TextAnchor.UpperLeft, leftMargin));
-        }
-
-        static private GUIStyle gSectionTitle;
-        static public GUIStyle getSectionTitle(int size = 15, TextAnchor anchor = TextAnchor.MiddleCenter, int leftMargin = 10)
-        {
-            if (gSectionTitle == null)
-            {
-                gSectionTitle = new GUIStyle();
-
-                gSectionTitle.richText = true;
-                gSectionTitle.alignment = anchor;
-                gSectionTitle.normal.textColor = Color.white;
-
-                gSectionTitle.fontStyle = FontStyle.Bold;
-                gSectionTitle.margin = new RectOffset(leftMargin, 10, 10, 10);
-                //gWinTitle.padding = new RectOffset(30, 30, 30, 30);
-
-            }
-
-            gSectionTitle.fontSize = size;
-
-            return gSectionTitle;
-        }
     }
 
 }

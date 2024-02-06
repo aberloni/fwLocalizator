@@ -154,7 +154,10 @@ namespace fwp.localizator
                 if (key == id) return getContentAtLine(i);
             }
 
-            if (warning) Debug.LogWarning("  ~loca manager~ getContentById() couldn't find trad for id  : <b>" + id + "</b>");
+            if (warning)
+            {
+                LocalizationManager.logw($"getContentById() <b>{iso}</b> : no trad # <b>" + id + "</b>", this);
+            }
 
             return "['" + id + "' missing in " + iso + "]";
         }

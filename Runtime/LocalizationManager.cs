@@ -19,6 +19,8 @@ namespace fwp.localizator
     /// </summary>
     public class LocalizationManager
     {
+        static public bool verbose = false;
+
         public const string _asset_menu_path = "Localizator/";
         public const string _menu_item_path = "Window/Localizator/";
         public const int _asset_menu_order = 100;
@@ -253,7 +255,7 @@ namespace fwp.localizator
 
             cur = sups[supportIndex];
 
-            Debug.Log("next language is : " + cur + " / " + sups.Length);
+            log("next language is : " + cur + " / " + sups.Length, this);
 
             setSavedLanguage(cur, true);
         }
@@ -338,7 +340,7 @@ namespace fwp.localizator
 
             if (!isIsoLanguageSupported(lang))
             {
-                Debug.LogWarning($"{lang} not supported, fallback to system");
+                logw($"{lang} not supported, fallback to system", this);
 
                 lang = getSystemLanguageToIso(); // sys OR fallback if sys is not supported
             }
@@ -368,6 +370,24 @@ namespace fwp.localizator
             return languageFallback;
         }
 
+        static public void log(string content, object target)
+        {
+            if (!verbose)
+                return;
+
+            Debug.Log("(Loca) "
+                + ((target != null) ? target.GetType().ToString() : string.Empty)
+                + "     "
+                + content, target as UnityEngine.Object);
+        }
+
+        static public void logw(string content, object target)
+        {
+            Debug.LogWarning("(Loca) "
+                + ((target != null) ? target.GetType().ToString() : string.Empty)
+                + "     " 
+                + content, target as UnityEngine.Object);
+        }
     }
 
 }

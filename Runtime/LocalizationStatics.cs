@@ -30,7 +30,7 @@ namespace fwp.localizator
     public static class ParserStatics
     {
 
-        public const int HEADER_SKIP_LINE_COUNT = 3;
+        //public const int HEADER_SKIP_LINE_COUNT = 3;
         public const char SPREAD_LINE_BREAK = '@';
         public const char CELL_LINE_BREAK = '|';
         public const char SPREAD_CELL_SEPARATOR = ',';

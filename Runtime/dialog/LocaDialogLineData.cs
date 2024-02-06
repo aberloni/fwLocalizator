@@ -9,6 +9,7 @@ namespace fwp.localizator.dialog
     {
         public string uid;
 
+#if UNITY_EDITOR
         //FOR DEBUG ONLY
         public string[] previews;
 
@@ -30,6 +31,7 @@ namespace fwp.localizator.dialog
             }
             previews = tmp.ToArray();
         }
+#endif
 
         /// <summary>
         /// THIS METHOD IS THE ONE THAT SHOULD PROVIDE LOCA

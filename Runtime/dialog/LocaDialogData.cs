@@ -23,6 +23,9 @@ namespace fwp.localizator.dialog
         [SerializeField]
         public LineData[] lines;
 
+        [System.NonSerialized]
+        public bool winEdFold;
+
         public LineData getNextLine(LineData line)
         {
             Debug.Assert(line != null);
