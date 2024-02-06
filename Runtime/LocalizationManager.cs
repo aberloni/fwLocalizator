@@ -8,6 +8,8 @@ using UnityEditor;
 
 namespace fwp.localizator
 {
+    using System.IO;
+
     /// <summary>
     /// Manager qui s'occupe de la loca au editor/runtime
     /// 
@@ -37,15 +39,22 @@ namespace fwp.localizator
         public const IsoLanguages languageFallback = IsoLanguages.en; // si la langue du system est pas supportée
 
         /// <summary>
-        /// subfolder within Resources/
-        /// </summary>
-        public const string folder_localization = "localization/";
-        public const string folder_localization_import = folder_localization + "/import/";
-
-        /// <summary>
         /// where all txt files is located in the project
         /// </summary>
-        public const string path_resource_localization = "Resources/" + folder_localization;
+        public const string resource_localization = "Resources/" + proj_localization;
+        public const string resource_localization_import = resource_localization + "import/";
+
+        /// <summary>
+        /// subfolder within Resources/
+        /// </summary>
+        public const string proj_localization = "localization/";
+        public const string proj_localization_import = proj_localization + "import/";
+
+        /// <summary>
+        /// from harddrive
+        /// </summary>
+        public static string sys_localization = Application.dataPath + "/" + resource_localization;
+        public static string sys_localization_import = sys_localization + "import/";
 
         public LocalizationFile[] lang_files;
 
@@ -385,7 +394,7 @@ namespace fwp.localizator
         {
             Debug.LogWarning("(Loca) "
                 + ((target != null) ? target.GetType().ToString() : string.Empty)
-                + "     " 
+                + "     "
                 + content, target as UnityEngine.Object);
         }
     }

@@ -2,24 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
-using System.IO;
-using System.Text.RegularExpressions;
-
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
-
-using Microsoft.VisualBasic;
 
 /// <summary>
 /// https://docs.google.com/spreadsheets/d/1UMlSlXTysA39zt0yRJljwTX2dPp5vQOo9plhI7YYCVU/edit#gid=1605195944
 /// https://docs.google.com/spreadsheets/d/1UMlSlXTysA39zt0yRJljwTX2dPp5vQOo9plhI7YYCVU/export?format=tsv&gid=1605195944
+/// 
+/// all tools specific to google spreadsheet
 /// </summary>
 
 namespace fwp.localizator
 {
 
-    public class LocaSpreadsheetBridge : MonoBehaviour
+    public class GoogleSpreadsheetBridge : MonoBehaviour
     {
 
         public const string sheetUrlPrefix = "https://docs.google.com/spreadsheets/d/";

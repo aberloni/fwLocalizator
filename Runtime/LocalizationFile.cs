@@ -249,7 +249,7 @@ namespace fwp.localizator
 
         public string getLangFilePath(IsoLanguages iso, bool ext = true)
         {
-            return LocalizationManager.folder_localization + "lang_" + iso + (ext ? ".txt" : string.Empty);
+            return LocalizationManager.proj_localization + "lang_" + iso + (ext ? ".txt" : string.Empty);
         }
 
         static public string[] splitLineBreak(string fileContent)

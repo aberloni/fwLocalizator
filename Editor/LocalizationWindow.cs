@@ -105,7 +105,7 @@ namespace fwp.localizator
         {
             LocalizationWindowUtils.drawSectionTitle(mgr.GetType().ToString());
 
-            ExportLocalisationToGoogleForm.verbose = EditorGUILayout.Toggle("verbose", ExportLocalisationToGoogleForm.verbose);
+            LocalizationManager.verbose = EditorGUILayout.Toggle("verbose", LocalizationManager.verbose);
 
             drawLangSelector(mgr);
 
@@ -224,22 +224,27 @@ namespace fwp.localizator
             GUILayout.Label("spreadsheet import", LocalizationWindowUtils.getSectionTitle());
 
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("download", btnH))
+            if (GUILayout.Button("download all", btnH))
             {
                 var sheets = LocalizatorUtils.getSheetsData();
-                ExportLocalisationToGoogleForm.ssheets_import(sheets);
+                ImportSheetUtils.ssheets_import(sheets);
             }
-            if (GUILayout.Button("generate", btnH))
+            if (GUILayout.Button("generate CSVs", btnH))
             {
-                ExportLocalisationToGoogleForm.trad_files_generation(sheetParams);
+                GenerateSheetUtils.csv_file_generate(sheetParams);
+            }
+            if (GUILayout.Button("generate trads", btnH))
+            {
+                GenerateSheetUtils.trad_files_generation(sheetParams);
             }
             GUILayout.EndHorizontal();
 
             if (GUILayout.Button("download & generate", GUILayout.Height(30f)))
             {
                 var sheets = LocalizatorUtils.getSheetsData();
-                ExportLocalisationToGoogleForm.ssheets_import(sheets);
-                ExportLocalisationToGoogleForm.trad_files_generation(sheetParams);
+                ImportSheetUtils.ssheets_import(sheets);
+                GenerateSheetUtils.csv_file_generate(sheetParams);
+                GenerateSheetUtils.trad_files_generation(sheetParams);
             }
 
             drawSheetSection(mgr);
@@ -294,18 +299,18 @@ namespace fwp.localizator
 
                     if (GUILayout.Button("download SHEET", btnW))
                     {
-                        string[] outputs = ExportLocalisationToGoogleForm.ssheet_import(sheet);
-                        for (int i = 0; i < sheet.sheetTabsIds.Length; i++)
+                        string[] outputs = ImportSheetUtils.ssheet_import(sheet);
+                        for (int i = 0; i < sheet.tabs.Length; i++)
                         {
-                            var tab = sheet.sheetTabsIds[i];
+                            var tab = sheet.tabs[i];
                             tab.cache = outputs[i];
-                            sheet.sheetTabsIds[i] = tab;
+                            sheet.tabs[i] = tab;
                         }
                     }
 
                     GUILayout.EndHorizontal();
 
-                    foreach (var tab in sheet.sheetTabsIds)
+                    foreach (var tab in sheet.tabs)
                     {
                         GUILayout.BeginHorizontal();
 
@@ -318,7 +323,7 @@ namespace fwp.localizator
 
                         if (GUILayout.Button("download TAB", btnW))
                         {
-                            ExportLocalisationToGoogleForm.tab_import(sheet, tab);
+                            ImportSheetUtils.tab_import(sheet, tab);
                         }
 
                         GUILayout.EndHorizontal();
@@ -362,7 +367,7 @@ namespace fwp.localizator
                 if (GUILayout.Button("generate trad files"))
                 {
                     mgr.reloadFiles();
-                    ExportLocalisationToGoogleForm.trad_files_generation(sheetParams);
+                    GenerateSheetUtils.trad_files_generation(sheetParams);
                 }
 
                 foreach (var l in langs)
@@ -376,7 +381,7 @@ namespace fwp.localizator
                     {
                         //var sheet = mgr.getSheets()[0];
                         //LocalizationFile file = mgr.getFileByLang(l.iso);
-                        ExportLocalisationToGoogleForm.trad_file_generate(l.iso, sheetParams);
+                        GenerateSheetUtils.trad_file_generate(l.iso, sheetParams);
                     }
 
                     if (GUILayout.Button(" > ", btnW))

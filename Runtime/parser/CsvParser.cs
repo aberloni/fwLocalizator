@@ -1,20 +1,21 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Text;
 
-/// <summary>
-/// MAISONNNN
-/// </summary>
-
-namespace fwp.localizator.editor
+namespace fwp.localizator
 {
     using fwp.localizator;
+    using System;
+    using System.IO;
+    using System.Text;
 
+    [System.Serializable]
     public class CsvParser
     {
+        public string tabUid;
         public string fileContentRaw;
 
+        [System.Serializable]
         public struct CsvLine
         {
             public string raw;
@@ -37,13 +38,46 @@ namespace fwp.localizator.editor
         /// </summary>
         public List<CsvLine> lines = new List<CsvLine>();
 
-        public CsvParser(string raw, int skipLineCount = 0)
+        public CsvParser()
+        { }
+
+        public void save() => CsvSerializer.save(this,
+            LocalizationManager.sys_localization_import + tabUid + CsvSerializer.parserExtDot);
+
+        public static CsvParser loadFromTabUid(string tabUid) => CsvSerializer.load(
+                LocalizationManager.sys_localization_import + tabUid + CsvSerializer.parserExtDot);
+
+        static public CsvParser load(string parserPath) => CsvSerializer.load(parserPath);
+        
+        public CsvParser generateFromPath(string path, int skipLineCount)
         {
+            string tabContent = File.ReadAllText(path);
+
+            var csv = generateFromRaw(tabContent, skipLineCount);
+
+            // tab txt path => txt name
+            path = path.Substring(path.LastIndexOf("/"));
+            path = path.Substring(0, path.LastIndexOf("."));
+
+            Debug.Log(path);
+
+            csv.tabUid = path;
+
+            return csv;
+        }
+
+        CsvParser generateFromRaw(string raw, int skipLineCount)
+        {
+            // some cleaning
+            raw = presetupRaw(raw);
+
             fileContentRaw = raw;
             //Debug.Log(raw);
 
             // this will split lines endings & remove empty lines
             string[] rawLines = raw.Split(new char[] { ParserStatics.SPREAD_LINE_BREAK }, System.StringSplitOptions.RemoveEmptyEntries);
+
+            int originalCount = rawLines.Length;
 
             for (int i = skipLineCount; i < rawLines.Length; i++)
             {
@@ -53,6 +87,7 @@ namespace fwp.localizator.editor
 
                 string[] split = cellsSeparator(rawLines[i]);
 
+                // check if any content in line
                 int cntCellWithContent = 0;
                 for (int j = 0; j < split.Length; j++)
                 {
@@ -64,12 +99,60 @@ namespace fwp.localizator.editor
                     line.cell.Add(split[j]);
                 }
 
+                //Debug.Log(line.raw + " ? " + cntCellWithContent);
+
                 //skip line of only empty cells
-                if (cntCellWithContent > 1) lines.Add(line);
+                if (cntCellWithContent > 0) lines.Add(line);
             }
 
-            if(ExportLocalisationToGoogleForm.verbose)
-                Debug.Log("csv solved x" + lines.Count);
+            //if (lines.Count != originalCount) Debug.Log("csv solved lines x" + lines.Count + " out of x" + originalCount);
+
+            return this;
+        }
+
+        public void fillAutoUid(int uidColumn)
+        {
+
+            string _uid = string.Empty;
+            int cnt = 0;
+
+            //first line is languages
+            for (int j = 1; j < lines.Count; j++)
+            {
+                var values = lines[j].cell;
+
+                if (values.Count < 2)
+                {
+                    _uid = string.Empty;
+                    cnt = 0;
+                    continue; // skip empty lines
+                }
+
+                var key = values[uidColumn]; // uid key
+
+                if (key.Length < 3)
+                {
+                    Debug.Assert(_uid.Length > 0, "need uid here");
+                    key = _uid; // empty key = last known
+                }
+                else
+                {
+                    if (key != _uid)
+                    {
+                        _uid = key;
+                        cnt = 0;
+                    }
+                }
+
+                cnt++;
+                if (cnt < 10) key = key + "-0" + cnt;
+                else key = key + "-" + cnt;
+
+                values[uidColumn] = key;
+
+                Debug.Log("#" + j + " => " + key);
+            }
+
         }
 
         /// <summary>
@@ -79,7 +162,7 @@ namespace fwp.localizator.editor
         /// </summary>
         string[] cellsSeparator(string lineRaw)
         {
-            
+
             List<string> cells = new List<string>();
 
             StringBuilder sb = new StringBuilder();
@@ -111,7 +194,7 @@ namespace fwp.localizator.editor
             }
 
             cells.Add(sb.ToString());
-            
+
             return cells.ToArray();
         }
 
@@ -127,7 +210,7 @@ namespace fwp.localizator.editor
             return sb.ToString();
         }
 
-        static public CsvParser parse(string raw, int skipLineCount)
+        string presetupRaw(string raw)
         {
 
             //search & replace all LINE breaks
@@ -156,7 +239,7 @@ namespace fwp.localizator.editor
 
             raw = sb.ToString();
 
-            return new CsvParser(raw, skipLineCount);
+            return raw;
         }
 
         static bool isCharLineBreak(string cur)
@@ -166,6 +249,34 @@ namespace fwp.localizator.editor
             if (cur == "\r") return true;
             if (cur == "\n") return true;
             return false;
+        }
+
+        static CsvParser[] _parsers;
+
+        static public void refreshCache()
+        {
+            string[] csvPaths = Directory.GetFiles(LocalizationManager.sys_localization_import, "*." + CsvSerializer.parserExt);
+
+            if (csvPaths.Length <= 0)
+            {
+                Debug.LogWarning("no csvs found @ " + LocalizationManager.sys_localization_import);
+                return;
+            }
+
+            List<CsvParser> output = new List<CsvParser>();
+            for (int i = 0; i < csvPaths.Length; i++)
+            {
+                var csv = CsvParser.load(csvPaths[i]);
+                output.Add(csv);
+            }
+
+            _parsers = output.ToArray();
+        }
+
+        static public CsvParser[] loadParsers()
+        {
+            if (_parsers == null) refreshCache();
+            return _parsers;
         }
 
     }

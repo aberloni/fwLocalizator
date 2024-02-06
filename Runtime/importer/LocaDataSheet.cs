@@ -2,12 +2,11 @@
 using System.Collections;
 using System;
 using UnityEngine;
-using UnityEditor;
 
 namespace fwp.localizator
 {
     [Serializable]
-    public struct DataSheetLabel
+    public struct DataSheetTab
     {
         public const string googleSpreadsheetEditPrefix = "/edit#gid=";
 
@@ -16,8 +15,8 @@ namespace fwp.localizator
 
         public string url => googleSpreadsheetEditPrefix + tabId;
 
-        public string cache;
-        public string cacheResources
+        public string cache; // relative to Assets/
+        public string cacheResources // relative to Resources/
         {
             get
             {
@@ -26,37 +25,17 @@ namespace fwp.localizator
             }
         }
         
-        public string cacheAsset => "Assets/" + cache;
+        public string cacheAsset => "Assets/" + cache; // relative to project
 
         public string displayName => fieldId + "&" + tabId;
 
-        public bool compare(DataSheetLabel other)
+        public bool compare(DataSheetTab other)
         {
             if (fieldId != other.fieldId) return false;
             if (tabId != other.tabId) return false;
             return true;
         }
 
-        string getTabText()
-        {
-            if (string.IsNullOrEmpty(cache))
-                return string.Empty;
-
-            //Debug.Log(cacheResources);
-
-            return (Resources.Load<TextAsset>(cacheResources) as TextAsset).text;
-        }
-
-        public string getLine(string lineUid)
-        {
-            var lines = getTabText().Split(Environment.NewLine);
-            foreach(var l in lines)
-            {
-                if (l.Contains(lineUid))
-                    return l;
-            }
-            return string.Empty;
-        }
     }
 
     /// <summary>
@@ -76,15 +55,15 @@ namespace fwp.localizator
         public string sheetUrlUid;
 
         [Tooltip("all tabs in that spreadsheet")]
-        public DataSheetLabel[] sheetTabsIds;
+        public DataSheetTab[] tabs;
 
         public string url => googleSpreadsheetBaseUrl + sheetUrlUid;
 
-        public int getTabIndex(DataSheetLabel tab)
+        public int getTabIndex(DataSheetTab tab)
         {
-            for (int i = 0; i < sheetTabsIds.Length; i++)
+            for (int i = 0; i < tabs.Length; i++)
             {
-                if (sheetTabsIds[i].compare(tab))
+                if (tabs[i].compare(tab))
                     return i;
             }
             return -1;
@@ -95,9 +74,9 @@ namespace fwp.localizator
             if (Application.isPlaying)
                 return;
 
-            if (sheetUrlUid.StartsWith(LocaSpreadsheetBridge.sheetUrlPrefix))
+            if (sheetUrlUid.StartsWith(GoogleSpreadsheetBridge.sheetUrlPrefix))
             {
-                sheetUrlUid = sheetUrlUid.Replace(LocaSpreadsheetBridge.sheetUrlPrefix, string.Empty);
+                sheetUrlUid = sheetUrlUid.Replace(GoogleSpreadsheetBridge.sheetUrlPrefix, string.Empty);
             }
         }
 
@@ -105,9 +84,9 @@ namespace fwp.localizator
 
         public string getTabIdOfField(string field)
         {
-            for (int i = 0; i < sheetTabsIds.Length; i++)
+            for (int i = 0; i < tabs.Length; i++)
             {
-                if (sheetTabsIds[i].fieldId == field) return sheetTabsIds[i].tabId;
+                if (tabs[i].fieldId == field) return tabs[i].tabId;
             }
             return string.Empty;
         }

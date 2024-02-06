@@ -52,40 +52,50 @@ namespace fwp.localizator.dialog
 
 #if UNITY_EDITOR
 
-        virtual public void solveContent()
+        protected string getCellValue(string lineUid, int cell)
         {
-            editorSolveLines();
-        }
-
-        protected string getCellValue(string lineUid, int cellIndex)
-        {
-            string line = fetchSheetLine(lineUid);
-
-            //Debug.Log(lineUid + " = " + line);
-
-            if(!string.IsNullOrEmpty(line))
+            var csvs = CsvParser.loadParsers();
+            foreach(var csv in csvs)
             {
-                //Debug.Log(line);
-                return line.Split(",")[cellIndex];
+                // search for line
+                foreach(var l in csv.lines)
+                {
+                    // search for cell with uid
+                    foreach(var val in l.cell)
+                    {
+                        if(val.Contains(lineUid))
+                        {
+                            return l.cell[cell];
+                        }
+                    }
+                }
             }
 
             return string.Empty;
         }
 
-        string fetchSheetLine(string uid)
+        virtual public void solveContent()
         {
-            //Debug.Log(uid);
-            var sheets = LocalizatorUtils.getSheetsData();
-            foreach (var s in sheets)
+            editorSolveLines();
+        }
+
+        string getTabText(string resourcePath)
+        {
+            if (string.IsNullOrEmpty(resourcePath))
+                return string.Empty;
+
+            //Debug.Log(cacheResources);
+
+            return (Resources.Load<TextAsset>(resourcePath) as TextAsset).text;
+        }
+
+        public string getLine(string resourcePath, string lineUid)
+        {
+            var lines = getTabText(resourcePath).Split(System.Environment.NewLine);
+            foreach (var l in lines)
             {
-                foreach (var t in s.sheetTabsIds)
-                {
-                    var txt = t.getLine(uid);
-                    if(!string.IsNullOrEmpty(txt))
-                    {
-                        return txt;
-                    }
-                }
+                if (l.Contains(lineUid))
+                    return l;
             }
             return string.Empty;
         }
