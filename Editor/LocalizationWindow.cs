@@ -18,6 +18,7 @@ namespace fwp.localizator
 
         GUIStyle foldHeaderTitle;
         GUIStyle foldTitle;
+        GUILayoutOption btnSW = GUILayout.MaxWidth(70f);
         GUILayoutOption btnW = GUILayout.MaxWidth(150f);
         GUILayoutOption btnH = GUILayout.Height(30f);
 
@@ -140,30 +141,45 @@ namespace fwp.localizator
                 GUILayout.Label(d);
                 var dial = dialog.getDialogInstance(d);
 
-                if (dial == null && GUILayout.Button("create", btnW))
+                if (dial == null)
                 {
-                    var inst = createDialog(d);
-                    Debug.Assert(inst != null, "could not create scriptable dialog");
+                    if(GUILayout.Button("create", btnW))
+                    {
+                        var inst = createDialog(d);
+                        Debug.Assert(inst != null, "could not create scriptable dialog");
 
-                    if(!AssetDatabase.IsValidFolder("Assets/Data"))
-                        AssetDatabase.CreateFolder("Assets", "Data");
+                        if (!AssetDatabase.IsValidFolder("Assets/Data"))
+                            AssetDatabase.CreateFolder("Assets", "Data");
 
-                    if(!AssetDatabase.IsValidFolder("Assets/Data/Dialogs"))
-                        AssetDatabase.CreateFolder("Assets/Data", "Dialogs");
+                        if (!AssetDatabase.IsValidFolder("Assets/Data/Dialogs"))
+                            AssetDatabase.CreateFolder("Assets/Data", "Dialogs");
 
-                    var path = "Assets/Data/Dialogs/" + d + ".asset";
-                    Debug.Log(path);
+                        var path = "Assets/Data/Dialogs/" + d + ".asset";
+                        Debug.Log(path);
 
-                    AssetDatabase.CreateAsset(inst, path);
-                    AssetDatabase.Refresh();
+                        AssetDatabase.CreateAsset(inst, path);
+                        AssetDatabase.Refresh();
 
-                    inst.solveContent();
-                    EditorUtility.SetDirty(inst);
+                        inst.solveContent();
+                        EditorUtility.SetDirty(inst);
+
+                        dialog.refresh();
+                        UnityEditor.Selection.activeObject = inst;
+                    }
                 }
-                else if (dial != null && GUILayout.Button("update", btnW))
+                else 
                 {
-                    dial.solveContent();
-                    EditorUtility.SetDirty(dial);
+                    if (GUILayout.Button("update", btnW))
+                    {
+                        dial.solveContent();
+                        EditorUtility.SetDirty(dial);
+
+                        UnityEditor.Selection.activeObject = dial;
+                    }
+                    if (GUILayout.Button(" > ", btnSW))
+                    {
+                        UnityEditor.Selection.activeObject = dial;
+                    }
                 }
 
                 GUILayout.EndHorizontal();
@@ -312,7 +328,7 @@ namespace fwp.localizator
                         {
                             GUILayout.Label(tab.cache);
 
-                            if (GUILayout.Button(" > ", btnW))
+                            if (GUILayout.Button(" > ", btnSW))
                                 UnityEditor.Selection.activeObject = AssetDatabase.LoadAssetAtPath(tab.cacheAsset, typeof(TextAsset));
                         }
                         GUILayout.EndHorizontal();
@@ -356,7 +372,7 @@ namespace fwp.localizator
                     GUILayout.Label(l.iso.ToString());
                     GUILayout.Label("char x" + l.textAsset.text.Length, btnW);
 
-                    if (GUILayout.Button("generate", btnW))
+                    if (GUILayout.Button("update", btnW))
                     {
                         //var sheet = mgr.getSheets()[0];
                         //LocalizationFile file = mgr.getFileByLang(l.iso);
