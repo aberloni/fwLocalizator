@@ -10,14 +10,10 @@ namespace fwp.localizator.editor
     using fwp.localizator;
     using System.IO;
     using UnityEditor;
-    using System.Text;
 
     public class ImportSheetUtils
     {
         static public bool verbose => LocalizationManager.verbose;
-
-        static public string folder_import => Path.Combine(Application.dataPath, LocalizationManager.resource_localization, "import");
-        static public string folder_dialogs => Path.Combine(Application.dataPath, LocalizationManager.resource_localization, "dialogs");
 
         /// <summary>
         /// import and save multiple spreadsheets
@@ -94,7 +90,8 @@ namespace fwp.localizator.editor
             //fileContent is raw downloadHandler text
             string fileContent = GoogleSpreadsheetBridge.ssheet_import(sheetUrl, dt.tabId);
 
-            string _folder = folder_import;
+            // path/to/sheets.ext
+            string _folder = LocalizationPaths.sysImports;
 
             if (!Directory.Exists(_folder))
             {
@@ -104,7 +101,7 @@ namespace fwp.localizator.editor
             //string fileName = getTabIdFileName(tabId);
             string fileName = dt.fieldId + "_" + dt.tabId;
 
-            string filePath = Path.Combine(folder_import, fileName + ".txt");
+            string filePath = Path.Combine(_folder, fileName + LocalizationPaths.langExtDot);
             File.WriteAllText(filePath, fileContent);
 
             //FileStream stream = File.OpenRead(filePath);

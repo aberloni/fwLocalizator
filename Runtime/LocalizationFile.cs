@@ -47,14 +47,14 @@ namespace fwp.localizator
         {
             string lang = iso.ToString();
 
-            string langFilePath = getLangFilePath(iso, false); // path to lang file, no ext
+            string langFilePath = getLangFileResourcesPath(iso, false); // resources/, path to lang file, no ext
             textAsset = Resources.Load(langFilePath) as TextAsset;
 
             //Debug.Log(ta.name);
 
             if (textAsset == null)
             {
-                Debug.LogError("no file : " + lang + " , at path ? " + langFilePath);
+                Debug.LogWarning("no file @ " + langFilePath);
                 return;
             }
 
@@ -215,7 +215,7 @@ namespace fwp.localizator
 
         public void rewriteAsset()
         {
-            StreamWriter file = new StreamWriter("Assets/Resources/" + getLangFilePath(iso));
+            StreamWriter file = new StreamWriter("Assets/Resources/" + getLangFileResourcesPath(iso));
 
             string[] rawLines = splitLineBreak(textAsset.text);
             int numberOfRewrite = 0;
@@ -247,9 +247,15 @@ namespace fwp.localizator
             file.Close();
         }
 
-        public string getLangFilePath(IsoLanguages iso, bool ext = true)
+        /// <summary>
+        /// format path to language file
+        /// path within Resources/
+        /// </summary>
+        public string getLangFileResourcesPath(IsoLanguages iso, bool ext = true)
         {
-            return LocalizationManager.proj_localization + "lang_" + iso + (ext ? ".txt" : string.Empty);
+            return Path.Combine(LocalizationPaths.folderLocalization,
+                LocalizationPaths.folderLangs,
+                "lang_" + iso + (ext ? LocalizationPaths.langExtDot : string.Empty));
         }
 
         static public string[] splitLineBreak(string fileContent)

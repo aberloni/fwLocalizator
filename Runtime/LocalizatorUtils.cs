@@ -32,7 +32,7 @@ namespace fwp.localizator
             return sheets;
         }
 
-        static T getScriptableObjectInEditor<T>(string nameContains = "") where T : ScriptableObject
+        static public T getScriptableObjectInEditor<T>(string nameContains = "") where T : ScriptableObject
         {
             string[] all = AssetDatabase.FindAssets("t:" + typeof(T).Name);
             for (int i = 0; i < all.Length; i++)

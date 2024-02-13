@@ -42,10 +42,10 @@ namespace fwp.localizator
         { }
 
         public void save() => CsvSerializer.save(this,
-            LocalizationManager.sys_localization_import + tabUid + CsvSerializer.parserExtDot);
+            LocalizationPaths.sysImports + tabUid + CsvSerializer.parserExtDot);
 
         public static CsvParser loadFromTabUid(string tabUid) => CsvSerializer.load(
-                LocalizationManager.sys_localization_import + tabUid + CsvSerializer.parserExtDot);
+                LocalizationPaths.sysImports + tabUid + CsvSerializer.parserExtDot);
 
         static public CsvParser load(string parserPath) => CsvSerializer.load(parserPath);
         
@@ -255,11 +255,12 @@ namespace fwp.localizator
 
         static public void refreshCache()
         {
-            string[] csvPaths = Directory.GetFiles(LocalizationManager.sys_localization_import, "*." + CsvSerializer.parserExt);
+            string[] csvPaths = Directory.GetFiles(
+                LocalizationPaths.sysImports, "*." + CsvSerializer.parserExt);
 
             if (csvPaths.Length <= 0)
             {
-                Debug.LogWarning("no csvs found @ " + LocalizationManager.sys_localization_import);
+                Debug.LogWarning("no csvs found @ " + LocalizationPaths.sysImports);
                 return;
             }
 

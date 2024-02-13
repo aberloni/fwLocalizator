@@ -43,11 +43,13 @@ namespace fwp.localizator.editor
         static public void csv_file_generate(LocalizationSheetParams param)
         {
             // fetching all tabs txts
-            string[] tabsFiles = Directory.GetFiles(LocalizationManager.sys_localization_import, "*.txt");
+            string[] tabsFiles = Directory.GetFiles(
+                LocalizationPaths.sysImports, 
+                "*" + LocalizationPaths.langExtDot);
 
             if (tabsFiles.Length <= 0)
             {
-                Debug.LogWarning("no tabs txt @ " + LocalizationManager.sys_localization_import);
+                Debug.LogWarning("no tabs txt @ " + LocalizationPaths.sysImports);
                 return;
             }
 
@@ -86,8 +88,12 @@ namespace fwp.localizator.editor
 
             //save
 
-            string outputPath = Path.Combine(Application.dataPath,
-                LocalizationManager.sys_localization, "lang_" + lang + ".txt");
+            if (!Directory.Exists(LocalizationPaths.sysLangs))
+                Directory.CreateDirectory(LocalizationPaths.sysLangs);
+
+            string outputPath = Path.Combine(
+                LocalizationPaths.sysLangs, 
+                "lang_" + lang + LocalizationPaths.langExtDot);
 
             if (verbose)
                 Debug.Log("saving : " + outputPath + " (" + output.Length + " char)");

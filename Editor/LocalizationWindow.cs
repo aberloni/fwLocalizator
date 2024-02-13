@@ -70,21 +70,22 @@ namespace fwp.localizator
         string[] tabs = new string[] { "localization", "dialogs" };
         int selectedTab = 0;
 
+        DialogManager<LineData> mgrDialog;
+
         private void OnFocus()
         {
             if (LocalizationManager.instance == null)
                 LocalizationManager.instance = System.Activator.CreateInstance<Manager>();
 
-            if (DialogManager<LineData>.instance == null)
+            if (mgrDialog == null)
             {
-                DialogManager<LineData>.instance = System.Activator.CreateInstance<DialogManager<LineData>>();
+                mgrDialog = DialogManager<LineData>.instance;
+                if (mgrDialog == null)
+                {
+                    mgrDialog = System.Activator.CreateInstance<DialogManager<LineData>>();
+                }
             }
-            else
-            {
-                DialogManager<LineData>.instance.refresh();
-            }
-
-            //checkStyles();
+            else mgrDialog.refresh();
         }
 
         private void OnGUI()
@@ -118,7 +119,11 @@ namespace fwp.localizator
                     drawLocalization(mgr);
                     break;
                 case 1:
-                    drawDialogs(DialogManager<LineData>.instance);
+                    if (DialogManager<LineData>.instance == null) GUILayout.Label("no dialog manager");
+                    else
+                    {
+                        drawDialogs();
+                    }
                     break;
             }
         }
@@ -127,56 +132,36 @@ namespace fwp.localizator
 
         Vector2 scrollDialsContent;
         Vector2 scrollDialsScriptables;
-        void drawDialogs(DialogManager<LineData> dialog)
+        void drawDialogs()
         {
-            if (dialog == null) return;
+            if (mgrDialog == null) return;
 
-            GUILayout.Label("in :   loca files x" + dialog.dialogsUids.Length, LocalizationWindowUtils.getSectionTitle());
+            GUILayout.Label("in :   loca files x" + mgrDialog.dialogsUids.Length,
+                LocalizationWindowUtils.getSectionTitle());
 
-            if(GUILayout.Button("generate all missing dialogs"))
+            if (GUILayout.Button("generate all missing dialogs"))
             {
-                foreach (var d in dialog.dialogsUids)
+                foreach (var d in mgrDialog.dialogsUids)
                 {
-                    var dial = dialog.getDialogInstance(d);
-                    if(dial == null) createDialog(dialog, d);
+                    var dial = mgrDialog.getDialogInstance(d);
+                    if (dial == null) createDialog(d);
                 }
             }
 
             scrollDialsContent = GUILayout.BeginScrollView(scrollDialsContent);
 
-            foreach (var d in dialog.dialogsUids)
+            foreach (var d in mgrDialog.dialogsUids)
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(d);
-                var dial = dialog.getDialogInstance(d);
+                var dial = mgrDialog.getDialogInstance(d);
 
                 if (dial == null)
                 {
-                    if(GUILayout.Button("create", btnW))
-                    {
-                        var inst = createDialogInstance(d);
-                        Debug.Assert(inst != null, "could not create scriptable dialog");
-
-                        if (!AssetDatabase.IsValidFolder("Assets/Data"))
-                            AssetDatabase.CreateFolder("Assets", "Data");
-
-                        if (!AssetDatabase.IsValidFolder("Assets/Data/Dialogs"))
-                            AssetDatabase.CreateFolder("Assets/Data", "Dialogs");
-
-                        var path = "Assets/Data/Dialogs/" + d + ".asset";
-                        Debug.Log(path);
-
-                        AssetDatabase.CreateAsset(inst, path);
-                        AssetDatabase.Refresh();
-
-                        inst.solveContent();
-                        EditorUtility.SetDirty(inst);
-
-                        dialog.refresh();
-                        UnityEditor.Selection.activeObject = inst;
-                    }
+                    if (GUILayout.Button("create", btnW))
+                        createDialog(d);
                 }
-                else 
+                else
                 {
                     if (GUILayout.Button("update", btnW))
                     {
@@ -196,7 +181,7 @@ namespace fwp.localizator
 
             GUILayout.EndScrollView();
 
-            var dialogs = DialogManager<LineData>.instance.dialogs;
+            var dialogs = mgrDialog.dialogs;
 
             GUILayout.Label("in :   scriptables x" + dialogs.Length, LocalizationWindowUtils.getSectionTitle());
 
@@ -208,7 +193,7 @@ namespace fwp.localizator
                     continue;
 
                 d.winEdFold = EditorGUILayout.Foldout(d.winEdFold, "dialog#" + d.name, true);
-                if(d.winEdFold)
+                if (d.winEdFold)
                 {
                     foreach (var line in d.lines)
                     {
@@ -221,29 +206,70 @@ namespace fwp.localizator
             GUILayout.EndScrollView();
         }
 
-        void createDialog(DialogManager<LineData> dialog, string uid)
+        void createDialog(string uid)
         {
 
             var inst = createDialogInstance(uid);
             Debug.Assert(inst != null, "could not create scriptable dialog");
 
-            if (!AssetDatabase.IsValidFolder("Assets/Data"))
-                AssetDatabase.CreateFolder("Assets", "Data");
+            //string path = DialogManager.sysDialogs;
+            string path = DialogManager<LineData>.assetDialogs;
 
-            if (!AssetDatabase.IsValidFolder("Assets/Data/Dialogs"))
-                AssetDatabase.CreateFolder("Assets/Data", "Dialogs");
+            // make sure folder exists
+            path = generateExportPath(path);
 
-            var path = "Assets/Data/Dialogs/" + uid + ".asset";
-            Debug.Log(path);
+            // add asset at end of path
+            path += uid + ".asset";
+
+            Debug.Log("asset path @ " + path);
 
             AssetDatabase.CreateAsset(inst, path);
             AssetDatabase.Refresh();
 
+            Debug.Log("solving content of " + inst);
+
             inst.solveContent();
             EditorUtility.SetDirty(inst);
 
-            dialog.refresh();
+            mgrDialog.refresh();
             UnityEditor.Selection.activeObject = inst;
+        }
+
+        /// <summary>
+        /// in : (Assets/) some/path (/)
+        /// out : filled path
+        /// </summary>
+        string generateExportPath(string path)
+        {
+            const string asset_path = "Assets";
+
+            if (!path.StartsWith(asset_path))
+                path = System.IO.Path.Combine(asset_path, path);
+
+            // remove last  /
+            if (path.EndsWith("/")) path = path.Substring(0, path.Length - 1);
+
+            var split = path.Split("/");
+
+            Debug.Log(path + " => " + split.Length);
+
+            string progressivePath = asset_path + "/";
+            for (int i = 1; i < split.Length; i++)
+            {
+                string tarPath = progressivePath + "/" + split[i];
+                if (!AssetDatabase.IsValidFolder(tarPath)) // Assets/Data/Dialogs
+                {
+                    Debug.LogWarning("creating : " + tarPath);
+                    var guid = AssetDatabase.CreateFolder(progressivePath, split[i]); // Assets/Data & Dialogs
+                    Debug.Log(guid);
+                }
+                else Debug.Log("OK : " + tarPath);
+
+
+                progressivePath = tarPath;
+            }
+
+            return path + "/";
         }
 
         void drawLocalization(Manager mgr)

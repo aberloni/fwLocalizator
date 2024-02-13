@@ -23,6 +23,7 @@ namespace fwp.localizator
     {
         static public bool verbose = false;
 
+        /// for [MenuItem]
         public const string _asset_menu_path = "Localizator/";
         public const string _menu_item_path = "Window/Localizator/";
         public const int _asset_menu_order = 100;
@@ -37,24 +38,6 @@ namespace fwp.localizator
         static public List<iLanguageChangeReact> reacts = new List<iLanguageChangeReact>();
 
         public const IsoLanguages languageFallback = IsoLanguages.en; // si la langue du system est pas supportée
-
-        /// <summary>
-        /// where all txt files is located in the project
-        /// </summary>
-        public const string resource_localization = "Resources/" + proj_localization;
-        public const string resource_localization_import = resource_localization + "import/";
-
-        /// <summary>
-        /// subfolder within Resources/
-        /// </summary>
-        public const string proj_localization = "localization/";
-        public const string proj_localization_import = proj_localization + "import/";
-
-        /// <summary>
-        /// from harddrive
-        /// </summary>
-        public static string sys_localization = Application.dataPath + "/" + resource_localization;
-        public static string sys_localization_import = sys_localization + "import/";
 
         public LocalizationFile[] lang_files;
 

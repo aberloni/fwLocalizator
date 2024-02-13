@@ -10,9 +10,11 @@ namespace fwp.localizator
     {
         public const string googleSpreadsheetEditPrefix = "/edit#gid=";
 
-        public string fieldId; // tab name in sheet
         public string tabId; // ssheet url uid
-
+        
+        [Header("debug stuff")]
+        public string fieldId; // tab name in sheet
+        
         public string url => googleSpreadsheetEditPrefix + tabId;
 
         public string cache; // relative to Assets/
