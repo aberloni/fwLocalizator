@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace fwp.localizator.dialog
 {
+    /// <summary>
+    /// don't forget to also flag children as serializable
+    /// </summary>
     [System.Serializable]
     public class LocaDialogLineData
     {

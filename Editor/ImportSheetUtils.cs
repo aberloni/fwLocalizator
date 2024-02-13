@@ -88,7 +88,7 @@ namespace fwp.localizator.editor
         static protected string importAndSaveSheetTab(string sheetUrl, DataSheetTab dt)
         {
             //fileContent is raw downloadHandler text
-            string fileContent = GoogleSpreadsheetBridge.ssheet_import(sheetUrl, dt.tabId);
+            string fileContent = GoogleSpreadsheetBridge.ssheet_import(sheetUrl, dt.tabUrlId);
 
             // path/to/sheets.ext
             string _folder = LocalizationPaths.sysImports;
@@ -99,7 +99,7 @@ namespace fwp.localizator.editor
             }
 
             //string fileName = getTabIdFileName(tabId);
-            string fileName = dt.fieldId + "_" + dt.tabId;
+            string fileName = dt.tabName + "_" + dt.tabUrlId;
 
             string filePath = Path.Combine(_folder, fileName + LocalizationPaths.langExtDot);
             File.WriteAllText(filePath, fileContent);

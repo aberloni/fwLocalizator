@@ -5,41 +5,7 @@ using UnityEngine;
 
 namespace fwp.localizator
 {
-    [Serializable]
-    public struct DataSheetTab
-    {
-        public const string googleSpreadsheetEditPrefix = "/edit#gid=";
-
-        public string tabId; // ssheet url uid
-        
-        [Header("debug stuff")]
-        public string fieldId; // tab name in sheet
-        
-        public string url => googleSpreadsheetEditPrefix + tabId;
-
-        public string cache; // relative to Assets/
-        public string cacheResources // relative to Resources/
-        {
-            get
-            {
-                string path = cache.Substring("Resources/".Length);
-                return path.Substring(0, path.LastIndexOf("."));
-            }
-        }
-        
-        public string cacheAsset => "Assets/" + cache; // relative to project
-
-        public string displayName => fieldId + "&" + tabId;
-
-        public bool compare(DataSheetTab other)
-        {
-            if (fieldId != other.fieldId) return false;
-            if (tabId != other.tabId) return false;
-            return true;
-        }
-
-    }
-
+    
     /// <summary>
     /// base structure to get a scriptble with uid/tabid couples
     /// - url
@@ -88,7 +54,7 @@ namespace fwp.localizator
         {
             for (int i = 0; i < tabs.Length; i++)
             {
-                if (tabs[i].fieldId == field) return tabs[i].tabId;
+                if (tabs[i].tabName == field) return tabs[i].tabUrlId;
             }
             return string.Empty;
         }

@@ -14,6 +14,7 @@ namespace fwp.localizator.dialog
     /// 
     /// </summary>
     //[CreateAssetMenu(menuName = LocalizationManager._asset_menu_path + "create dialog data",fileName = "DialogData_", order = LocalizationManager._asset_menu_order)]
+    [System.Serializable]
     public class LocaDialogData<LineData> : ScriptableObject where LineData : LocaDialogLineData
     {
         public const string dialog_line_number_separator = "-";
@@ -25,6 +26,11 @@ namespace fwp.localizator.dialog
 
         [System.NonSerialized]
         public bool winEdFold;
+
+        public bool match(string uid)
+        {
+            return locaId == uid;
+        }
 
         public LineData getNextLine(LineData line)
         {
@@ -55,15 +61,15 @@ namespace fwp.localizator.dialog
         protected string getCellValue(string lineUid, int cell)
         {
             var csvs = CsvParser.loadParsers();
-            foreach(var csv in csvs)
+            foreach (var csv in csvs)
             {
                 // search for line
-                foreach(var l in csv.lines)
+                foreach (var l in csv.lines)
                 {
                     // search for cell with uid
-                    foreach(var val in l.cell)
+                    foreach (var val in l.cell)
                     {
-                        if(val.Contains(lineUid))
+                        if (val.Contains(lineUid))
                         {
                             return l.cell[cell];
                         }
@@ -180,11 +186,15 @@ namespace fwp.localizator.dialog
                 //mergeLog = "[Merged]";
             }
 
+            //Debug.Log(locaId + " lines x" + lines.Length);
+
             cmUpdateCached();
         }
 
         public void cmUpdateCached()
         {
+            Debug.Log(locaId + " :: update cache :: lines x"+lines.Length);
+
             for (int i = 0; i < lines.Length; i++)
             {
                 lines[i].debugUpdatePreview(false);

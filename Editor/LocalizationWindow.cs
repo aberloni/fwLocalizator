@@ -102,6 +102,11 @@ namespace fwp.localizator
             draw(mgr);
         }
 
+        /// <summary>
+        /// generate the instance
+        /// </summary>
+        abstract protected LocaDialogData<LineData> createDialogInstance(string nm);
+
         virtual protected void draw(Manager mgr)
         {
             LocalizationWindowUtils.drawSectionTitle(mgr.GetType().ToString());
@@ -127,8 +132,6 @@ namespace fwp.localizator
                     break;
             }
         }
-
-        abstract protected LocaDialogData<LineData> createDialogInstance(string nm);
 
         Vector2 scrollDialsContent;
         Vector2 scrollDialsScriptables;
@@ -195,9 +198,13 @@ namespace fwp.localizator
                 d.winEdFold = EditorGUILayout.Foldout(d.winEdFold, "dialog#" + d.name, true);
                 if (d.winEdFold)
                 {
-                    foreach (var line in d.lines)
+                    if (d.lines == null) GUILayout.Label("null lines[]");
+                    else
                     {
-                        GUILayout.Label("       " + line.previews[(int)IsoLanguages.fr]);
+                        foreach (var line in d.lines)
+                        {
+                            GUILayout.Label("       " + line.previews[(int)IsoLanguages.fr]);
+                        }
                     }
                 }
 
@@ -376,7 +383,7 @@ namespace fwp.localizator
                     {
                         GUILayout.BeginHorizontal();
 
-                        GUILayout.Label("TAB    " + tab.fieldId + "#" + tab.tabId);
+                        GUILayout.Label("TAB    " + tab.tabName + "#" + tab.tabUrlId);
 
                         if (GUILayout.Button("browse", btnW))
                         {
