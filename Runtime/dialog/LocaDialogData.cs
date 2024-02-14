@@ -206,7 +206,7 @@ namespace fwp.localizator.dialog
             return LocalizationStatics.getScriptableObjectsInEditor<LocaDialogData<LineData>>();
         }
 
-        [MenuItem(LocalizationManager._menu_item_path + "dialogs/solve all dialog lines")]
+        //[MenuItem(LocalizationManager._menu_item_path + "dialogs/solve all dialog lines")]
         static protected void solveLines()
         {
             LocaDialogData<LineData>[] all = getScriptables();
@@ -230,7 +230,7 @@ namespace fwp.localizator.dialog
             EditorUtility.ClearProgressBar();
         }
 
-        [MenuItem(LocalizationManager._menu_item_path + "dialogs/solve all dialog lines NO DIFF")]
+        //[MenuItem(LocalizationManager._menu_item_path + "dialogs/solve all dialog lines NO DIFF")]
         static protected void solveLinesNoDiff()
         {
             LocaDialogData<LineData>[] all = getScriptables();
