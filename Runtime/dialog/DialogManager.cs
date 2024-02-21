@@ -93,7 +93,11 @@ namespace fwp.localizator.dialog
 
         protected LocaDialogData<LineData>[] getDialogs()
         {
+#if UNITY_EDITOR
             return LocalizatorUtils.getScriptableObjectsInEditor<LocaDialogData<LineData>>();
+#else
+            return null;
+#endif
         }
     }
 }
