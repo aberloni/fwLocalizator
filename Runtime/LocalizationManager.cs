@@ -282,17 +282,27 @@ namespace fwp.localizator
             if (applySwap) applyLanguage(iso); // apply
         }
 
-        virtual protected void setLanguage(IsoLanguages iso)
+        protected void setLanguage(IsoLanguages iso)
         {
+            
+#if UNITY_EDITOR
+            EditorPrefs.SetInt(ppref_language, (int)iso);
+#endif
             //LabySaveManager.getStream().setOption(LANG_PREFIX, (float)iso); // save
 
             //how to save
-            EditorPrefs.SetInt(ppref_language, (int)iso);
+            //...
+
         }
 
-        virtual protected IsoLanguages loadLanguage()
+        protected IsoLanguages loadLanguage()
         {
-            int idx = EditorPrefs.GetInt(ppref_language, -1);
+            int idx = -1;
+
+#if UNITY_EDITOR
+            idx = EditorPrefs.GetInt(ppref_language, -1);
+#endif
+
             if (idx >= 0) return (IsoLanguages)idx;
             return getSystemLanguageToIso();
         }
