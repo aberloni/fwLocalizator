@@ -16,6 +16,7 @@ namespace fwp.localizator
         where LineData : LocaDialogLineData
     {
 
+        GUIStyle sectionTitle;
         GUIStyle foldHeaderTitle;
         GUIStyle foldTitle;
         GUILayoutOption btnSW = GUILayout.MaxWidth(70f);
@@ -34,13 +35,20 @@ namespace fwp.localizator
         /// </summary>
         public Manager getManager() => LocalizationManager.instance as Manager;
 
-        void checkStyles()
+        void checkStyles(bool force = false)
         {
-            foldHeaderTitle = new GUIStyle(EditorStyles.foldoutHeader);
-            foldTitle = new GUIStyle(EditorStyles.foldout);
 
-            if (foldHeaderTitle != null)
+            if(sectionTitle == null || force)
             {
+                sectionTitle = new GUIStyle();
+                //sectionTitle.normal.textColor = Color.gray;
+                //sectionTitle.richText = true;
+                sectionTitle.fontStyle = FontStyle.Bold;
+            }
+
+            if(foldHeaderTitle == null || force)
+            {
+                foldHeaderTitle = new GUIStyle(EditorStyles.foldoutHeader);
                 foldHeaderTitle.fontStyle = FontStyle.Bold;
 
                 foldHeaderTitle.normal.textColor = Color.white;
@@ -57,11 +65,12 @@ namespace fwp.localizator
 
                 //foldTitle.padding = new RectOffset(0, 0, 100, 100);
                 //foldHeaderTitle.margin = new RectOffset(20,0,0,0);
-
             }
 
-            if (foldTitle != null)
+            if(foldTitle == null || force)
             {
+                foldTitle = new GUIStyle(EditorStyles.foldout);
+
                 //foldTitle.richText = true;
                 foldTitle.fontSize = 20;
             }
@@ -72,8 +81,15 @@ namespace fwp.localizator
 
         DialogManager<LineData> mgrDialog;
 
+        private void OnEnable()
+        {
+            //checkStyles(true);
+        }
+
         private void OnFocus()
         {
+            //checkStyles(true);
+
             if (LocalizationManager.instance == null)
                 LocalizationManager.instance = System.Activator.CreateInstance<Manager>();
 
@@ -306,7 +322,7 @@ namespace fwp.localizator
             }
             GUILayout.EndHorizontal();
 
-            if (GUILayout.Button("download & generate", GUILayout.Height(30f)))
+            if (GUILayout.Button("download > CSV > trads", GUILayout.Height(30f)))
             {
                 var sheets = LocalizatorUtils.getSheetsData();
                 ImportSheetUtils.ssheets_import(sheets);
@@ -330,6 +346,7 @@ namespace fwp.localizator
                 if (GUILayout.Button(s.ToString()))
                 {
                     mgr.setSavedLanguage(s, true);
+                    mgrDialog?.refresh();
                 }
             }
             GUILayout.EndHorizontal();
@@ -360,8 +377,9 @@ namespace fwp.localizator
                 {
                     GUILayout.BeginHorizontal();
 
-                    GUILayout.Label("URL    " + sheet.sheetUrlUid);
-
+                    GUILayout.Label("URL", btnW);
+                    GUILayout.Label(sheet.sheetUrlUid);
+                    
                     if (GUILayout.Button("browse", btnW)) OpenInFileBrowser.browseUrl(sheet.url);
 
                     if (GUILayout.Button("download TABS", btnW))

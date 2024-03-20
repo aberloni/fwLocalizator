@@ -21,6 +21,9 @@ namespace fwp.localizator.dialog
         static public string sysDialogs = System.IO.Path.Combine(
             Application.dataPath, resourcesDialogs);
 
+        IsoLanguages iso => LocalizationManager.instance.getSavedIsoLanguage();
+
+        // for one iso language
         public string[] dialogsUids;
 
         public LocaDialogData<LineData>[] dialogs;
@@ -64,7 +67,7 @@ namespace fwp.localizator.dialog
             }
 
             // get french (default)
-            var file = mgr.getFileByLang(IsoLanguages.fr);
+            var file = mgr.getFileByLang(iso);
             if (file == null)
             {
                 Debug.LogWarning("no fr file ?");
@@ -76,19 +79,24 @@ namespace fwp.localizator.dialog
 
             List<string> tmp = new List<string>();
 
+            // all lines in lang file
             var lines = file.getLines();
             foreach (var l in lines)
             {
+                // split UID=VAL
                 var split = l.Split("=");
                 var uid = split[0];
+
+                // split UID-{NUM}
                 uid = uid.Substring(0, uid.LastIndexOf("-"));
 
                 if (!tmp.Contains(uid))
                     tmp.Add(uid);
             }
+            
             dialogsUids = tmp.ToArray();
 
-            Debug.Log("solved x" + dialogsUids.Length + " dialog uids");
+            Debug.Log($"{iso} -> solved x{dialogsUids.Length} dialog uids");
         }
 
         protected LocaDialogData<LineData>[] getDialogs()
