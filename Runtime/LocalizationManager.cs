@@ -19,7 +19,7 @@ namespace fwp.localizator
     /// pour les espaces insécables : Alt+0160 pour l'écrire dans excel mais \u00A0 dans TMPro.
     /// https://forum.unity.com/threads/why-there-is-no-setting-for-textmesh-pro-ugui-to-count-whitespace-at-the-end.676897/
     /// </summary>
-    public class LocalizationManager
+    abstract public class LocalizationManager
     {
         static public bool verbose = false;
 
@@ -31,6 +31,17 @@ namespace fwp.localizator
         public const string ppref_language = "ppref_language";
 
         static public LocalizationManager instance;
+
+        /*
+        static public LocalizationManager instance
+        {
+            get
+            {
+                if (_instance == null) _instance = new LocalizationManager();
+                return _instance;
+            }
+        }
+        */
 
         /// <summary>
         /// list of reactor candidates to lang change
