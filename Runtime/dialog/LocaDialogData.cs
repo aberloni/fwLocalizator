@@ -24,9 +24,6 @@ namespace fwp.localizator.dialog
         [SerializeField]
         public LineData[] lines;
 
-        [System.NonSerialized]
-        public bool winEdFold;
-
         public bool match(string uid)
         {
             return locaId == uid;

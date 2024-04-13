@@ -23,6 +23,8 @@ namespace fwp.localizator
         GUILayoutOption btnW = GUILayout.MaxWidth(150f);
         GUILayoutOption btnH = GUILayout.Height(30f);
 
+        Dictionary<string, bool> edFoldout = new Dictionary<string, bool>();
+
         LocalizationSheetParams sheetParams = new LocalizationSheetParams()
         {
             uidColumn = ColumnLetter.D,
@@ -155,78 +157,125 @@ namespace fwp.localizator
         {
             if (mgrDialog == null) return;
 
-            GUILayout.Label("in :   loca files x" + mgrDialog.dialogsUids.Length,
-                LocalizationWindowUtils.getSectionTitle());
-
-            if (GUILayout.Button("generate all missing dialogs"))
-            {
-                foreach (var d in mgrDialog.dialogsUids)
-                {
-                    var dial = mgrDialog.getDialogInstance(d);
-                    if (dial == null) createDialog(d);
-                }
-            }
-
-            scrollDialsContent = GUILayout.BeginScrollView(scrollDialsContent);
-
-            foreach (var d in mgrDialog.dialogsUids)
-            {
-                GUILayout.BeginHorizontal();
-                GUILayout.Label(d);
-                var dial = mgrDialog.getDialogInstance(d);
-
-                if (dial == null)
-                {
-                    if (GUILayout.Button("create", btnW))
-                        createDialog(d);
-                }
-                else
-                {
-                    if (GUILayout.Button("update", btnW))
-                    {
-                        dial.solveContent();
-                        EditorUtility.SetDirty(dial);
-
-                        UnityEditor.Selection.activeObject = dial;
-                    }
-                    if (GUILayout.Button(" > ", btnSW))
-                    {
-                        UnityEditor.Selection.activeObject = dial;
-                    }
-                }
-
-                GUILayout.EndHorizontal();
-            }
-
-            GUILayout.EndScrollView();
+            drawFoldLocalizationFiles();
 
             var dialogs = mgrDialog.dialogs;
 
-            GUILayout.Label("in :   scriptables x" + dialogs.Length, LocalizationWindowUtils.getSectionTitle());
+            //GUILayout.Label("in :   scriptables x" + dialogs.Length, LocalizationWindowUtils.getSectionTitle());
+            bool unfold = drawFoldout("in :   scriptables x" + dialogs.Length, "scriptables", true);
 
-            scrollDialsScriptables = GUILayout.BeginScrollView(scrollDialsScriptables);
+            //GUILayout.Label("in :   scriptables x" + dialogs.Length, LocalizationWindowUtils.getSectionTitle());
 
-            foreach (var d in dialogs)
+            if(unfold)
             {
-                if (d == null)
-                    continue;
+                scrollDialsScriptables = GUILayout.BeginScrollView(scrollDialsScriptables);
 
-                d.winEdFold = EditorGUILayout.Foldout(d.winEdFold, "dialog#" + d.name, true);
-                if (d.winEdFold)
+                foreach (var d in dialogs)
                 {
-                    if (d.lines == null) GUILayout.Label("null lines[]");
-                    else
+                    if (d == null)
+                        continue;
+
+                    bool dUnfold = drawFoldout("dialog#" + d.name, d.name);
+                    //d.winEdFold = EditorGUILayout.Foldout(d.winEdFold, "dialog#" + d.name, true);
+                    if (dUnfold)
                     {
-                        foreach (var line in d.lines)
+                        if (d.lines == null) GUILayout.Label("null lines[]");
+                        else
                         {
-                            GUILayout.Label("       " + line.previews[(int)IsoLanguages.fr]);
+                            foreach (var line in d.lines)
+                            {
+                                GUILayout.Label("       " + line.previews[(int)IsoLanguages.fr]);
+                            }
                         }
+                    }
+
+                }
+
+                GUILayout.EndScrollView();
+            }
+            
+        }
+
+        void drawFoldLocalizationFiles()
+        {
+            //GUILayout.Label("in :   loca files x" + mgrDialog.dialogsUids.Length, LocalizationWindowUtils.getSectionTitle());
+
+            bool unfold = drawFoldout("in :   loca files x" + mgrDialog.dialogsUids.Length, "loca", true);
+
+            if (unfold)
+            {
+                if (GUILayout.Button("generate all missing dialogs"))
+                {
+                    foreach (var d in mgrDialog.dialogsUids)
+                    {
+                        var dial = mgrDialog.getDialogInstance(d);
+                        if (dial == null) createDialog(d);
                     }
                 }
 
+                scrollDialsContent = GUILayout.BeginScrollView(scrollDialsContent);
+
+                foreach (var d in mgrDialog.dialogsUids)
+                {
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label(d);
+                    var dial = mgrDialog.getDialogInstance(d);
+
+                    if (dial == null)
+                    {
+                        if (GUILayout.Button("create", btnW))
+                            createDialog(d);
+                    }
+                    else
+                    {
+                        if (GUILayout.Button("update", btnW))
+                        {
+                            dial.solveContent();
+                            EditorUtility.SetDirty(dial);
+
+                            UnityEditor.Selection.activeObject = dial;
+                        }
+                        if (GUILayout.Button(" > ", btnSW))
+                        {
+                            UnityEditor.Selection.activeObject = dial;
+                        }
+                    }
+
+                    GUILayout.EndHorizontal();
+                }
+
+                GUILayout.EndScrollView();
+
             }
 
-            GUILayout.EndScrollView();
+        }
+
+        bool drawFoldout(string label, string uid, bool isSection = false)
+        {
+            bool foldState = false;
+            if(edFoldout.ContainsKey(uid))
+            {
+                foldState = edFoldout[uid];
+            }
+
+            bool _state;
+            
+            if (isSection)
+            {
+                _state = EditorGUILayout.Foldout(foldState, label, true, LocalizationWindowUtils.getFoldoutSection(15));
+            }
+            else
+            {
+                _state = EditorGUILayout.Foldout(foldState, label, true);
+            }
+
+            if(_state != foldState)
+            {
+                if (!edFoldout.ContainsKey(uid)) edFoldout.Add(uid, false);
+                edFoldout[uid] = _state;
+            }
+
+            return _state;
         }
 
         void createDialog(string uid)

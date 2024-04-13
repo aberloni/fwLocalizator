@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting.YamlDotNet.Core.Tokens;
+using UnityEditor;
 using UnityEngine;
 
 public class LocalizationWindowUtils
@@ -16,6 +18,23 @@ public class LocalizationWindowUtils
         GUILayout.Label(label, getSectionTitle(15, TextAnchor.UpperLeft, leftMargin));
     }
 
+    static private GUIStyle gFoldoutSection;
+    static public GUIStyle getFoldoutSection(int size = 15)
+    {
+        if(gFoldoutSection == null)
+        {
+            gFoldoutSection = new GUIStyle(EditorStyles.foldout);
+
+            gFoldoutSection.richText = true;
+            gFoldoutSection.normal.textColor = Color.white;
+
+            gFoldoutSection.fontStyle = FontStyle.Bold;
+        }
+
+        gFoldoutSection.fontSize = size;
+
+        return gFoldoutSection;
+    }
     static private GUIStyle gSectionTitle;
     static public GUIStyle getSectionTitle(int size = 15, TextAnchor anchor = TextAnchor.MiddleCenter, int leftMargin = 10)
     {
