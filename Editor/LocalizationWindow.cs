@@ -40,7 +40,7 @@ namespace fwp.localizator
         void checkStyles(bool force = false)
         {
 
-            if(sectionTitle == null || force)
+            if (sectionTitle == null || force)
             {
                 sectionTitle = new GUIStyle();
                 //sectionTitle.normal.textColor = Color.gray;
@@ -48,7 +48,7 @@ namespace fwp.localizator
                 sectionTitle.fontStyle = FontStyle.Bold;
             }
 
-            if(foldHeaderTitle == null || force)
+            if (foldHeaderTitle == null || force)
             {
                 foldHeaderTitle = new GUIStyle(EditorStyles.foldoutHeader);
                 foldHeaderTitle.fontStyle = FontStyle.Bold;
@@ -69,7 +69,7 @@ namespace fwp.localizator
                 //foldHeaderTitle.margin = new RectOffset(20,0,0,0);
             }
 
-            if(foldTitle == null || force)
+            if (foldTitle == null || force)
             {
                 foldTitle = new GUIStyle(EditorStyles.foldout);
 
@@ -139,7 +139,7 @@ namespace fwp.localizator
                 return;
 
             int _selectedTab = GUILayout.Toolbar((int)selectedTab, tabs, "LargeButton");
-            if(_selectedTab != selectedTab)
+            if (_selectedTab != selectedTab)
             {
                 selectedTab = _selectedTab;
 
@@ -153,7 +153,7 @@ namespace fwp.localizator
                     break;
                 case 1:
 
-                    if(mgrDialog == null) GUILayout.Label("no dialog manager ?");
+                    if (mgrDialog == null) GUILayout.Label("no dialog manager ?");
                     else
                     {
                         drawFoldLocalizationFiles();
@@ -264,13 +264,13 @@ namespace fwp.localizator
         bool drawFoldout(string label, string uid, bool isSection = false)
         {
             bool foldState = false;
-            if(edFoldout.ContainsKey(uid))
+            if (edFoldout.ContainsKey(uid))
             {
                 foldState = edFoldout[uid];
             }
 
             bool _state;
-            
+
             if (isSection)
             {
                 _state = EditorGUILayout.Foldout(foldState, label, true, LocalizationWindowUtils.getFoldoutSection(15));
@@ -280,7 +280,7 @@ namespace fwp.localizator
                 _state = EditorGUILayout.Foldout(foldState, label, true);
             }
 
-            if(_state != foldState)
+            if (_state != foldState)
             {
                 if (!edFoldout.ContainsKey(uid)) edFoldout.Add(uid, false);
                 edFoldout[uid] = _state;
@@ -439,7 +439,7 @@ namespace fwp.localizator
 
                     GUILayout.Label("URL", btnW);
                     GUILayout.Label(sheet.sheetUrlUid);
-                    
+
                     if (GUILayout.Button("browse", btnW)) OpenInFileBrowser.browseUrl(sheet.url);
 
                     GUILayout.EndHorizontal();
@@ -476,7 +476,7 @@ namespace fwp.localizator
                                 Selection.activeObject = AssetDatabase.LoadAssetAtPath("Assets/" + tab.cacheTxt, typeof(TextAsset));
                             }
 
-                            if(GUILayout.Button("csv", btnSW))
+                            if (GUILayout.Button("csv", btnSW))
                             {
                                 Selection.activeObject = AssetDatabase.LoadAssetAtPath("Assets/" + tab.cacheCsv, typeof(Object));
                             }
@@ -485,9 +485,13 @@ namespace fwp.localizator
                             {
                                 var parser = CsvParser.load("Assets/" + tab.cacheCsv);
 
-                                foreach(var l in parser.lines)
+                                foreach (var l in parser.lines)
                                 {
-                                    Debug.Log(l.stringify());
+                                    Debug.Log("parser line : " + l.stringify());
+                                    foreach (var c in l.cell)
+                                    {
+                                        Debug.Log("    >> " + c);
+                                    }
                                 }
                             }
                         }
