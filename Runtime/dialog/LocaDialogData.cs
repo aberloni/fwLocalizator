@@ -58,6 +58,7 @@ namespace fwp.localizator.dialog
         protected string getCellValue(string lineUid, int cell)
         {
             var csvs = CsvParser.loadParsers();
+
             foreach (var csv in csvs)
             {
                 // search for line
@@ -68,10 +69,20 @@ namespace fwp.localizator.dialog
                     {
                         if (val.Contains(lineUid))
                         {
+                            if (LocalizationManager.verbose)
+                            {
+                                Debug.Log("found " + lineUid + " cell in CSV:" + csv.tabUid + " => returning column #" + cell);
+                            }
+
                             return l.cell[cell];
                         }
                     }
                 }
+            }
+
+            if (LocalizationManager.verbose)
+            {
+                Debug.LogWarning("could not find a cell value for uid : " + lineUid);
             }
 
             return string.Empty;
@@ -190,7 +201,7 @@ namespace fwp.localizator.dialog
 
         public void cmUpdateCached()
         {
-            Debug.Log(locaId + " :: update cache :: lines x"+lines.Length);
+            Debug.Log(locaId + " :: update cache :: lines x" + lines.Length);
 
             for (int i = 0; i < lines.Length; i++)
             {
