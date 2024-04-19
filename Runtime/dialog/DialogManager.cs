@@ -74,13 +74,14 @@ namespace fwp.localizator.dialog
                 return;
             }
 
-            // get scriptables
+            // get dialog scriptables
             dialogs = getDialogs();
 
-            List<string> tmp = new List<string>();
+            // fetching all possible UIDs (from trad file)
 
-            // all lines in lang file
+            List<string> tmp = new List<string>();
             var lines = file.getLines();
+
             foreach (var l in lines)
             {
                 // split UID=VAL
@@ -93,10 +94,11 @@ namespace fwp.localizator.dialog
                 if (!tmp.Contains(uid))
                     tmp.Add(uid);
             }
-            
+
             dialogsUids = tmp.ToArray();
 
             Debug.Log($"{iso} -> solved x{dialogsUids.Length} dialog uids");
+            Debug.Log($"      -> solved x{dialogs.Length} scriptable dialogs");
         }
 
         protected LocaDialogData<LineData>[] getDialogs()

@@ -48,7 +48,7 @@ namespace fwp.localizator
                 LocalizationPaths.sysImports + tabUid + CsvSerializer.parserExtDot);
 
         static public CsvParser load(string parserPath) => CsvSerializer.load(parserPath);
-        
+
         public CsvParser generateFromPath(string path, int skipLineCount)
         {
             string tabContent = File.ReadAllText(path);
@@ -56,10 +56,10 @@ namespace fwp.localizator
             var csv = generateFromRaw(tabContent, skipLineCount);
 
             // tab txt path => txt name
-            path = path.Substring(path.LastIndexOf("/"));
+            path = path.Substring(path.LastIndexOf("/") + 1);
             path = path.Substring(0, path.LastIndexOf("."));
 
-            Debug.Log(path);
+            //Debug.Log(path);
 
             csv.tabUid = path;
 
@@ -255,6 +255,8 @@ namespace fwp.localizator
 
         static public void refreshCache()
         {
+            //Debug.Log("refresh CSV cache");
+
             string[] csvPaths = Directory.GetFiles(
                 LocalizationPaths.sysImports, "*." + CsvSerializer.parserExt);
 

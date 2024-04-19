@@ -71,7 +71,8 @@ namespace fwp.localizator.editor
 
             //EditorUtility.DisplayProgressBar("importing tab "+tab.displayName, "fetching...", 0f);
 
-            tab.cache = importAndSaveSheetTab(sheet.sheetUrlUid, tab);
+            string filePath = importAndSaveSheetTab(sheet.sheetUrlUid, tab);
+            tab.cache = tab.cache = filePath.Substring(0, filePath.LastIndexOf(".")); // path to file, remove extention
             tab.cache = tab.cache.Substring(Application.dataPath.Length + 1); // relative to project
 
             sheet.tabs[idx] = tab;

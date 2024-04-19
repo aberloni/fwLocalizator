@@ -211,7 +211,7 @@ namespace fwp.localizator
         {
             //GUILayout.Label("in :   loca files x" + mgrDialog.dialogsUids.Length, LocalizationWindowUtils.getSectionTitle());
 
-            bool unfold = drawFoldout("in :   loca files x" + mgrDialog.dialogsUids.Length, "loca", true);
+            bool unfold = drawFoldout("in :   loca dialogs UIDs x" + mgrDialog.dialogsUids.Length, "loca", true);
 
             if (unfold)
             {
@@ -442,19 +442,6 @@ namespace fwp.localizator
                     
                     if (GUILayout.Button("browse", btnW)) OpenInFileBrowser.browseUrl(sheet.url);
 
-                    if (GUILayout.Button("download TABS", btnW))
-                    {
-                        string[] outputs = ImportSheetUtils.ssheet_import(sheet);
-
-                        // update all tabs cache paths
-                        for (int i = 0; i < sheet.tabs.Length; i++)
-                        {
-                            var tab = sheet.tabs[i];
-                            tab.cache = outputs[i];
-                            sheet.tabs[i] = tab;
-                        }
-                    }
-
                     GUILayout.EndHorizontal();
 
                     foreach (var tab in sheet.tabs)
@@ -484,10 +471,28 @@ namespace fwp.localizator
                         {
                             GUILayout.Label(tab.cache);
 
-                            if (GUILayout.Button(" > ", btnSW))
-                                UnityEditor.Selection.activeObject = AssetDatabase.LoadAssetAtPath(tab.cacheAsset, typeof(TextAsset));
+                            if (GUILayout.Button("txt", btnSW))
+                            {
+                                Selection.activeObject = AssetDatabase.LoadAssetAtPath("Assets/" + tab.cacheTxt, typeof(TextAsset));
+                            }
+
+                            if(GUILayout.Button("csv", btnSW))
+                            {
+                                Selection.activeObject = AssetDatabase.LoadAssetAtPath("Assets/" + tab.cacheCsv, typeof(Object));
+                            }
+
+                            if (GUILayout.Button("log", btnSW))
+                            {
+                                var parser = CsvParser.load("Assets/" + tab.cacheCsv);
+
+                                foreach(var l in parser.lines)
+                                {
+                                    Debug.Log(l.stringify());
+                                }
+                            }
                         }
                         GUILayout.EndHorizontal();
+
                     }
                 }
 

@@ -60,7 +60,11 @@ namespace fwp.localizator.editor
 
                 // read and create csv
                 var csv = new CsvParser().generateFromPath(tabsFiles[i], param.langLineIndex);
+
+                // solve all UIDs inc numbering
                 csv.fillAutoUid(param.langLineIndex);
+
+                // save
                 csv.save();
             }
         }

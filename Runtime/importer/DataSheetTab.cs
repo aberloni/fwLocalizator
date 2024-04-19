@@ -20,16 +20,9 @@ namespace fwp.localizator
 
         [Tooltip("to debug location")]
         public string cache; // relative to Assets/
-        public string cacheResources // relative to Resources/
-        {
-            get
-            {
-                string path = cache.Substring("Resources/".Length);
-                return path.Substring(0, path.LastIndexOf("."));
-            }
-        }
-
-        public string cacheAsset => "Assets/" + cache; // relative to project
+        
+        public string cacheTxt => cache + ".txt";
+        public string cacheCsv => cache + ".parser";
 
         public string displayName => tabName + "&" + tabUrlId;
 

@@ -39,7 +39,7 @@ namespace fwp.localizator
 
         public static CsvParser load(string path)
         {
-            Debug.Log("load parser @ " + path);
+            //Debug.Log("load parser @ " + path);
 
             byte[] fileBytes;
             loadBytesFromFile(path, out fileBytes);
