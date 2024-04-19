@@ -135,29 +135,37 @@ namespace fwp.localizator
 
             GUILayout.Space(20f);
 
-            selectedTab = GUILayout.Toolbar((int)selectedTab, tabs, "LargeButton");
+            if (mgrDialog == null)
+                return;
+
+            int _selectedTab = GUILayout.Toolbar((int)selectedTab, tabs, "LargeButton");
+            if(_selectedTab != selectedTab)
+            {
+                selectedTab = _selectedTab;
+
+                if (mgrDialog != null) mgrDialog.refresh();
+            }
+
             switch (selectedTab)
             {
                 case 0:
                     drawLocalization(mgr);
                     break;
                 case 1:
-                    if (DialogManager<LineData>.instance == null) GUILayout.Label("no dialog manager");
+
+                    if(mgrDialog == null) GUILayout.Label("no dialog manager ?");
                     else
                     {
-                        drawDialogs();
+                        drawFoldLocalizationFiles();
+                        drawFoldScriptableFiles();
                     }
                     break;
             }
         }
 
-        Vector2 scrollDialsContent;
         Vector2 scrollDialsScriptables;
-        void drawDialogs()
+        void drawFoldScriptableFiles()
         {
-            if (mgrDialog == null) return;
-
-            drawFoldLocalizationFiles();
 
             var dialogs = mgrDialog.dialogs;
 
@@ -166,8 +174,10 @@ namespace fwp.localizator
 
             //GUILayout.Label("in :   scriptables x" + dialogs.Length, LocalizationWindowUtils.getSectionTitle());
 
-            if(unfold)
+            if (unfold)
             {
+                IsoLanguages iso = getManager().getSavedIsoLanguage();
+
                 scrollDialsScriptables = GUILayout.BeginScrollView(scrollDialsScriptables);
 
                 foreach (var d in dialogs)
@@ -184,7 +194,7 @@ namespace fwp.localizator
                         {
                             foreach (var line in d.lines)
                             {
-                                GUILayout.Label("       " + line.previews[(int)IsoLanguages.fr]);
+                                GUILayout.Label(line.stringify());
                             }
                         }
                     }
@@ -193,9 +203,10 @@ namespace fwp.localizator
 
                 GUILayout.EndScrollView();
             }
-            
+
         }
 
+        Vector2 scrollDialsContent;
         void drawFoldLocalizationFiles()
         {
             //GUILayout.Label("in :   loca files x" + mgrDialog.dialogsUids.Length, LocalizationWindowUtils.getSectionTitle());

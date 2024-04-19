@@ -20,7 +20,7 @@ namespace fwp.localizator.dialog
         {
             List<string> tmp = new List<string>();
 
-            if(verbose)
+            if (verbose)
                 Debug.Log("log debug previews @ " + uid);
 
             var sups = LocalizationManager.instance.getSupportedLanguages();
@@ -29,7 +29,7 @@ namespace fwp.localizator.dialog
                 var val = LocalizationManager.instance.getContent(uid, sup, true);
                 tmp.Add(val);
 
-                if(verbose)
+                if (verbose)
                     Debug.Log(sup + " => " + val);
             }
             previews = tmp.ToArray();
@@ -55,6 +55,12 @@ namespace fwp.localizator.dialog
             if (uid == null) return false;
 
             return uid.Length > 0;
+        }
+
+        virtual public string stringify()
+        {
+            int idx = (int)LocalizationManager.instance.getSavedIsoLanguage();
+            return previews[idx];
         }
 
         static public string getLocaByUID(string uid, bool fallbackIfMissing = false, bool emptyOnMissing = false)
