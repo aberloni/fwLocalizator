@@ -59,8 +59,15 @@ namespace fwp.localizator.dialog
 
         virtual public string stringify()
         {
-            int idx = (int)LocalizationManager.instance.getSavedIsoLanguage();
-            return previews[idx];
+#if UNITY_EDITOR
+            if (LocalizationManager.instance != null)
+            {
+                int idx = (int)LocalizationManager.instance.getSavedIsoLanguage();
+                return previews[idx];
+            }
+#endif
+
+            return string.Empty;
         }
 
         static public string getLocaByUID(string uid, bool fallbackIfMissing = false, bool emptyOnMissing = false)
