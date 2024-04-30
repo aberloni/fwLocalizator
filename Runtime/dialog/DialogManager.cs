@@ -24,7 +24,7 @@ namespace fwp.localizator.dialog
         IsoLanguages iso => LocalizationManager.instance.getSavedIsoLanguage();
 
         // for one iso language
-        public string[] dialogsUids;
+        public string[] dialogsUids = new string[0];
 
         public LocaDialogData<LineData>[] dialogs;
 

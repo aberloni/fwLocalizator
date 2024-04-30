@@ -179,8 +179,13 @@ namespace fwp.localizator
         Vector2 scrollDialsScriptables;
         void drawFoldScriptableFiles()
         {
+            if (mgrDialog == null)
+                return;
 
             var dialogs = mgrDialog.dialogs;
+
+            if (dialogs == null)
+                return;
 
             //GUILayout.Label("in :   scriptables x" + dialogs.Length, LocalizationWindowUtils.getSectionTitle());
             bool unfold = drawFoldout("in :   scriptables x" + dialogs.Length, "scriptables", true);
@@ -223,6 +228,8 @@ namespace fwp.localizator
         void drawFoldLocalizationFiles()
         {
             //GUILayout.Label("in :   loca files x" + mgrDialog.dialogsUids.Length, LocalizationWindowUtils.getSectionTitle());
+            if (mgrDialog == null)
+                return;
 
             bool unfold = drawFoldout("in :   loca dialogs UIDs x" + mgrDialog.dialogsUids.Length, "loca", true);
 
