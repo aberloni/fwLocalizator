@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System;
 
 namespace fwp.localizator
 {
@@ -90,20 +91,32 @@ namespace fwp.localizator
 
         private void OnFocus()
         {
-            //checkStyles(true);
+            Type t;
 
             if (LocalizationManager.instance == null)
-                LocalizationManager.instance = System.Activator.CreateInstance<Manager>();
+            {
+                t = typeof(Manager);
+                if(!t.IsAbstract)
+                {
+                    LocalizationManager.instance = System.Activator.CreateInstance<Manager>();
+                }
+            }
 
             if (mgrDialog == null)
             {
-                mgrDialog = DialogManager<LineData>.instance;
-                if (mgrDialog == null)
+                t = typeof(LineData);
+
+                if(!t.IsAbstract)
                 {
-                    mgrDialog = System.Activator.CreateInstance<DialogManager<LineData>>();
+                    mgrDialog = DialogManager<LineData>.instance;
+                    if (mgrDialog == null)
+                    {
+                        mgrDialog = System.Activator.CreateInstance<DialogManager<LineData>>();
+                    }
                 }
             }
-            else mgrDialog.refresh();
+
+            mgrDialog?.refresh();
         }
 
         private void OnGUI()
@@ -396,8 +409,9 @@ namespace fwp.localizator
 
         void drawLangSelector(Manager mgr)
         {
-
-            GUILayout.Label("active lang " + mgr.getSavedIsoLanguage().ToString().ToUpper());
+            GUILayout.Label("sys lang       : " + Application.systemLanguage);
+            GUILayout.Label("sys iso        : " + LocalizationManager.sysToIso(Application.systemLanguage));
+            GUILayout.Label("saved lang     : " + mgr.getSavedIsoLanguage());
 
             GUILayout.BeginHorizontal();
             var sups = mgr.getSupportedLanguages();
@@ -478,7 +492,7 @@ namespace fwp.localizator
 
                             if (GUILayout.Button("csv", btnSW))
                             {
-                                Selection.activeObject = AssetDatabase.LoadAssetAtPath("Assets/" + tab.cacheCsv, typeof(Object));
+                                Selection.activeObject = AssetDatabase.LoadAssetAtPath("Assets/" + tab.cacheCsv, typeof(UnityEngine.Object));
                             }
 
                             if (GUILayout.Button("log", btnSW))

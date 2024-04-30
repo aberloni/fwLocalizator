@@ -61,16 +61,15 @@ namespace fwp.localizator.dialog
         {
             var mgr = LocalizationManager.instance;
             if (mgr == null)
-            {
-                Debug.LogError("no loca manager ?");
                 return;
-            }
+
+            var _iso = iso;
 
             // get french (default)
-            var file = mgr.getFileByLang(iso);
+            var file = mgr.getFileByLang(_iso);
             if (file == null)
             {
-                Debug.LogWarning("no fr file ?");
+                Debug.LogWarning($"no {_iso} file ?");
                 return;
             }
 

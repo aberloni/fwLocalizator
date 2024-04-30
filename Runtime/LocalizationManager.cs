@@ -364,7 +364,7 @@ namespace fwp.localizator
         /// <summary>
         /// https://docs.microsoft.com/en-us/dotnet/api/system.globalization.cultureinfo.twoletterisolanguagename?view=net-5.0
         /// </summary>
-        static IsoLanguages sysToIso(SystemLanguage sys)
+        public static IsoLanguages sysToIso(SystemLanguage sys)
         {
             switch (sys)
             {
