@@ -96,7 +96,7 @@ namespace fwp.localizator
             if (LocalizationManager.instance == null)
             {
                 t = typeof(Manager);
-                if(!t.IsAbstract)
+                if (!t.IsAbstract)
                 {
                     LocalizationManager.instance = System.Activator.CreateInstance<Manager>();
                 }
@@ -106,7 +106,7 @@ namespace fwp.localizator
             {
                 t = typeof(LineData);
 
-                if(!t.IsAbstract)
+                if (!t.IsAbstract)
                 {
                     mgrDialog = DialogManager<LineData>.instance;
                     if (mgrDialog == null)
@@ -409,9 +409,11 @@ namespace fwp.localizator
 
         void drawLangSelector(Manager mgr)
         {
-            GUILayout.Label("sys lang       : " + Application.systemLanguage);
-            GUILayout.Label("sys iso        : " + LocalizationManager.sysToIso(Application.systemLanguage));
+            GUILayout.Space(10f);
+            GUILayout.Label("sys lang       : " + Application.systemLanguage + " (iso : " + LocalizationManager.sysToIso(Application.systemLanguage) + ")");
             GUILayout.Label("saved lang     : " + mgr.getSavedIsoLanguage());
+            GUILayout.Label("build iso      : " + LocalizationManager.getSystemLanguageToIso());
+            GUILayout.Space(10f);
 
             GUILayout.BeginHorizontal();
             var sups = mgr.getSupportedLanguages();
