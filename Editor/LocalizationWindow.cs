@@ -13,9 +13,11 @@ namespace fwp.localizator
     /// base for a window editor dedicated to localizator
     /// </summary>
     abstract public class LocalizationWindow<Manager, LineData> : EditorWindow
-        where Manager : LocalizationManager
-        where LineData : LocaDialogLineData
+        where Manager : LocalizationManager // extended Manager
+        where LineData : LocaDialogLineData // extended base LineData
     {
+
+        WinHelpFilter filter = new();
 
         GUIStyle sectionTitle;
         GUIStyle foldHeaderTitle;
@@ -130,7 +132,9 @@ namespace fwp.localizator
                 return;
             }
 
-            draw(mgr);
+			LocalizationWindowUtils.drawSectionTitle(mgr.GetType().ToString());
+            
+			draw(mgr);
         }
 
         /// <summary>
@@ -140,8 +144,6 @@ namespace fwp.localizator
 
         virtual protected void draw(Manager mgr)
         {
-            LocalizationWindowUtils.drawSectionTitle(mgr.GetType().ToString());
-
             LocalizationManager.verbose = EditorGUILayout.Toggle("verbose", LocalizationManager.verbose);
 
             drawLangSelector(mgr);
@@ -169,7 +171,9 @@ namespace fwp.localizator
                     if (mgrDialog == null) GUILayout.Label("no dialog manager ?");
                     else
                     {
-                        drawFoldLocalizationFiles();
+						filter.drawFilterField();
+
+						drawFoldLocalizationFiles();
                         drawFoldScriptableFiles();
                     }
                     break;
@@ -199,10 +203,10 @@ namespace fwp.localizator
                 scrollDialsScriptables = GUILayout.BeginScrollView(scrollDialsScriptables);
 
                 foreach (var d in dialogs)
-                {
-                    if (d == null)
-                        continue;
-
+				{
+                    if (d == null) continue;
+					if (!filter.MatchFilter(d.name)) continue;
+					
                     bool dUnfold = drawFoldout("dialog#" + d.name, d.name);
                     //d.winEdFold = EditorGUILayout.Foldout(d.winEdFold, "dialog#" + d.name, true);
                     if (dUnfold)
@@ -248,6 +252,9 @@ namespace fwp.localizator
 
                 foreach (var d in mgrDialog.dialogsUids)
                 {
+                    if (d == null) continue;
+                    if (!filter.MatchFilter(d)) continue;
+
                     GUILayout.BeginHorizontal();
                     GUILayout.Label(d);
                     var dial = mgrDialog.getDialogInstance(d);
