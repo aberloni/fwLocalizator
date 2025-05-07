@@ -445,7 +445,7 @@ namespace fwp.localizator
 
         bool foldDownload;
 
-        void drawSheetSection(Manager mgr)
+        void drawSheetSection(LocalizationManager mgr)
         {
             var sheets = LocalizatorUtils.getSheetsData();
 

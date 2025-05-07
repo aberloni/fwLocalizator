@@ -34,24 +34,31 @@ namespace fwp.localizator
 
 		static public ScriptableObject[] getScriptableObjectsInEditor(System.Type typ, string filter = null)
 		{
-			string[] all = AssetDatabase.FindAssets("t:" + typ.Name);
-			List<ScriptableObject> output = new List<ScriptableObject>();
+			var all = AssetDatabase.FindAssets("t:" + typ.Name);
+			List<ScriptableObject> output = new();
 			for (int i = 0; i < all.Length; i++)
 			{
 				Object obj = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(all[i]), typ);
-				ScriptableObject so = obj as ScriptableObject;
+				var so = obj as ScriptableObject;
 				if (so == null) continue;
-
                 if (!string.IsNullOrEmpty(filter) && !so.name.Contains(filter)) continue;
-
 				output.Add(so);
 			}
 			return output.ToArray();
 		}
 
 		static public T[] getScriptableObjectsInEditor<T>() where T : ScriptableObject
-			=> (T[])getScriptableObjectsInEditor(typeof(T));
-
+        {
+            var ss = getScriptableObjectsInEditor(typeof(T));
+            List<T> ret = new();
+            foreach(var s in ss)
+            {
+                T cmp = s as T;
+                if (cmp == null) continue;
+                ret.Add(cmp);
+            }
+            return ret.ToArray();
+		}
 #endif
 	}
 }
