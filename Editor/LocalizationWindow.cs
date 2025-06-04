@@ -17,7 +17,7 @@ namespace fwp.localizator
 		where LineData : LocaDialogLineData // extended base LineData
 	{
 
-		const string button_browse = "browse";
+		const string button_browse = "open URL";
 
 		WinHelpFilter filter = new();
 
@@ -177,7 +177,6 @@ namespace fwp.localizator
 		Vector2 scrollTabDialogs;
 		void drawTabDialogs()
 		{
-
 			if (mgrDialog == null)
 			{
 				GUILayout.Label("no dialog manager ?");
@@ -205,38 +204,29 @@ namespace fwp.localizator
 
 			//GUILayout.Label("in :   scriptables x" + dialogs.Length, LocalizationWindowUtils.getSectionTitle());
 			bool unfold = drawFoldout("in :   scriptables x" + dialogs.Length, "scriptables", true);
+			if (!unfold) return;
 
-			//GUILayout.Label("in :   scriptables x" + dialogs.Length, LocalizationWindowUtils.getSectionTitle());
+			IsoLanguages iso = getManager().getSavedIsoLanguage();
 
-			if (unfold)
+			foreach (var d in dialogs)
 			{
-				IsoLanguages iso = getManager().getSavedIsoLanguage();
+				if (d == null) continue;
+				if (!filter.MatchFilter(d.name)) continue;
 
-
-
-				foreach (var d in dialogs)
+				bool dUnfold = drawFoldout("dialog#" + d.name, d.name);
+				//d.winEdFold = EditorGUILayout.Foldout(d.winEdFold, "dialog#" + d.name, true);
+				if (dUnfold)
 				{
-					if (d == null) continue;
-					if (!filter.MatchFilter(d.name)) continue;
-
-					bool dUnfold = drawFoldout("dialog#" + d.name, d.name);
-					//d.winEdFold = EditorGUILayout.Foldout(d.winEdFold, "dialog#" + d.name, true);
-					if (dUnfold)
+					if (d.lines == null) GUILayout.Label("null lines[]");
+					else
 					{
-						if (d.lines == null) GUILayout.Label("null lines[]");
-						else
+						foreach (var line in d.lines)
 						{
-							foreach (var line in d.lines)
-							{
-								GUILayout.Label(line.stringify());
-							}
+							GUILayout.Label(line.stringify());
 						}
 					}
-
 				}
-
 			}
-
 		}
 
 		void drawFoldLocalizationFiles()
@@ -246,50 +236,47 @@ namespace fwp.localizator
 				return;
 
 			bool unfold = drawFoldout("in :   loca dialogs UIDs x" + mgrDialog.dialogsUids.Length, "loca", true);
+			if (!unfold) return;
 
-			if (unfold)
+			if (GUILayout.Button("generate all missing dialogs"))
 			{
-				if (GUILayout.Button("generate all missing dialogs"))
-				{
-					foreach (var d in mgrDialog.dialogsUids)
-					{
-						var dial = mgrDialog.getDialogInstance(d);
-						if (dial == null) createDialog(d);
-					}
-				}
-
 				foreach (var d in mgrDialog.dialogsUids)
 				{
-					if (d == null) continue;
-					if (!filter.MatchFilter(d)) continue;
-
-					GUILayout.BeginHorizontal();
-					GUILayout.Label(d);
 					var dial = mgrDialog.getDialogInstance(d);
+					if (dial == null) createDialog(d);
+				}
+			}
 
-					if (dial == null)
+			foreach (var d in mgrDialog.dialogsUids)
+			{
+				if (d == null) continue;
+				if (!filter.MatchFilter(d)) continue;
+
+				GUILayout.BeginHorizontal();
+				GUILayout.Label(d);
+				var dial = mgrDialog.getDialogInstance(d);
+
+				if (dial == null)
+				{
+					if (GUILayout.Button("create", btnW))
+						createDialog(d);
+				}
+				else
+				{
+					if (GUILayout.Button("update", btnW))
 					{
-						if (GUILayout.Button("create", btnW))
-							createDialog(d);
+						dial.solveContent();
+						EditorUtility.SetDirty(dial);
+
+						UnityEditor.Selection.activeObject = dial;
 					}
-					else
+					if (GUILayout.Button(" > ", btnSW))
 					{
-						if (GUILayout.Button("update", btnW))
-						{
-							dial.solveContent();
-							EditorUtility.SetDirty(dial);
-
-							UnityEditor.Selection.activeObject = dial;
-						}
-						if (GUILayout.Button(" > ", btnSW))
-						{
-							UnityEditor.Selection.activeObject = dial;
-						}
+						UnityEditor.Selection.activeObject = dial;
 					}
-
-					GUILayout.EndHorizontal();
 				}
 
+				GUILayout.EndHorizontal();
 			}
 
 		}
@@ -465,7 +452,8 @@ namespace fwp.localizator
 
 			EditorGUI.BeginChangeCheck();
 			foldDownload = EditorGUILayout.BeginFoldoutHeaderGroup(foldDownload, "sheets x" + sheets.Length, foldHeaderTitle);
-			if (EditorGUI.EndChangeCheck())
+
+			if (EditorGUI.EndChangeCheck()) // unfold
 			{
 				if (foldDownload)
 				{
@@ -478,67 +466,64 @@ namespace fwp.localizator
 				foreach (var sheet in sheets)
 				{
 					GUILayout.BeginHorizontal();
-
-					GUILayout.Label("URL", btnW);
-					GUILayout.Label(sheet.sheetUrlUid);
-
+					GUILayout.Label("URL : " + sheet.sheetUrlUid);
 					if (GUILayout.Button(button_browse, btnW)) OpenInFileBrowser.browseUrl(sheet.url);
-
 					GUILayout.EndHorizontal();
 
+					bool _fold = drawFoldout("Show all tabs", "tab" + sheet.sheetUrlUid);
+					if (!_fold) continue;
+
+					EditorGUI.indentLevel++;
 					foreach (var tab in sheet.tabs)
 					{
-						GUILayout.BeginHorizontal();
-
-						GUILayout.Label("TAB    " + tab.tabName + "#" + tab.tabUrlId);
-
-						if (GUILayout.Button(button_browse, btnW))
+						using (new GUILayout.HorizontalScope())
 						{
-							OpenInFileBrowser.browseUrl(sheet.url + tab.url);
-						}
+							GUILayout.Space(20f);
+							GUILayout.Label(tab.tabName + "#" + tab.tabUrlId);
 
-						if (GUILayout.Button("download TAB", btnW))
-						{
-							// import tab
-							ImportSheetUtils.tab_import(sheet, tab);
-
-							// make sure csv are up to date
-							GenerateSheetUtils.csv_file_generate(sheetParams);
-						}
-
-						GUILayout.EndHorizontal();
-
-						GUILayout.BeginHorizontal();
-						if (!string.IsNullOrEmpty(tab.cache))
-						{
-							GUILayout.Label(tab.cache);
-
-							if (GUILayout.Button("txt", btnSW))
+							if (GUILayout.Button(button_browse, btnSW))
 							{
-								Selection.activeObject = AssetDatabase.LoadAssetAtPath("Assets/" + tab.cacheTxt, typeof(TextAsset));
+								OpenInFileBrowser.browseUrl(sheet.url + tab.url);
 							}
 
-							if (GUILayout.Button("csv", btnSW))
+							if (GUILayout.Button("download", btnW))
 							{
-								Selection.activeObject = AssetDatabase.LoadAssetAtPath("Assets/" + tab.cacheCsv, typeof(UnityEngine.Object));
+								// import tab
+								ImportSheetUtils.tab_import(sheet, tab);
+
+								// make sure csv are up to date
+								GenerateSheetUtils.csv_file_generate(sheetParams);
 							}
 
-							if (GUILayout.Button("log", btnSW))
+							if (!string.IsNullOrEmpty(tab.cache))
 							{
-								var parser = CsvParser.load("Assets/" + tab.cacheCsv);
+								GUILayout.Label("cache");
 
-								foreach (var l in parser.lines)
+								if (GUILayout.Button("txt", btnSW))
 								{
-									Debug.Log("parser line : " + l.stringify());
-									foreach (var c in l.cell)
+									Selection.activeObject = AssetDatabase.LoadAssetAtPath("Assets/" + tab.cacheTxt, typeof(TextAsset));
+								}
+
+								if (GUILayout.Button("csv", btnSW))
+								{
+									Selection.activeObject = AssetDatabase.LoadAssetAtPath("Assets/" + tab.cacheCsv, typeof(UnityEngine.Object));
+								}
+
+								if (GUILayout.Button("log", btnSW))
+								{
+									var parser = CsvParser.load("Assets/" + tab.cacheCsv);
+
+									foreach (var l in parser.lines)
 									{
-										Debug.Log("    >> " + c);
+										Debug.Log("parser line : " + l.stringify());
+										foreach (var c in l.cell)
+										{
+											Debug.Log("    >> " + c);
+										}
 									}
 								}
 							}
 						}
-						GUILayout.EndHorizontal();
-
 					}
 				}
 
