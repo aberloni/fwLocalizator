@@ -30,17 +30,13 @@ namespace fwp.localizator
 
 		Dictionary<string, bool> edFoldout = new Dictionary<string, bool>();
 
-		LocalizationSheetParams sheetParams = new LocalizationSheetParams()
-		{
-			uidColumn = ColumnLetter.D,
-			langLineIndex = 3
-		};
-
 		/// <summary>
 		/// in usage context
 		/// return override localiz manager
 		/// </summary>
 		public Manager getManager() => LocalizationManager.instance as Manager;
+
+		LocaDataSheet[] Sheets => LocalizatorUtils.getSheetsData();
 
 		void checkStyles(bool force = false)
 		{
@@ -119,6 +115,9 @@ namespace fwp.localizator
 					}
 				}
 			}
+
+			// force refresh usage of sheets scriptables
+			LocalizatorUtils.getSheetsData(true);
 
 			mgrDialog?.refresh();
 		}
@@ -380,35 +379,12 @@ namespace fwp.localizator
 		{
 			GUILayout.Label("spreadsheet params", LocalizationWindowUtils.getSectionTitle());
 
-			GUILayout.BeginHorizontal();
-			GUILayout.Label("uid @ " + sheetParams.uidColumn);
-			GUILayout.Label("langs @ " + sheetParams.langLineIndex);
-			GUILayout.EndHorizontal();
-
-			GUILayout.Label("spreadsheet import", LocalizationWindowUtils.getSectionTitle());
-
-			GUILayout.BeginHorizontal();
-			if (GUILayout.Button("download all", btnH))
+			if (GUILayout.Button("process all (download > parse > trads)", GUILayout.Height(30f)))
 			{
-				var sheets = LocalizatorUtils.getSheetsData();
+				var sheets = LocalizatorUtils.getSheetsData(true);
 				ImportSheetUtils.ssheets_import(sheets);
-			}
-			if (GUILayout.Button("generate CSVs", btnH))
-			{
-				GenerateSheetUtils.csv_file_generate(sheetParams);
-			}
-			if (GUILayout.Button("generate trads", btnH))
-			{
-				GenerateSheetUtils.trad_files_generation(sheetParams);
-			}
-			GUILayout.EndHorizontal();
-
-			if (GUILayout.Button("download > CSV > trads", GUILayout.Height(30f)))
-			{
-				var sheets = LocalizatorUtils.getSheetsData();
-				ImportSheetUtils.ssheets_import(sheets);
-				GenerateSheetUtils.csv_file_generate(sheetParams);
-				GenerateSheetUtils.trad_files_generation(sheetParams);
+				GenerateSheetUtils.csvs_generate(sheets);
+				GenerateSheetUtils.trads_generate(sheets);
 			}
 
 			scrollTabLocaliz = GUILayout.BeginScrollView(scrollTabLocaliz);
@@ -479,11 +455,11 @@ namespace fwp.localizator
 						using (new GUILayout.HorizontalScope())
 						{
 							GUILayout.Space(20f);
-							GUILayout.Label(tab.tabName + "#" + tab.tabUrlId);
+							GUILayout.Label(tab.tabName + "#" + tab.tabUrlId + " (" + tab.parseType + ")");
 
 							if (GUILayout.Button(button_browse, btnSW))
 							{
-								OpenInFileBrowser.browseUrl(sheet.url + tab.url);
+								OpenInFileBrowser.browseUrl(sheet.url + tab.Url);
 							}
 
 							if (GUILayout.Button("download", btnW))
@@ -492,7 +468,7 @@ namespace fwp.localizator
 								ImportSheetUtils.tab_import(sheet, tab);
 
 								// make sure csv are up to date
-								GenerateSheetUtils.csv_file_generate(sheetParams);
+								GenerateSheetUtils.csv_file_generate(tab);
 							}
 
 							if (!string.IsNullOrEmpty(tab.cache))
@@ -501,26 +477,23 @@ namespace fwp.localizator
 
 								if (GUILayout.Button("txt", btnSW))
 								{
-									Selection.activeObject = AssetDatabase.LoadAssetAtPath("Assets/" + tab.cacheTxt, typeof(TextAsset));
+									Selection.activeObject = AssetDatabase.LoadAssetAtPath("Assets/" + tab.CacheTxt, typeof(TextAsset));
 								}
 
 								if (GUILayout.Button("csv", btnSW))
 								{
-									Selection.activeObject = AssetDatabase.LoadAssetAtPath("Assets/" + tab.cacheCsv, typeof(UnityEngine.Object));
+									Selection.activeObject = AssetDatabase.LoadAssetAtPath("Assets/" + tab.CacheCsv, typeof(UnityEngine.Object));
 								}
 
-								if (GUILayout.Button("log", btnSW))
+								if (GUILayout.Button("log raw", btnSW))
 								{
-									var parser = CsvParser.load("Assets/" + tab.cacheCsv);
-
-									foreach (var l in parser.lines)
-									{
-										Debug.Log("parser line : " + l.stringify());
-										foreach (var c in l.cell)
-										{
-											Debug.Log("    >> " + c);
-										}
-									}
+									var p = CsvParser.getParser(tab);
+									p?.logRaw();
+								}
+								if (GUILayout.Button("log loca", btnSW))
+								{
+									var p = CsvParser.getParser(tab);
+									p?.logLocalized(mgr.getSavedIsoLanguage());
 								}
 							}
 						}
@@ -554,7 +527,7 @@ namespace fwp.localizator
 				if (GUILayout.Button("generate trad files"))
 				{
 					mgr.reloadFiles();
-					GenerateSheetUtils.trad_files_generation(sheetParams);
+					GenerateSheetUtils.trads_generate(Sheets);
 				}
 
 				foreach (var l in langs)
@@ -564,14 +537,14 @@ namespace fwp.localizator
 					GUILayout.Label(l.iso.ToString());
 					GUILayout.Label("char x" + l.textAsset.text.Length, btnW);
 
-					if (GUILayout.Button("update", btnW))
+					if (GUILayout.Button("update", btnSW))
 					{
 						//var sheet = mgr.getSheets()[0];
 						//LocalizationFile file = mgr.getFileByLang(l.iso);
-						GenerateSheetUtils.trad_file_generate(l.iso, sheetParams);
+						GenerateSheetUtils.trad_file_generate(l.iso);
 					}
 
-					if (GUILayout.Button(" > ", btnW))
+					if (GUILayout.Button(" > ", btnSW))
 					{
 						UnityEditor.Selection.activeObject = l.textAsset;
 					}

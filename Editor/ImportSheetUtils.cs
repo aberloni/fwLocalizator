@@ -51,7 +51,7 @@ namespace fwp.localizator.editor
             {
                 var tab = sheet.tabs[i];
 
-                EditorUtility.DisplayProgressBar("importing tab" + tab.displayName, "fetching...", (1f * i) / (1f * tabs.Length));
+                EditorUtility.DisplayProgressBar("importing tab" + tab.DisplayName, "fetching...", (1f * i) / (1f * tabs.Length));
                 output.Add(tab_import(sheet, tab));
             }
 

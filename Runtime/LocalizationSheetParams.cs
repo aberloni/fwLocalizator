@@ -9,8 +9,15 @@ public enum ColumnLetter
 }
 
 [System.Serializable]
-public struct LocalizationSheetParams
+public class LocalizationSheetParams
 {
-    public ColumnLetter uidColumn;
-    public int langLineIndex;
+    /// <summary>
+    /// what column in the spreadsheet is UID of a line located
+    /// </summary>
+    public ColumnLetter uidColumn = ColumnLetter.D;
+
+    /// <summary>
+    /// quantity of lines to ignore from top of ssheet
+    /// </summary>
+    public int langLineIndex = 3;
 }

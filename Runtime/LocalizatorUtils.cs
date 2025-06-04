@@ -5,7 +5,6 @@ using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
-using fwp.localizator;
 
 namespace fwp.localizator
 {
@@ -13,7 +12,23 @@ namespace fwp.localizator
     {
 #if UNITY_EDITOR
 
-        static LocaDataSheet[] sheets; // data to fetch content online
+		static public DataSheetTab tab_fetch(string tabUid)
+		{
+			var sheets = LocalizatorUtils.getSheetsData();
+			foreach (var ss in sheets)
+			{
+				foreach (var t in ss.tabs)
+				{
+					if (t.tabUrlId == tabUid)
+						return t;
+				}
+			}
+
+			Debug.LogWarning("could not locate data sheet tab :" + tabUid);
+			return default(DataSheetTab);
+		}
+
+		static LocaDataSheet[] sheets; // data to fetch content online
 
         static public LocaDataSheet getSheetData(bool clearCache = false)
         {

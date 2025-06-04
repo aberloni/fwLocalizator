@@ -65,7 +65,7 @@ namespace fwp.localizator.dialog
                 foreach (var l in csv.lines)
                 {
                     // search for cell with uid
-                    foreach (var val in l.cell)
+                    foreach (var val in l.cells)
                     {
                         if (val.Contains(lineUid))
                         {
@@ -74,7 +74,7 @@ namespace fwp.localizator.dialog
                                 Debug.Log("found " + lineUid + " cell in CSV:" + csv.tabUid + " => returning column #" + cell);
                             }
 
-                            return l.cell[cell];
+                            return l.cells[cell];
                         }
                     }
                 }

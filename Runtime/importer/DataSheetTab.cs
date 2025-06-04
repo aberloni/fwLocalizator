@@ -16,15 +16,21 @@ namespace fwp.localizator
         [Tooltip("id of tab in url")]
         public string tabUrlId; // ssheet url uid
 
-        public string url => googleSpreadsheetEditPrefix + tabUrlId;
+        public SheetParseType parseType;
+
+        public LocalizationSheetParams tabParams;
 
         [Tooltip("to debug location")]
         public string cache; // relative to Assets/
         
-        public string cacheTxt => cache + ".txt";
-        public string cacheCsv => cache + ".parser";
+        // getter
 
-        public string displayName => tabName + "&" + tabUrlId;
+        public string CacheTxt => cache + ".txt";
+        public string CacheCsv => cache + ".parser";
+
+		public string Url => googleSpreadsheetEditPrefix + tabUrlId;
+
+		public string DisplayName => tabName + "&" + tabUrlId;
 
         public bool compare(DataSheetTab other)
         {

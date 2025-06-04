@@ -85,7 +85,7 @@ namespace fwp.localizator
             }
             catch (Exception e)
             {
-                Debug.LogWarning("issue during DEserialization : " + buffer);
+                Debug.LogWarning("issue during deserialization : " + buffer);
                 Debug.LogError(e);
                 output = null;
             }
