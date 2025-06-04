@@ -30,7 +30,7 @@ namespace fwp.localizator.editor
 				return null;
 			}
 
-			foreach(var t in tabsFiles)
+			foreach (var t in tabsFiles)
 			{
 				if (t.Contains(tab.tabUrlId))
 					return t;
@@ -43,7 +43,7 @@ namespace fwp.localizator.editor
 		{
 			string path = raw_file_locate(tab);
 
-			Debug.Log("parsing : " + path);
+			Debug.Log("parsing (" + tab.parseType + ") : " + path);
 
 			// read and create csv
 			var csv = new CsvParser(tab, path);
@@ -54,15 +54,17 @@ namespace fwp.localizator.editor
 				csv.fillAutoUid((int)tab.tabParams.uidColumn);
 			}
 
+			csv.generateLocalization();
+
 			// save
 			csv.save();
 		}
 
 		static public void csvs_generate(LocaDataSheet[] sheets)
 		{
-			foreach(var sheet in sheets)
+			foreach (var sheet in sheets)
 			{
-				foreach(var tab in sheet.tabs)
+				foreach (var tab in sheet.tabs)
 				{
 					csv_file_generate(tab);
 				}
@@ -112,15 +114,9 @@ namespace fwp.localizator.editor
 
 			StringBuilder output = new StringBuilder();
 
-			// all tabs
-			for (int i = 0; i < parsers.Length; i++)
+			foreach (var csv in parsers)
 			{
-				var csv = parsers[i];
-
-				// generate file
-				string tabOutput = generateLangFile(csv, lang);
-
-				output.AppendLine(tabOutput);
+				output.AppendLine(csv.getLangFileContent(lang));
 			}
 
 			//save
@@ -132,80 +128,9 @@ namespace fwp.localizator.editor
 				LocalizationPaths.sysLangs,
 				"lang_" + lang + LocalizationPaths.langExtDot);
 
-			if (verbose)
-				Debug.Log("saving : " + outputPath + " (" + output.Length + " char)");
+			Debug.Log("saving : " + outputPath + " (" + output.Length + " char)");
 
 			File.WriteAllText(outputPath, output.ToString());
-		}
-
-		/// <summary>
-		/// generate the list of key=value
-		/// for localization per lang
-		/// </summary>
-		static string generateLangFile(CsvParser csv, IsoLanguages lang)
-		{
-			//string tabContent = File.ReadAllText(filePath);
-			//CsvParser csv = CsvParser.parse(tabContent, param.langLineIndex);
-
-			int langColumnIndex = csv.getLangColumnIndex(lang); //  search for matching language column
-			if (langColumnIndex < 0) return string.Empty;
-
-			StringBuilder output = new StringBuilder();
-
-			var param = csv.Tab.tabParams;
-
-			Debug.Log($"solveTabAutoId <b>lang : {lang}</b> , ssheet UIDs column <b>#{param.uidColumn}</b> , lines x" + csv.lines.Count);
-
-			//first line is languages
-			for (int j = 1; j < csv.lines.Count; j++)
-			{
-				var values = csv.lines[j].cells;
-
-				if (values.Count < 2)
-				{
-					if (verbose) Debug.LogWarning("empty line #" + j);
-					continue; // skip empty lines
-				}
-
-				// lang column overflow provided datas
-				if (langColumnIndex >= values.Count)
-				{
-					if (verbose) Debug.LogWarning("lang overflow #" + j);
-					continue;
-				}
-
-				var key = values[(int)param.uidColumn]; // uid key
-
-				if (verbose) Debug.Log("  checking key=" + key);
-
-				string langValue = sanitizeValue(values[langColumnIndex]);
-
-				// skipping empty values
-				if (langValue.Length <= 2)
-				{
-					if (verbose) Debug.LogWarning("empty value (key=" + key + ") #" + j);
-					continue;
-				}
-
-				string line = key + "=" + langValue;
-
-				if (verbose)
-					Debug.Log("     append : " + line);
-
-				output.AppendLine(line);
-			}
-
-			return output.ToString();
-		}
-
-		static string sanitizeValue(string val)
-		{
-			val = val.Trim();
-
-			//remove "" around escaped values
-			val = val.Replace(ParserStatics.SPREAD_CELL_ESCAPE_VALUE.ToString(), string.Empty);
-
-			return val;
 		}
 
 	}

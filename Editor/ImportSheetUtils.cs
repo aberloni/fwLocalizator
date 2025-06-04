@@ -32,12 +32,12 @@ namespace fwp.localizator.editor
         /// import and save a single spreadsheet
         /// returns : path to generated files
         /// </summary>
-        static public string[] ssheet_import(LocaDataSheet sheet)
+        static public void ssheet_import(LocaDataSheet sheet)
         {
             if (sheet == null)
             {
                 Debug.LogError("no scriptable with tabs ids ?");
-                return new string[0];
+                return;
             }
 
             DataSheetTab[] tabs = sheet.tabs;
@@ -46,20 +46,17 @@ namespace fwp.localizator.editor
 
             EditorUtility.DisplayProgressBar("importing loca " + sheet.url, "fetching...", 0f);
 
-            List<string> output = new List<string>();
             for (int i = 0; i < sheet.tabs.Length; i++)
             {
                 var tab = sheet.tabs[i];
 
                 EditorUtility.DisplayProgressBar("importing tab" + tab.DisplayName, "fetching...", (1f * i) / (1f * tabs.Length));
-                output.Add(tab_import(sheet, tab));
+                tab_import(sheet, tab);
             }
 
             EditorUtility.ClearProgressBar();
 
             AssetDatabase.Refresh();
-
-            return output.ToArray();
         }
 
         /// <summary>
@@ -70,16 +67,13 @@ namespace fwp.localizator.editor
             int idx = sheet.getTabIndex(tab);
 
             //EditorUtility.DisplayProgressBar("importing tab "+tab.displayName, "fetching...", 0f);
-
+            
             string filePath = importAndSaveSheetTab(sheet.sheetUrlUid, tab);
-            tab.cache = tab.cache = filePath.Substring(0, filePath.LastIndexOf(".")); // path to file, remove extention
-            tab.cache = tab.cache.Substring(Application.dataPath.Length + 1); // relative to project
-
             sheet.tabs[idx] = tab;
 
             //EditorUtility.ClearProgressBar();
 
-            return tab.cache;
+            return tab.Cache;
         }
 
         /// <summary>

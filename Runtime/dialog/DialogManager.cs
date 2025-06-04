@@ -87,10 +87,13 @@ namespace fwp.localizator.dialog
                 var split = l.Split("=");
                 var uid = split[0];
 
-                // split UID-{NUM}
-                uid = uid.Substring(0, uid.LastIndexOf("-"));
+                if (uid.Contains("-"))
+                {
+					// split UID-{NUM}
+					uid = uid.Substring(0, uid.LastIndexOf("-"));
+				}
 
-                if (!tmp.Contains(uid))
+				if (!tmp.Contains(uid))
                     tmp.Add(uid);
             }
 

@@ -20,19 +20,22 @@ namespace fwp.localizator
 
         public LocalizationSheetParams tabParams;
 
-        [Tooltip("to debug location")]
-        public string cache; // relative to Assets/
-        
-        // getter
-
-        public string CacheTxt => cache + ".txt";
-        public string CacheCsv => cache + ".parser";
-
 		public string Url => googleSpreadsheetEditPrefix + tabUrlId;
 
 		public string DisplayName => tabName + "&" + tabUrlId;
 
-        public bool compare(DataSheetTab other)
+        /// <summary>
+        /// relative to Assets/
+        /// </summary>
+        [Tooltip("to debug location")]
+        public string Cache => LocalizationPaths.pathImports + "/" + DisplayName;
+
+		// getter
+
+		public string CacheTxt => Cache + ".txt";
+		public string CacheCsv => Cache + ".parser";
+
+		public bool compare(DataSheetTab other)
         {
             if (tabName != other.tabName) return false;
             if (tabUrlId != other.tabUrlId) return false;

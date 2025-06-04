@@ -18,6 +18,9 @@ public class LocalizationPaths : MonoBehaviour
 
     static public string pathLangs = exportPathBase + folderLangs;
 
+    /// <summary>
+    /// Resources/localization/imports/
+    /// </summary>
     static public string sysImports => Path.Combine(Application.dataPath, pathImports);
     static public string sysCsvs => Path.Combine(Application.dataPath, pathCsvs);
     static public string sysLangs => Path.Combine(Application.dataPath, pathLangs);

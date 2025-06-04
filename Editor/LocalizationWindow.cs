@@ -471,7 +471,7 @@ namespace fwp.localizator
 								GenerateSheetUtils.csv_file_generate(tab);
 							}
 
-							if (!string.IsNullOrEmpty(tab.cache))
+							if (!string.IsNullOrEmpty(tab.Cache))
 							{
 								GUILayout.Label("cache");
 

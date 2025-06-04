@@ -6,6 +6,8 @@ namespace fwp.localizator
 {
 	using System.IO;
 	using System.Text;
+	using TMPro;
+	using UnityEditor;
 
 	/// <summary>
 	/// must fill with leading numbers
@@ -20,11 +22,21 @@ namespace fwp.localizator
 	public class CsvLineRaw
 	{
 		public string raw = string.Empty;
+
 		public List<string> cells = new();
 
 		public CsvLineRaw(string raw)
 		{
 			this.raw = raw;
+		}
+
+		public bool hasAnyLocalization(int uidCol)
+		{
+			for (int i = uidCol + 1; i < cells.Count; i++)
+			{
+				if (cells[i].Length > 0) return true;
+			}
+			return false;
 		}
 
 		public string stringify()
@@ -56,9 +68,16 @@ namespace fwp.localizator
 		/// </summary>
 		public List<string> localized = new();
 
-		public CsvLineLang(CsvLineRaw raw, int uidColumn)
+		public bool hasLocalization(IsoLanguages lang)
 		{
-			key = raw.cells[uidColumn];
+			if (localized.Count <= (int)lang) return false;
+			return !string.IsNullOrEmpty(localized[(int)lang]);
+		}
+
+		public CsvLineLang(string key)
+		{
+			this.key = key;
+			Debug.Assert(!string.IsNullOrEmpty(key), "no key given ?");
 		}
 
 		public void addLang(IsoLanguages iso, string loca)
@@ -78,10 +97,23 @@ namespace fwp.localizator
 	[System.Serializable]
 	public class CsvParser
 	{
+		/// <summary>
+		/// guid of ssheet tab
+		/// </summary>
 		public string tabUid;
-		public string fileContentRaw;
+
+		/// <summary>
+		/// [tabName]_[ssheetGUID]
+		/// </summary>
+		public string ParserFileName => Tab.tabName + "_" + tabUid;
 
 		public DataSheetTab Tab => LocalizatorUtils.tab_fetch(tabUid);
+
+		/// <summary>
+		/// contains header of column
+		/// to find column of each lang
+		/// </summary>
+		public CsvLineRaw Header => lines[0];
 
 		/// <summary>
 		/// mirror of txt CSV cell repartition but include some text treatment
@@ -109,7 +141,8 @@ namespace fwp.localizator
 			Debug.Log("parser.log : " + iso + " x" + localizes.Count);
 			foreach (var l in localizes)
 			{
-				Debug.Log(l.key + " = " + l.localized[(int)iso]);
+				if (!l.hasLocalization(iso)) Debug.Log(l.key + "=[missing " + iso + "]");
+				else Debug.Log(l.key + " = " + l.localized[(int)iso]);
 			}
 		}
 
@@ -123,7 +156,7 @@ namespace fwp.localizator
 
 			// after CSV treatment on import, header is removed,
 			// language are on first line
-			string[] langs = lines[0].cells.ToArray(); // each lang of cur line
+			string[] langs = Header.cells.ToArray(); // each lang of cur line
 
 			string langStr = lang.ToString().ToLower();
 
@@ -165,10 +198,7 @@ namespace fwp.localizator
 		}
 
 		public void save() => CsvSerializer.save(this,
-			LocalizationPaths.sysImports + tabUid + CsvSerializer.parserExtDot);
-
-		public static CsvParser loadFromTabUid(string tabUid) => CsvSerializer.load(
-				LocalizationPaths.sysImports + tabUid + CsvSerializer.parserExtDot);
+			LocalizationPaths.sysImports + ParserFileName + CsvSerializer.parserExtDot);
 
 		void generateFromPath(DataSheetTab tab, string path)
 		{
@@ -179,45 +209,52 @@ namespace fwp.localizator
 			// some cleaning
 			raw = presetupRaw(raw);
 
-			fileContentRaw = raw;
-			//Debug.Log(raw);
-
 			// this will split lines endings & remove empty lines
 			string[] rawLines = raw.Split(new char[] { ParserStatics.SPREAD_LINE_BREAK }, System.StringSplitOptions.RemoveEmptyEntries);
 
 			int originalCount = rawLines.Length;
 
-			for (int i = tab.tabParams.langLineIndex; i < rawLines.Length; i++)
+			// line just under header of langs
+			int firstContentLine = tab.tabParams.langLineIndex;
+			for (int i = firstContentLine; i < rawLines.Length; i++)
 			{
+				string lineStr = rawLines[i];
+
 				// don't keep empty lines (if any)
-				if (string.IsNullOrEmpty(rawLines[i].Trim())) continue;
+				if (string.IsNullOrEmpty(lineStr)) continue;
 
-				CsvLineRaw line = new CsvLineRaw(rawLines[i]);
+				string[] split = cellsSeparator(lineStr);
 
-				string[] split = cellsSeparator(rawLines[i]);
-
-				// check if any content in line
-				int cntCellWithContent = 0;
-				for (int j = 0; j < split.Length; j++)
+				// it's spreadsheet cells
+				// need to add event the empty ones to keep index coherent
+				CsvLineRaw line = new CsvLineRaw(lineStr);
+				line.cells.AddRange(split);
+				
+				if (line.hasAnyLocalization((int)tab.tabParams.uidColumn))
 				{
-					if (split[j].Length > 0)
-					{
-						//Debug.Log(split[j] + " (" + split[j].Length + ")");
-						cntCellWithContent++;
-					}
-					line.cells.Add(split[j]);
+					lines.Add(line);
+					//Debug.Log("+	" + lineStr);
 				}
+				//else Debug.LogWarning("skipped : " + lineStr);
 
-				//Debug.Log(line.raw + " ? " + cntCellWithContent);
-
-				//skip line of only empty cells
-				if (cntCellWithContent > 0) lines.Add(line);
 			}
+
+		}
+
+		public void generateLocalization()
+		{
+			Debug.Log("		generate localization for lines x" + lines.Count);
+
+			int _col = (int)Tab.tabParams.uidColumn;
 
 			foreach (var line in lines)
 			{
 				Debug.Assert(line != null);
-				CsvLineLang llang = new(line, (int)tab.tabParams.uidColumn);
+				string key = line.cells[_col];
+
+				Debug.Assert(!string.IsNullOrEmpty(key));
+
+				CsvLineLang llang = new(key);
 				var langs = System.Enum.GetValues(typeof(IsoLanguages));
 				for (int i = 0; i < langs.Length; i++)
 				{
@@ -227,17 +264,20 @@ namespace fwp.localizator
 				}
 				localizes.Add(llang);
 			}
+
 		}
 
 		/// <summary>
-		/// 
+		/// append 01,02,03 to keys
 		/// </summary>
 		public void fillAutoUid(int uidColumn)
 		{
+			Debug.Log("		autofill lines x" + lines.Count);
 			string _activeUid = string.Empty;
 			int cnt = 0;
 
 			// search for first valid UID line
+			/*
 			int startIndex = 1;
 			while (_activeUid.Length <= 0)
 			{
@@ -247,15 +287,12 @@ namespace fwp.localizator
 				if (!string.IsNullOrEmpty(uid)) _activeUid = uid;
 				else startIndex++;
 			}
-
-			//Debug.Log("autofill start # " + startIndex);
-
-			string sheetType = lines[0].cells[uidColumn].StartsWith("dialog") ? "dialog" : "uid";
+			*/
 
 			//first line is languages header
-			for (int j = startIndex; j < lines.Count; j++)
+			for (int j = 0; j < lines.Count; j++)
 			{
-				if (isEmptyLine(j)) continue;
+				Debug.Assert(!isEmptyLine(j), "autofill an empty line ?");
 
 				var key = lines[j].cells[uidColumn].Trim(); // uid key
 
@@ -277,9 +314,11 @@ namespace fwp.localizator
 				if (cnt < 10) key = key + "-0" + cnt;
 				else key = key + "-" + cnt;
 
-				//lineFields[uidColumn] = key;
+				Debug.Assert(!string.IsNullOrEmpty(key), "no key to inject ?");
 
-				//Debug.Log("  <b>autofilled</b> to : " + key);
+				lines[j].cells[uidColumn] = key;
+
+				Debug.Log("  <b>autofilled</b> key : " + key);
 			}
 
 		}
@@ -363,14 +402,13 @@ namespace fwp.localizator
 		/// </summary>
 		string[] cellsSeparator(string lineRaw)
 		{
-
 			List<string> cells = new List<string>();
 
 			StringBuilder sb = new StringBuilder();
 
 			bool inValue = false;
 
-			//browse the string
+			// parse the string
 			for (int i = 0; i < lineRaw.Length; i++)
 			{
 				char cur = lineRaw[i];
@@ -389,11 +427,12 @@ namespace fwp.localizator
 				}
 				else
 				{
-					//don't add separator "," symbol
+					// append current character to cell value
 					sb.Append(cur);
 				}
 			}
 
+			// append last active
 			cells.Add(sb.ToString());
 
 			return cells.ToArray();
@@ -442,6 +481,41 @@ namespace fwp.localizator
 
 			return raw;
 		}
+
+		/// <summary>
+		/// key=value
+		/// key=value
+		/// </summary>
+		public string getLangFileContent(IsoLanguages lang)
+		{
+			StringBuilder output = new StringBuilder();
+
+			// first is header
+			for (int i = 1; i < localizes.Count; i++)
+			{
+				var line = localizes[i];
+				if (line.hasLocalization(lang))
+				{
+					string val = line.localized[(int)lang];
+					val = sanitizeValue(val);
+					output.AppendLine(line.key + " = " + val);
+				}
+			}
+
+			return output.ToString();
+		}
+
+		static string sanitizeValue(string val)
+		{
+			val = val.Trim();
+
+			//remove "" around escaped values
+			val = val.Replace(ParserStatics.SPREAD_CELL_ESCAPE_VALUE.ToString(), string.Empty);
+
+			return val;
+		}
+
+
 
 		static bool isCharLineBreak(string cur)
 		{
