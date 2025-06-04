@@ -205,8 +205,6 @@ namespace fwp.localizator
 			bool unfold = drawFoldout("in :   scriptables x" + dialogs.Length, "scriptables", true);
 			if (!unfold) return;
 
-			IsoLanguages iso = getManager().getSavedIsoLanguage();
-
 			foreach (var d in dialogs)
 			{
 				if (d == null) continue;
@@ -224,6 +222,12 @@ namespace fwp.localizator
 							GUILayout.Label(line.stringify());
 						}
 					}
+					
+					if (GUILayout.Button(">", btnSW))
+					{
+						UnityEditor.Selection.activeObject = d;
+					}
+
 				}
 			}
 		}
@@ -384,7 +388,7 @@ namespace fwp.localizator
 				var sheets = LocalizatorUtils.getSheetsData(true);
 				ImportSheetUtils.ssheets_import(sheets);
 				GenerateSheetUtils.csvs_generate(sheets);
-				GenerateSheetUtils.trads_generate(sheets);
+				GenerateSheetUtils.trads_generate();
 			}
 
 			scrollTabLocaliz = GUILayout.BeginScrollView(scrollTabLocaliz);
@@ -527,7 +531,7 @@ namespace fwp.localizator
 				if (GUILayout.Button("generate trad files"))
 				{
 					mgr.reloadFiles();
-					GenerateSheetUtils.trads_generate(Sheets);
+					GenerateSheetUtils.trads_generate();
 				}
 
 				foreach (var l in langs)

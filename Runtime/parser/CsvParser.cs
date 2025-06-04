@@ -229,7 +229,7 @@ namespace fwp.localizator
 				// need to add event the empty ones to keep index coherent
 				CsvLineRaw line = new CsvLineRaw(lineStr);
 				line.cells.AddRange(split);
-				
+
 				if (line.hasAnyLocalization((int)tab.tabParams.uidColumn))
 				{
 					lines.Add(line);
@@ -243,7 +243,7 @@ namespace fwp.localizator
 
 		public void generateLocalization()
 		{
-			Debug.Log("		generate localization for lines x" + lines.Count);
+			Debug.Log("		generate <b>localization</b> for lines x" + lines.Count);
 
 			int _col = (int)Tab.tabParams.uidColumn;
 

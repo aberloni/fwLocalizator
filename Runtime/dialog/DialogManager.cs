@@ -26,6 +26,9 @@ namespace fwp.localizator.dialog
         // for one iso language
         public string[] dialogsUids = new string[0];
 
+        /// <summary>
+        /// scriptable objects
+        /// </summary>
         public LocaDialogData<LineData>[] dialogs;
 
         public DialogManager()
@@ -87,14 +90,13 @@ namespace fwp.localizator.dialog
                 var split = l.Split("=");
                 var uid = split[0];
 
-                if (uid.Contains("-"))
-                {
-					// split UID-{NUM}
-					uid = uid.Substring(0, uid.LastIndexOf("-"));
-				}
-
-				if (!tmp.Contains(uid))
-                    tmp.Add(uid);
+                // only keep uid with autofill numbering
+                if (!uid.Contains("-")) continue;
+                
+				// split UID-{NUM}
+				uid = uid.Substring(0, uid.LastIndexOf("-"));
+				
+				if (!tmp.Contains(uid)) tmp.Add(uid);
             }
 
             dialogsUids = tmp.ToArray();

@@ -71,18 +71,7 @@ namespace fwp.localizator.editor
 			}
 		}
 
-		static public void trads_generate(LocaDataSheet[] sheets)
-		{
-			foreach (var sheet in sheets)
-			{
-				foreach (var tab in sheet.tabs)
-				{
-					trad_generate(tab);
-				}
-			}
-		}
-
-		static public void trad_generate(DataSheetTab tab)
+		static public void trads_generate()
 		{
 			var sups = LocalizationManager.instance.getSupportedLanguages();
 
@@ -95,7 +84,8 @@ namespace fwp.localizator.editor
 			{
 				IsoLanguages lang = sups[i];
 
-				EditorUtility.DisplayProgressBar("converting loca", "langage : " + lang.ToString(), (1f * i) / (1f * sups.Length));
+				EditorUtility.DisplayProgressBar(
+					"converting loca", "langage : " + lang.ToString(), (1f * i) / (1f * sups.Length));
 
 				trad_file_generate(lang);
 			}
