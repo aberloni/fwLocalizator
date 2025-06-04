@@ -22,6 +22,9 @@ namespace fwp.localizator
         [Tooltip("string to identify spreadsheet")]
         public string sheetUrlUid;
 
+        [Tooltip("to be able to identify what spreadsheet it is")]
+        public string sheetDescription;
+
         [Tooltip("all tabs in that spreadsheet")]
         public DataSheetTab[] tabs;
 
