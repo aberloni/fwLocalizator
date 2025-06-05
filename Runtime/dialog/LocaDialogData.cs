@@ -26,20 +26,31 @@ namespace fwp.localizator.dialog
 
 		public string getDialogUid() => name;
 
-		public bool match(string uid)
+		virtual public bool match(string uid)
 		{
 			return getDialogUid() == uid;
 		}
-
-		abstract public iDialogLine[] getLines();
-
-		abstract public iDialogLine getNextLine(iDialogLine line);
 
 		/// <summary>
 		/// what type is used for lines in this dialogs
 		/// for auto generation routine
 		/// </summary>
 		abstract public System.Type getLineDataType();
+
+		abstract public iDialogLine[] getLines();
+
+		virtual public iDialogLine getNextLine(iDialogLine line)
+		{
+			var ls = getLines();
+			for (int i = 0; i < ls.Length - 1; i++)
+			{
+				if (ls[i].getLineUid() == line.getLineUid())
+				{
+					return ls[i + 1];
+				}
+			}
+			return null;
+		}
 
 		/// <summary>
 		/// will generate a list of lines to play for this dialog
@@ -86,7 +97,7 @@ namespace fwp.localizator.dialog
 		/// how to inject them
 		/// </summary>
 		abstract protected void injectDialogLines(iDialogLine[] lines);
-		
+
 #if UNITY_EDITOR
 
 		bool dUnfold;
