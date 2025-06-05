@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -89,6 +91,7 @@ namespace fwp.localizator.dialog
 				index++;
 			}
 
+			Debug.Log("injecting x" + tmp.Count + " new lines");
 			injectDialogLines(tmp.ToArray());
 		}
 
@@ -96,7 +99,7 @@ namespace fwp.localizator.dialog
 		/// all generated lines
 		/// how to inject them
 		/// </summary>
-		abstract protected void injectDialogLines(iDialogLine[] lines);
+		abstract protected void injectDialogLines(iDialogLine[] newLines);
 
 #if UNITY_EDITOR
 
