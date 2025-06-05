@@ -2,6 +2,8 @@
 using UnityEngine;
 using System.IO;
 using System;
+using System.Globalization;
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -128,6 +130,20 @@ namespace fwp.localizator
             }
 
             return output;
+        }
+
+        /// <summary>
+        /// loca file has a key matching param
+        /// </summary>
+        public bool hasId(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return false;
+            foreach(var l in lines)
+            {
+                var key = l.Split('=')[0];
+                if (key.Trim().ToLower() == id.Trim().ToLower()) return true;
+            }
+            return false;
         }
 
         public string getContentById(string id, bool warning = false)

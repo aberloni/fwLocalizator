@@ -8,262 +8,109 @@ using UnityEditor;
 
 namespace fwp.localizator.dialog
 {
-    /// <summary>
-    /// 
-    /// dialog UID in spreadsheet must match name of scriptable
-    /// 
-    /// </summary>
-    //[CreateAssetMenu(menuName = LocalizationManager._asset_menu_path + "create dialog data",fileName = "DialogData_", order = LocalizationManager._asset_menu_order)]
-    [System.Serializable]
-    public class LocaDialogData<LineData> : ScriptableObject where LineData : LocaDialogLineData
-    {
-        public const string dialog_line_number_separator = "-";
+	/// <summary>
+	/// 
+	/// dialog UID in spreadsheet must match name of scriptable
+	/// 
+	/// </summary>
+	//[CreateAssetMenu(menuName = LocalizationManager._asset_menu_path + "create dialog data",fileName = "DialogData_", order = LocalizationManager._asset_menu_order)]
+	[System.Serializable]
+	abstract public class LocaDialogData : ScriptableObject
+	{
+		public const string dialog_line_number_separator = "-";
 
-        public string locaId => name;
+		/// <summary>
+		/// max lines per scriptable
+		/// </summary>
+		const int max_fetch_lines = 50;
 
-        [SerializeField]
-        public LineData[] lines;
+		public string getDialogUid() => name;
 
-        public bool match(string uid)
-        {
-            return locaId == uid;
-        }
+		public bool match(string uid)
+		{
+			return getDialogUid() == uid;
+		}
 
-        public LineData getNextLine(LineData line)
-        {
-            Debug.Assert(line != null);
+		abstract public iDialogLine[] getLines();
 
-            Debug.Log(GetType() + " :: " + name + " :: getNextLine() :: searching next line, in x" + lines.Length + " possible lines");
-            Debug.Log("  L from line " + line.uid + " (" + line.getSolvedLineByUID(false) + ")");
+		abstract public iDialogLine getNextLine(iDialogLine line);
 
-            for (int i = 0; i < lines.Length; i++)
-            {
-                if (lines[i] == line)
-                {
-                    Debug.Log("  L found line at index " + i + ", returning next LineData");
+		/// <summary>
+		/// what type is used for lines in this dialogs
+		/// for auto generation routine
+		/// </summary>
+		abstract public System.Type getLineDataType();
 
-                    // last, no next
-                    if (i >= lines.Length - 1) return null;
+		/// <summary>
+		/// will generate a list of lines to play for this dialog
+		/// it will check if any localization exists for number from 1 to MAX
+		/// if there is any : add this UID
+		/// </summary>
+		public void edFillDialogLines()
+		{
+			string uid = getDialogUid();
 
-                    return lines[i + 1];
-                }
-            }
+			List<iDialogLine> tmp = new();
 
-            Debug.LogWarning("  L /! line wasn't in dialog ?");
-            return null;
-        }
+			int index = 1;
 
+			var t = getLineDataType();
+
+			while (index < max_fetch_lines)
+			{
+				// generate a potential UID
+				// to check if that key exists in loca file
+				string fullId = uid + dialog_line_number_separator + ((index < 10) ? "0" + index : index.ToString());
+				if (LocalizationManager.instance.hasKey(fullId, IsoLanguages.en))
+				{
+					Debug.Log("     +<" + t.Name + ">	fid ? " + fullId);
+
+					object line = System.Activator.CreateInstance(t, new object[] { fullId });
+
+					tmp.Add(line as iDialogLine);
+				}
+				else
+				{
+					// stop
+					index = max_fetch_lines;
+				}
+
+				index++;
+			}
+
+			injectDialogLines(tmp.ToArray());
+		}
+
+		/// <summary>
+		/// all generated lines
+		/// how to inject them
+		/// </summary>
+		abstract protected void injectDialogLines(iDialogLine[] lines);
+		
 #if UNITY_EDITOR
 
-        protected string getCellValue(string lineUid, int cell)
-        {
-            var csvs = CsvParser.loadParsers();
+		bool dUnfold;
+		public void drawLines()
+		{
+			dUnfold = EditorGUILayout.Foldout(dUnfold, "dialog#" + getDialogUid(), true);
+			if (!dUnfold) return;
 
-            foreach (var csv in csvs)
-            {
-                // search for line
-                foreach (var l in csv.lines)
-                {
-                    // search for cell with uid
-                    foreach (var val in l.cells)
-                    {
-                        if (val.Contains(lineUid))
-                        {
-                            if (LocalizationManager.verbose)
-                            {
-                                Debug.Log("found " + lineUid + " cell in CSV:" + csv.tabUid + " => returning column #" + cell);
-                            }
+			var lines = getLines();
+			if (lines == null) GUILayout.Label("null lines[]");
+			else
+			{
+				foreach (var line in lines)
+				{
+					GUILayout.Label(line.getContent());
+				}
+			}
 
-                            return l.cells[cell];
-                        }
-                    }
-                }
-            }
-
-            if (LocalizationManager.verbose)
-            {
-                Debug.LogWarning("could not find a cell value for uid : " + lineUid);
-            }
-
-            return string.Empty;
-        }
-
-        virtual public void solveContent()
-        {
-            editorSolveLines();
-        }
-
-        string getTabText(string resourcePath)
-        {
-            if (string.IsNullOrEmpty(resourcePath))
-                return string.Empty;
-
-            //Debug.Log(cacheResources);
-
-            return (Resources.Load<TextAsset>(resourcePath) as TextAsset).text;
-        }
-
-        public string getLine(string resourcePath, string lineUid)
-        {
-            var lines = getTabText(resourcePath).Split(System.Environment.NewLine);
-            foreach (var l in lines)
-            {
-                if (l.Contains(lineUid))
-                    return l;
-            }
-            return string.Empty;
-        }
-
-        public void editorSolveLines()
-        {
-            if (locaId == null)
-            {
-                Debug.LogWarning(name + " has no loca id", this);
-                return;
-            }
-
-            if (locaId.Length <= 0)
-            {
-                Debug.LogWarning(name + " loca id is empty", this);
-                return;
-            }
-
-            Debug.Log("[" + LocalizationManager.instance.getSavedIsoLanguage() + "] solve lines @ " + locaId);
-
-            List<LineData> tmp = new List<LineData>();
-
-            int safe = 50;
-            int index = 1;
-            string ct;
-
-            do
-            {
-                string fullId = locaId + dialog_line_number_separator + ((index < 10) ? "0" + index : index.ToString());
-                ct = LocalizationManager.instance.getContent(fullId);
-
-                if (ct.IndexOf("['") > -1) ct = string.Empty;
-
-                if (ct.Length > 0)
-                {
-                    LineData line = System.Activator.CreateInstance<LineData>();
-                    line.uid = fullId;
-
-                    Debug.Log("     ADD fid ? " + fullId + " => " + ct);
-
-                    tmp.Add(line);
-                }
-
-                index++;
-                safe--;
-
-            } while (safe > 0 && ct.Length > 0);
-
-
-            //string mergeLog = string.Empty;
-
-            if (lines == null || lines.Length <= 0)
-            {
-                if (tmp.Count > 0)
-                {
-                    lines = tmp.ToArray();
-                }
-            }
-            else
-            {
-                List<LineData> merged = new List<LineData>();
-
-                for (int i = 0; i < tmp.Count; i++)
-                {
-                    if (i < lines.Length)
-                    {
-                        if (lines[i].getSolvedLineByFUID() == tmp[i].getSolvedLineByFUID())
-                            merged.Add(lines[i]);
-                        else
-                        {
-                            merged.Add(tmp[i]);
-                        }
-                    }
-                    else
-                    {
-                        merged.Add(tmp[i]);
-                    }
-                }
-
-                lines = merged.ToArray();
-
-                //mergeLog = "[Merged]";
-            }
-
-            //Debug.Log(locaId + " lines x" + lines.Length);
-
-            cmUpdateCached();
-        }
-
-        public void cmUpdateCached()
-        {
-            Debug.Log(locaId + " :: update cache :: lines x" + lines.Length);
-
-            for (int i = 0; i < lines.Length; i++)
-            {
-                lines[i].debugUpdatePreview(false);
-            }
-        }
-
-        static public LocaDialogData<LineData>[] getScriptables()
-        {
-            return LocalizationStatics.getScriptableObjectsInEditor<LocaDialogData<LineData>>();
-        }
-
-        //[MenuItem(LocalizationManager._menu_item_path + "dialogs/solve all dialog lines")]
-        static protected void solveLines()
-        {
-            LocaDialogData<LineData>[] all = getScriptables();
-
-            float progress = 0f;
-            for (int i = 0; i < all.Length; i++)
-            {
-                progress = (float)(i + 1f) / Mathf.Max(1f, (float)all.Length);
-
-                if (EditorUtility.DisplayCancelableProgressBar("Solving all dialog lines", "Solving " + all[i].name + " (" + (i + 1) + "/" + all.Length + ")", progress))
-                {
-                    EditorUtility.ClearProgressBar();
-                    return;
-                }
-
-                all[i].cmUpdateCached();
-                EditorUtility.SetDirty(all[i]);
-            }
-            AssetDatabase.SaveAssets();
-
-            EditorUtility.ClearProgressBar();
-        }
-
-        //[MenuItem(LocalizationManager._menu_item_path + "dialogs/solve all dialog lines NO DIFF")]
-        static protected void solveLinesNoDiff()
-        {
-            LocaDialogData<LineData>[] all = getScriptables();
-
-            float progress = 0f;
-            for (int i = 0; i < all.Length; i++)
-            {
-                progress = (float)(i + 1f) / Mathf.Max(1f, (float)all.Length);
-                if (EditorUtility.DisplayCancelableProgressBar("Solving all dialog lines", "Solving " + all[i].name + " (" + (i + 1) + "/" + all.Length + ")", progress))
-                {
-                    EditorUtility.ClearProgressBar();
-                    return;
-                }
-
-                all[i].editorSolveLines();
-
-                EditorUtility.SetDirty(all[i]);
-            }
-            AssetDatabase.SaveAssets();
-
-            EditorUtility.ClearProgressBar();
-        }
-
+			if (GUILayout.Button(">", GUILayout.Width(70f)))
+			{
+				UnityEditor.Selection.activeObject = this;
+			}
+		}
 #endif
-
-    }
+	}
 
 }

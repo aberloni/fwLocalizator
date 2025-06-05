@@ -10,7 +10,7 @@ using UnityEngine.Networking;
 /// all tools specific to google spreadsheet
 /// </summary>
 
-namespace fwp.localizator
+namespace fwp.localizator.editor
 {
 
 	public class GoogleSpreadsheetBridge : MonoBehaviour

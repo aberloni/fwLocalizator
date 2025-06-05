@@ -4,114 +4,142 @@ using UnityEngine;
 
 namespace fwp.localizator.dialog
 {
-    using fwp.localizator;
+	/// <summary>
+	/// manage the list of available dialogs
+	/// editor : everything
+	/// runtime : will load from Resources/
+	/// </summary>
+	public class DialogManager
+	{
+		static public DialogManager instance;
 
-    /// <summary>
-    /// LineData generic is to have control over content in dialog lines
-    /// </summary>
-    public class DialogManager<LineData> where LineData : LocaDialogLineData
-    {
-        static public DialogManager<LineData> instance;
+		static public string folderDialogs = "dialogs/";
+		static public string resourcesDialogs = "Resources/" + folderDialogs;
 
-        static public string folderDialogs = "dialogs/";
-        static public string resourcesDialogs = "Resources/" + folderDialogs;
+		static public string assetDialogs = System.IO.Path.Combine(
+			"Assets/", resourcesDialogs);
+		static public string sysDialogs = System.IO.Path.Combine(
+			Application.dataPath, resourcesDialogs);
 
-        static public string assetDialogs = System.IO.Path.Combine(
-            "Assets/", resourcesDialogs);
-        static public string sysDialogs = System.IO.Path.Combine(
-            Application.dataPath, resourcesDialogs);
+		/// <summary>
+		/// scriptable objects
+		/// </summary>
+		public List<LocaDialogData> dialogs = new();
 
-        IsoLanguages iso => LocalizationManager.instance.getSavedIsoLanguage();
+		public DialogManager()
+		{
+			instance = this;
+		}
 
-        // for one iso language
-        public string[] dialogsUids = new string[0];
+		public LocaDialogData getDialogInstance(string uid)
+		{
+			foreach (var d in dialogs)
+			{
+				if (d == null)
+					continue;
 
-        /// <summary>
-        /// scriptable objects
-        /// </summary>
-        public LocaDialogData<LineData>[] dialogs;
+				if (d.getDialogUid() == uid)
+					return d;
+			}
+			return null;
+		}
 
-        public DialogManager()
-        {
-            instance = this;
-            refresh();
-        }
+		public bool hasDialogInstance(string uid)
+		{
+			foreach (var d in dialogs)
+			{
+				if (d.getDialogUid() == uid)
+					return true;
+			}
+			return false;
+		}
 
-        public LocaDialogData<LineData> getDialogInstance(string uid)
-        {
-            foreach (var d in dialogs)
-            {
-                if (d == null)
-                    continue;
+		public LocaDialogData getDialog(string uid)
+		{
+			//... resource load ...
+			return null;
+		}
 
-                if (d.name == uid)
-                    return d;
-            }
-            return null;
-        }
+		virtual protected System.Type getDialogType() => typeof(LocaDialogData);
 
-        public bool hasDialogInstance(string uid)
-        {
-            foreach (var d in dialogs)
-            {
-                if (d.name == uid)
-                    return true;
-            }
-            return false;
-        }
+		/// <summary>
+		/// generate the scriptable object instance
+		/// </summary>
+		public LocaDialogData createDialog(string uid)
+		{
+			var inst = ScriptableObject.CreateInstance(getDialogType());
 
-        public void refresh()
-        {
-            var mgr = LocalizationManager.instance;
-            if (mgr == null)
-                return;
+			Debug.Assert(inst != null, "could not create scriptable dialog");
 
-            var _iso = iso;
+			//string path = DialogManager.sysDialogs;
+			string path = DialogManager.assetDialogs;
 
-            // get french (default)
-            var file = mgr.getFileByLang(_iso);
-            if (file == null)
-            {
-                Debug.LogWarning($"no {_iso} file ?");
-                return;
-            }
+			// make sure folder exists
+			path = generateExportPath(path);
 
-            // get dialog scriptables
-            dialogs = getDialogs();
+			// add asset at end of path
+			path += uid + ".asset";
 
-            // fetching all possible UIDs (from trad file)
+			Debug.Log("asset path @ " + path);
 
-            List<string> tmp = new List<string>();
-            var lines = file.getLines();
+			UnityEditor.AssetDatabase.CreateAsset(inst, path);
+			UnityEditor.AssetDatabase.Refresh();
 
-            foreach (var l in lines)
-            {
-                // split UID=VAL
-                var split = l.Split("=");
-                var uid = split[0];
+			Debug.Log("solving content of " + inst);
+			LocaDialogData data = inst as LocaDialogData;
 
-                // only keep uid with autofill numbering
-                if (!uid.Contains("-")) continue;
-                
-				// split UID-{NUM}
-				uid = uid.Substring(0, uid.LastIndexOf("-"));
-				
-				if (!tmp.Contains(uid)) tmp.Add(uid);
-            }
+			Debug.Assert(data != null, data.GetType() + " is not a dialog data ?");
+			reactDialogCreation(data);
 
-            dialogsUids = tmp.ToArray();
+			UnityEditor.EditorUtility.SetDirty(inst);
 
-            Debug.Log($"{iso} -> solved x{dialogsUids.Length} dialog uids");
-            Debug.Log($"      -> solved x{dialogs.Length} scriptable dialogs");
-        }
+			//mgrDialog.refresh();
+			UnityEditor.Selection.activeObject = inst;
 
-        protected LocaDialogData<LineData>[] getDialogs()
-        {
-#if UNITY_EDITOR
-            return LocalizatorUtils.getScriptableObjectsInEditor<LocaDialogData<LineData>>();
-#else
-            return null;
-#endif
-        }
-    }
+			return data;
+		}
+
+		virtual protected void reactDialogCreation(LocaDialogData data)
+		{
+			data.edFillDialogLines();
+		}
+
+		/// <summary>
+		/// in : (Assets/) some/path (/)
+		/// out : filled path
+		/// </summary>
+		string generateExportPath(string path)
+		{
+			const string asset_path = "Assets";
+
+			if (!path.StartsWith(asset_path))
+				path = System.IO.Path.Combine(asset_path, path);
+
+			// remove last  /
+			if (path.EndsWith("/")) path = path.Substring(0, path.Length - 1);
+
+			var split = path.Split("/");
+
+			Debug.Log(path + " => " + split.Length);
+
+			string progressivePath = asset_path + "/";
+			for (int i = 1; i < split.Length; i++)
+			{
+				string tarPath = progressivePath + "/" + split[i];
+				if (!UnityEditor.AssetDatabase.IsValidFolder(tarPath)) // Assets/Data/Dialogs
+				{
+					Debug.LogWarning("creating : " + tarPath);
+					var guid = UnityEditor.AssetDatabase.CreateFolder(progressivePath, split[i]); // Assets/Data & Dialogs
+					Debug.Log(guid);
+				}
+				else Debug.Log("OK : " + tarPath);
+
+
+				progressivePath = tarPath;
+			}
+
+			return path + "/";
+		}
+
+	}
 }

@@ -8,9 +8,6 @@ using UnityEditor;
 
 namespace fwp.localizator
 {
-	using System.IO;
-	using System.Runtime.CompilerServices;
-
 	/// <summary>
 	/// Manager qui s'occupe de la loca au editor/runtime
 	/// 
@@ -20,7 +17,7 @@ namespace fwp.localizator
 	/// pour les espaces insécables : Alt+0160 pour l'écrire dans excel mais \u00A0 dans TMPro.
 	/// https://forum.unity.com/threads/why-there-is-no-setting-for-textmesh-pro-ugui-to-count-whitespace-at-the-end.676897/
 	/// </summary>
-	abstract public class LocalizationManager
+	public class LocalizationManager
 	{
 		static public bool verbose = false;
 
@@ -31,18 +28,7 @@ namespace fwp.localizator
 
 		public const string ppref_language = "ppref_language";
 
-		static public LocalizationManager instance;
-
-		/*
-        static public LocalizationManager instance
-        {
-            get
-            {
-                if (_instance == null) _instance = new LocalizationManager();
-                return _instance;
-            }
-        }
-        */
+		static public LocalizationManager instance = null;
 
 		/// <summary>
 		/// list of reactor candidates to lang change
@@ -249,6 +235,13 @@ namespace fwp.localizator
 			return file.getContentById(id, warning);
 		}
 
+		public bool hasKey(string key) => hasKey(key, getSavedIsoLanguage());
+		public bool hasKey(string key, IsoLanguages iso)
+		{
+			LocalizationFile file = instance.getFileByLang(iso);
+			return file.hasId(key);
+		}
+		
 		public void nextLanguage()
 		{
 			IsoLanguages cur = getSavedIsoLanguage();

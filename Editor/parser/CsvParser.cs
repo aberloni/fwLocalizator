@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace fwp.localizator
+namespace fwp.localizator.editor
 {
 	using System.IO;
 	using System.Text;
-	using TMPro;
-	using UnityEditor;
-
+	
 	/// <summary>
 	/// must fill with leading numbers
 	/// </summary>
@@ -16,82 +14,6 @@ namespace fwp.localizator
 	{
 		none = 0,
 		autofill, // add 01,02,03 if UID doesn't change
-	}
-
-	[System.Serializable]
-	public class CsvLineRaw
-	{
-		public string raw = string.Empty;
-
-		public List<string> cells = new();
-
-		public CsvLineRaw(string raw)
-		{
-			this.raw = raw;
-		}
-
-		public bool hasAnyLocalization(int uidCol)
-		{
-			for (int i = uidCol + 1; i < cells.Count; i++)
-			{
-				if (cells[i].Length > 0) return true;
-			}
-			return false;
-		}
-
-		public string stringify()
-		{
-			string output = string.Empty;
-			for (int i = 0; i < cells.Count; i++)
-			{
-				if (i > 0) output += ParserStatics.SPREAD_CELL_SEPARATOR;
-				output += cells[i];
-			}
-			return output;
-		}
-	}
-
-	/// <summary>
-	/// parsed values
-	/// array match index of iso enum
-	/// </summary>
-	[System.Serializable]
-	public class CsvLineLang
-	{
-		/// <summary>
-		/// key to query to find localization
-		/// </summary>
-		public string key = string.Empty;
-
-		/// <summary>
-		/// each localization sorted by IsoLanguage enum
-		/// </summary>
-		public List<string> localized = new();
-
-		public bool hasLocalization(IsoLanguages lang)
-		{
-			if (localized.Count <= (int)lang) return false;
-			return !string.IsNullOrEmpty(localized[(int)lang]);
-		}
-
-		public CsvLineLang(string key)
-		{
-			this.key = key;
-			Debug.Assert(!string.IsNullOrEmpty(key), "no key given ?");
-		}
-
-		public void addLang(IsoLanguages iso, string loca)
-		{
-			if ((int)iso >= localized.Count)
-			{
-				while (localized.Count <= (int)iso)
-				{
-					localized.Add(string.Empty);
-				}
-			}
-
-			localized[(int)iso] = loca;
-		}
 	}
 
 	[System.Serializable]
@@ -107,7 +29,7 @@ namespace fwp.localizator
 		/// </summary>
 		public string ParserFileName => Tab.tabName + "_" + tabUid;
 
-		public DataSheetTab Tab => LocalizatorUtils.tab_fetch(tabUid);
+		public DataSheetTab Tab => LocalizatorUtilsEditor.tab_fetch(tabUid);
 
 		/// <summary>
 		/// contains header of column
@@ -568,6 +490,39 @@ namespace fwp.localizator
 				}
 			}
 			return null;
+		}
+
+		static public string getCellValue(string lineUid, int cell)
+		{
+			var csvs = CsvParser.loadParsers();
+
+			foreach (var csv in csvs)
+			{
+				// search for line
+				foreach (var l in csv.lines)
+				{
+					// search for cell with uid
+					foreach (var val in l.cells)
+					{
+						if (val.Contains(lineUid))
+						{
+							if (LocalizationManager.verbose)
+							{
+								Debug.Log("found " + lineUid + " cell in CSV:" + csv.tabUid + " => returning column #" + cell);
+							}
+
+							return l.cells[cell];
+						}
+					}
+				}
+			}
+
+			if (LocalizationManager.verbose)
+			{
+				Debug.LogWarning("could not find a cell value for uid : " + lineUid);
+			}
+
+			return string.Empty;
 		}
 
 	}

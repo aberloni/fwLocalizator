@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace fwp.localizator
+namespace fwp.localizator.editor
 {
     /// <summary>
     /// A simple class to read small CSV files

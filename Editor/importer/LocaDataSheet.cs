@@ -3,7 +3,7 @@ using System.Collections;
 using System;
 using UnityEngine;
 
-namespace fwp.localizator
+namespace fwp.localizator.editor
 {
 
 	/// <summary>

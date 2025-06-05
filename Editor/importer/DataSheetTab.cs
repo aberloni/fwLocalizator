@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-namespace fwp.localizator
+namespace fwp.localizator.editor
 {
     [Serializable]
     public struct DataSheetTab
