@@ -148,14 +148,7 @@ namespace fwp.localizator.dialog.editor
 			bool fold = drawFoldout("in :   loca dialogs UIDs x" + dialogsUids.Length, "loca");
 			if (!fold) return;
 
-			if (GUILayout.Button("generate all missing dialogs"))
-			{
-				foreach (var d in dialogsUids)
-				{
-					if (hasDialogInstance(d)) continue;
-					DialogManager.instance.createDialog(d);
-				}
-			}
+			drawGlobalDialogButtons();
 
 			bool dirty = false;
 			foreach (var d in dialogsUids)
@@ -181,11 +174,8 @@ namespace fwp.localizator.dialog.editor
 				{
 					if (GUILayout.Button("update", btnM))
 					{
-						dial.edFillDialogLines();
-						EditorUtility.SetDirty(dial);
-
+						dial.edUpdate();
 						dirty = true;
-
 						UnityEditor.Selection.activeObject = dial;
 					}
 					if (GUILayout.Button(" > ", btnS))
@@ -198,6 +188,56 @@ namespace fwp.localizator.dialog.editor
 			}
 
 			if (dirty) refresh();
+		}
+
+		void drawGlobalDialogButtons()
+		{
+			bool _generate = false;
+			bool _update = false;
+
+			if (GUILayout.Button("generate all missing dialogs")) _generate = true;
+			if (GUILayout.Button("update all dialogs")) _update = true;
+
+			bool dirty = false;
+
+			if (!_generate && !_update)
+				return;
+			EditorUtility.DisplayProgressBar("process", "fetching...", 0f);
+
+			for (int i = 0; i < dialogsUids.Length; i++)
+			{
+				var d = dialogsUids[i];
+
+				if(EditorUtility.DisplayCancelableProgressBar("processing x" + dialogsUids.Length, "#" + i + ":" + d + "...", (i * 1f) / (dialogsUids.Length * 1f)))
+				{
+					i = dialogsUids.Length;
+					continue;
+				}
+
+				if (hasDialogInstance(d))
+				{
+					if (_update)
+					{
+						var dial = getDialog(d);
+						if (dial != null) dial.edUpdate();
+
+						dirty = true;
+					}
+				}
+				else if (_generate)
+				{
+					DialogManager.instance.createDialog(d);
+					dirty = true;
+				}
+			}
+
+			EditorUtility.ClearProgressBar();
+
+			if (!dirty)
+			{
+				Debug.Log("dialog process : nothing was done");
+			}
+
 		}
 
 #if UNITY_EDITOR

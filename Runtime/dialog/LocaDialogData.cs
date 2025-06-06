@@ -54,6 +54,12 @@ namespace fwp.localizator.dialog
 			return null;
 		}
 
+		public void edUpdate()
+		{
+			edFillDialogLines();
+			EditorUtility.SetDirty(this);
+		}
+
 		/// <summary>
 		/// will generate a list of lines to play for this dialog
 		/// it will check if any localization exists for number from 1 to MAX
@@ -68,6 +74,8 @@ namespace fwp.localizator.dialog
 			int index = 1;
 
 			var t = getLineDataType();
+
+			Debug.Log("<b>autofill</b> " + name);
 
 			while (index < max_fetch_lines)
 			{
@@ -91,7 +99,6 @@ namespace fwp.localizator.dialog
 				index++;
 			}
 
-			Debug.Log("injecting x" + tmp.Count + " new lines");
 			injectDialogLines(tmp.ToArray());
 		}
 
