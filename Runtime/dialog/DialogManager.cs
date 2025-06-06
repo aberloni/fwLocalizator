@@ -62,6 +62,7 @@ namespace fwp.localizator.dialog
 
 		virtual protected System.Type getDialogType() => typeof(LocaDialogData);
 
+#if UNITY_EDITOR
 		/// <summary>
 		/// generate the scriptable object instance
 		/// </summary>
@@ -140,6 +141,7 @@ namespace fwp.localizator.dialog
 
 			return path + "/";
 		}
+#endif
 
 	}
 }

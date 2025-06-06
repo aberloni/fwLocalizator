@@ -54,9 +54,11 @@ namespace fwp.localizator.dialog
 			return null;
 		}
 
+#if UNITY_EDITOR
 		public void edUpdate()
 		{
 			edFillDialogLines();
+
 			EditorUtility.SetDirty(this);
 		}
 
@@ -99,16 +101,14 @@ namespace fwp.localizator.dialog
 				index++;
 			}
 
-			injectDialogLines(tmp.ToArray());
+			edInjectDialogLines(tmp.ToArray());
 		}
 
 		/// <summary>
 		/// all generated lines
 		/// how to inject them
 		/// </summary>
-		abstract protected void injectDialogLines(iDialogLine[] newLines);
-
-#if UNITY_EDITOR
+		abstract protected void edInjectDialogLines(iDialogLine[] newLines);
 
 		bool dUnfold;
 		public void drawLines()
