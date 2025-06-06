@@ -335,9 +335,8 @@ namespace fwp.localizator
 			SystemLanguage langDefault = Application.systemLanguage;
 
 #if loca_en
-		lang = SystemLanguage.English;
+			langDefault = SystemLanguage.English;
 #endif
-
 
 			return langDefault;
 		}
