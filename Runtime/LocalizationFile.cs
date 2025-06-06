@@ -137,11 +137,19 @@ namespace fwp.localizator
         /// </summary>
         public bool hasId(string id)
         {
+            id = id.Trim().ToLower();
             if (string.IsNullOrEmpty(id)) return false;
             foreach(var l in lines)
             {
-                var key = l.Split('=')[0];
-                if (key.Trim().ToLower() == id.Trim().ToLower()) return true;
+                var key = l.Split('=')[0].Trim().ToLower();
+
+				// key{-num}
+				if (char.IsDigit(key[^1]))
+                {
+                    key = key.Substring(0, key.LastIndexOf("-"));
+                }
+
+                if (key == id) return true;
             }
             return false;
         }
