@@ -26,12 +26,18 @@ namespace fwp.localizator.editor
 
 		static LocaDataSheet[] sheets; // data to fetch content online
 
-        static public LocaDataSheet getSheetData(bool clearCache = false)
+		/// <summary>
+		/// returns default, first one
+		/// </summary>
+		static public LocaDataSheet getSheetData(string filter, bool clearCache = false)
         {
             getSheetsData(clearCache);
             if(sheets != null && sheets.Length > 0)
             {
-                return sheets[0];
+				foreach(var s in sheets)
+				{
+					if (s.name.Contains(filter)) return s;
+				}
             }
             return null;
         }
