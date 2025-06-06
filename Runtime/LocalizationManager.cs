@@ -272,20 +272,6 @@ namespace fwp.localizator
 			setSavedLanguage(cur, true);
 		}
 
-
-		static IsoLanguages stringToIso(string lang)
-		{
-			string[] nms = Enum.GetNames(typeof(IsoLanguages));
-			for (int i = 0; i < nms.Length; i++)
-			{
-				if (nms[i] == lang) return (IsoLanguages)i;
-			}
-
-			Debug.LogError("nope ; using fallback language");
-
-			return languageFallback;
-		}
-
 		/// <summary>
 		/// in : language
 		/// out : label of language
@@ -332,20 +318,27 @@ namespace fwp.localizator
 		/// https://developer.nintendo.com/group/development/g1kr9vj6/forums/english/-/gts_message_boards/thread/269684575#636486
 		/// none defined language in player settings won't work
 		/// </summary>
-		static public IsoLanguages getSystemLanguageToIso()
+		public IsoLanguages getSystemLanguageToIso()
+		{
+			IsoLanguages lang = sysToIso(getFilteredSystemLanguage());
+			return lang;
+		}
+
+		public SystemLanguage getSystemLanguage() => Application.systemLanguage;
+
+		/// <summary>
+		/// potential additionnal rules to override sys language
+		/// #if loca_en 
+		/// </summary>
+		virtual public SystemLanguage getFilteredSystemLanguage()
 		{
 			SystemLanguage langDefault = Application.systemLanguage;
 
 #if loca_en
-    langDefault = SystemLanguage.English;
-#elif loca_fr
-    langDefault = SystemLanguage.French;
-#elif local_zh
-    langDefault = SystemLanguage.Chinese;
+		lang = SystemLanguage.English;
 #endif
 
-			IsoLanguages lang = sysToIso(langDefault);
-			return lang;
+			return langDefault;
 		}
 
 		/// <summary>

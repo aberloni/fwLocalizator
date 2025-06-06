@@ -71,8 +71,12 @@ namespace fwp.localizator.editor
 		{
 			GUILayout.BeginHorizontal();
 			GUILayout.Label("APP (unity)   : " + Application.systemLanguage + " (iso : " + LocalizationManager.sysToIso(Application.systemLanguage) + ")");
-			GUILayout.Label("BUILD (#if)   : " + LocalizationManager.getSystemLanguageToIso());
-			GUILayout.Label("USER (ppref)  : " + LocalizationManager.instance.getSavedIsoLanguage());
+			if(LocalizationManager.instance != null)
+			{
+				GUILayout.Label("SYS           : " + LocalizationManager.instance.getSystemLanguage());
+				GUILayout.Label("BUILD (#if)   : " + LocalizationManager.instance.getFilteredSystemLanguage());
+				GUILayout.Label("USER (ppref)  : " + LocalizationManager.instance.getSavedIsoLanguage());
+			}
 			GUILayout.EndHorizontal();
 
 			GUILayout.Space(10f);
