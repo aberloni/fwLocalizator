@@ -157,6 +157,9 @@ namespace fwp.localizator.editor
 
 								// make sure csv are up to date
 								GenerateSheetUtils.csv_file_generate(tab);
+
+								// all remake all localiz files
+								GenerateSheetUtils.trads_generate();
 							}
 
 							if (!string.IsNullOrEmpty(tab.Cache))
