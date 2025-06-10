@@ -420,7 +420,7 @@ namespace fwp.localizator.editor
 				{
 					string val = line.localized[(int)lang];
 					val = sanitizeValue(val);
-					output.AppendLine(line.key + " = " + val);
+					output.AppendLine(line.key + "=" + val);
 				}
 			}
 
