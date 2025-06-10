@@ -239,7 +239,7 @@ namespace fwp.localizator
 		public bool hasKey(string key, IsoLanguages iso)
 		{
 			LocalizationFile file = instance.getFileByLang(iso);
-			return file.hasId(key);
+			return file.hasId(key, false);
 		}
 		
 		public void nextLanguage()

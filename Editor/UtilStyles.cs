@@ -100,11 +100,11 @@ public class UtilStyles
 	/// <summary>
 	/// draw a label with speficic style
 	/// </summary>
-	static public void drawSectionTitle(string label, float spaceMargin = 20f, int leftMargin = 10)
+	static public bool drawSectionTitle(string label, float spaceMargin = 20f, int leftMargin = 10)
 	{
 		if (spaceMargin > 0f)
 			GUILayout.Space(spaceMargin);
 
-		GUILayout.Label(label, SectionTitle(15, TextAnchor.UpperLeft, leftMargin));
+		return GUILayout.Button(label, SectionTitle(15, TextAnchor.UpperLeft, leftMargin));
 	}
 }

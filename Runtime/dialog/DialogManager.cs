@@ -11,6 +11,8 @@ namespace fwp.localizator.dialog
 	/// </summary>
 	public class DialogManager
 	{
+		static public bool verbose;
+
 		static public DialogManager instance;
 
 		static public string folderDialogs = "dialogs/";

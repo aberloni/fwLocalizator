@@ -77,25 +77,30 @@ namespace fwp.localizator.dialog
 
 			var t = getLineDataType();
 
-			Debug.Log("<b>autofill</b> " + name);
+			Debug.Log("<b>autofill</b> " + name + " (up to : " + max_fetch_lines + ")");
+
+			IsoLanguages iso = IsoLanguages.en;
 
 			while (index < max_fetch_lines)
 			{
 				// generate a potential UID
 				// to check if that key exists in loca file
 				string fullId = uid + dialog_line_number_separator + ((index < 10) ? "0" + index : index.ToString());
-				if (LocalizationManager.instance.hasKey(fullId, IsoLanguages.en))
+				Debug.Log($"({iso})?" + fullId);
+
+				if (!LocalizationManager.instance.hasKey(fullId, iso))
+				{
+					// stop
+					index = max_fetch_lines;
+					Debug.Log(fullId + " not in localization");
+				}
+				else
 				{
 					Debug.Log("     +<" + t.Name + ">	fid ? " + fullId);
 
 					object line = System.Activator.CreateInstance(t, new object[] { fullId });
 
 					tmp.Add(line as iDialogLine);
-				}
-				else
-				{
-					// stop
-					index = max_fetch_lines;
 				}
 
 				index++;

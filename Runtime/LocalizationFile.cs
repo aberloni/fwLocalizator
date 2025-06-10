@@ -11,282 +11,285 @@ using UnityEditor;
 
 namespace fwp.localizator
 {
-    /// <summary>
-    /// contains raw text (from spreadsheet)
-    /// and parsed lines
-    /// </summary>
-    public class LocalizationFile
-    {
-        public const string SPREADSHEET_LINE_BREAK = "\r\n"; // spreadsheet line break
-        public const char SPREADSHEET_CELL_BREAK = ','; // spreadsheet cell separator
-        public const char SPREADSHEET_CELL_LINE_BREAK = '\n'; // spreadsheet cell text line break
+	/// <summary>
+	/// contains raw text (from spreadsheet)
+	/// and parsed lines
+	/// </summary>
+	public class LocalizationFile
+	{
+		public const string SPREADSHEET_LINE_BREAK = "\r\n"; // spreadsheet line break
+		public const char SPREADSHEET_CELL_BREAK = ','; // spreadsheet cell separator
+		public const char SPREADSHEET_CELL_LINE_BREAK = '\n'; // spreadsheet cell text line break
 
-        public const char LOCALIZ_CHAR_COMMENT = '#'; //id=content
-        public const string LOCALIZ_CHAR_COMMENT2 = "\\\\"; //id=content
-        public const char LOCALIZ_CHAR_SPLIT = '='; //id=content
-        public const string LOCALIZ_MULTIPLE_BEGIN = "<multiple>"; //id=content
-        public const string LOCALIZ_MULTIPLE_END = "</multiple>"; //id=content
-        public const string FILESEPARATOR = "@";
+		public const char LOCALIZ_CHAR_COMMENT = '#'; //id=content
+		public const string LOCALIZ_CHAR_COMMENT2 = "\\\\"; //id=content
+		public const char LOCALIZ_CHAR_SPLIT = '='; //id=content
+		public const string LOCALIZ_MULTIPLE_BEGIN = "<multiple>"; //id=content
+		public const string LOCALIZ_MULTIPLE_END = "</multiple>"; //id=content
+		public const string FILESEPARATOR = "@";
 
-        //public string lang_name = ""; // fr, en, ...
-        public IsoLanguages iso;
+		//public string lang_name = ""; // fr, en, ...
+		public IsoLanguages iso;
 
-        public TextAsset textAsset;
+		public TextAsset textAsset;
 
-        public bool editor_fold;
+		public bool editor_fold;
 
-        string[] lines;
+		string[] lines;
 
-        public LocalizationFile(IsoLanguages lang)
-        {
-            iso = lang;
-            setup();
-        }
+		public LocalizationFile(IsoLanguages lang)
+		{
+			iso = lang;
+			setup();
+		}
 
-        public string[] getLines() => lines;
+		public string[] getLines() => lines;
 
-        void setup()
-        {
-            string lang = iso.ToString();
+		void setup()
+		{
+			string lang = iso.ToString();
 
-            string langFilePath = getLangFileResourcesPath(iso, false); // resources/, path to lang file, no ext
-            textAsset = Resources.Load(langFilePath) as TextAsset;
+			string langFilePath = getLangFileResourcesPath(iso, false); // resources/, path to lang file, no ext
+			textAsset = Resources.Load(langFilePath) as TextAsset;
 
-            //Debug.Log(ta.name);
+			//Debug.Log(ta.name);
 
-            if (textAsset == null)
-            {
-                Debug.LogWarning("no file @ " + langFilePath);
-                return;
-            }
+			if (textAsset == null)
+			{
+				Debug.LogWarning("no file @ " + langFilePath);
+				return;
+			}
 
-            lines = splitLineBreak(textAsset.text);
+			lines = splitLineBreak(textAsset.text);
 
-            List<string> tmp = new List<string>();
-            bool multipleLine = false;
-            bool firstMultipleLine = false;
-            foreach (string line in lines)
-            {
-                if (line.StartsWith("" + LocalizationFile.LOCALIZ_CHAR_COMMENT)) continue;
-                if (line.Length <= 1)
-                {
-                    if (multipleLine) tmp[tmp.Count - 1] += "\n";
-                    else continue;
-                }
+			List<string> tmp = new List<string>();
+			bool multipleLine = false;
+			bool firstMultipleLine = false;
+			foreach (string line in lines)
+			{
+				if (line.StartsWith("" + LocalizationFile.LOCALIZ_CHAR_COMMENT)) continue;
+				if (line.Length <= 1)
+				{
+					if (multipleLine) tmp[tmp.Count - 1] += "\n";
+					else continue;
+				}
 
-                if (line.StartsWith(LOCALIZ_MULTIPLE_BEGIN)) { multipleLine = true; firstMultipleLine = true; continue; }
-                if (line.StartsWith(LOCALIZ_MULTIPLE_END)) { multipleLine = false; continue; }
+				if (line.StartsWith(LOCALIZ_MULTIPLE_BEGIN)) { multipleLine = true; firstMultipleLine = true; continue; }
+				if (line.StartsWith(LOCALIZ_MULTIPLE_END)) { multipleLine = false; continue; }
 
-                if (multipleLine)
-                {
-                    if (firstMultipleLine)
-                        tmp.Add(line);
-                    else
-                        tmp[tmp.Count - 1] += "\n" + line;
-                    firstMultipleLine = false;
-                }
-                else
-                    tmp.Add(line);
-            }
-            lines = tmp.ToArray();
+				if (multipleLine)
+				{
+					if (firstMultipleLine)
+						tmp.Add(line);
+					else
+						tmp[tmp.Count - 1] += "\n" + line;
+					firstMultipleLine = false;
+				}
+				else
+					tmp.Add(line);
+			}
+			lines = tmp.ToArray();
 
-            //Debug.Log("  " + path + " | " + lines.Length + " lines");
-        }
+			//Debug.Log("  " + path + " | " + lines.Length + " lines");
+		}
 
-        public void debugRefresh()
-        {
-            setup();
-        }
+		public void debugRefresh()
+		{
+			setup();
+		}
 
 
-        /// <summary>
-        /// Permet de comparer deux fichiers de langue pour indiquer si ils sont compatibles
-        /// </summary>
-        public bool compare(LocalizationFile other)
-        {
-            List<string> ids = new List<string>();
-            for (int i = 0; i < lines.Length; i++)
-            {
-                string id = getIdAtLine(i);
-                if (id.Length > 0) ids.Add(id);
-            }
+		/// <summary>
+		/// Permet de comparer deux fichiers de langue pour indiquer si ils sont compatibles
+		/// </summary>
+		public bool compare(LocalizationFile other)
+		{
+			List<string> ids = new List<string>();
+			for (int i = 0; i < lines.Length; i++)
+			{
+				string id = getIdAtLine(i);
+				if (id.Length > 0) ids.Add(id);
+			}
 
-            bool output = false;
+			bool output = false;
 
-            bool found = false;
-            for (int i = 0; i < ids.Count; i++)
-            {
-                found = false;
-                for (int j = 0; j < other.lines.Length; j++)
-                {
-                    string id = other.getIdAtLine(j);
-                    if (id == ids[i]) found = true;
-                }
-                if (!found)
-                {
-                    Debug.LogError("missing id " + ids[i] + " from file " + iso + " in file " + other.iso);
-                    output = true; // error
-                }
-            }
+			bool found = false;
+			for (int i = 0; i < ids.Count; i++)
+			{
+				found = false;
+				for (int j = 0; j < other.lines.Length; j++)
+				{
+					string id = other.getIdAtLine(j);
+					if (id == ids[i]) found = true;
+				}
+				if (!found)
+				{
+					Debug.LogError("missing id " + ids[i] + " from file " + iso + " in file " + other.iso);
+					output = true; // error
+				}
+			}
 
-            return output;
-        }
+			return output;
+		}
 
-        /// <summary>
-        /// loca file has a key matching param
-        /// </summary>
-        public bool hasId(string id)
-        {
-            id = id.Trim().ToLower();
-            if (string.IsNullOrEmpty(id)) return false;
-            foreach(var l in lines)
-            {
-                var key = l.Split('=')[0].Trim().ToLower();
+		/// <summary>
+		/// loca file has a key matching param
+		/// removeDigit : should we compare with ending digits or not
+		/// </summary>
+		public bool hasId(string id, bool removeDigit)
+		{
+			id = id.Trim().ToLower();
+			if (string.IsNullOrEmpty(id)) return false;
+			foreach (var l in lines)
+			{
+				var key = l.Split('=')[0].Trim().ToLower();
 
-				// key{-num}
-				if (char.IsDigit(key[^1]))
-                {
-                    key = key.Substring(0, key.LastIndexOf("-"));
-                }
+				// key{-num}, remove it
+				if (removeDigit && char.IsDigit(key[^1]))
+				{
+					key = key.Substring(0, key.LastIndexOf("-"));
+				}
 
-                if (key == id) return true;
-            }
-            return false;
-        }
+				//Debug.Log(id + " vs " + key);
 
-        public string getContentById(string id, bool warning = false)
-        {
-            if (id == null) return "[no id]";
+				if (key == id) return true;
+			}
+			return false;
+		}
 
-            if (id.Length <= 0)
-            {
-                Debug.LogWarning("no id given to gather content loca ?");
-                return "[no id given / empty]";
-            }
+		public string getContentById(string id, bool warning = false)
+		{
+			if (id == null) return "[no id]";
 
-            //Debug.Log("searching for " + id);
-            for (int i = 0; i < lines.Length; i++)
-            {
-                string key = lines[i].Split('=')[0];
+			if (id.Length <= 0)
+			{
+				Debug.LogWarning("no id given to gather content loca ?");
+				return "[no id given / empty]";
+			}
 
-                key = key.Trim();
-                id = id.Trim();
+			//Debug.Log("searching for " + id);
+			for (int i = 0; i < lines.Length; i++)
+			{
+				string key = lines[i].Split('=')[0];
 
-                //srt_outro_museum_05 == srt_outro_museum_05
-                //Debug.Log(key + " ("+key.Length+") == " + id+" ("+id.Length+")");
+				key = key.Trim();
+				id = id.Trim();
 
-                if (key == id) return getContentAtLine(i);
-            }
+				//srt_outro_museum_05 == srt_outro_museum_05
+				//Debug.Log(key + " ("+key.Length+") == " + id+" ("+id.Length+")");
 
-            if (warning)
-            {
-                LocalizationManager.logw($"getContentById() <b>{iso}</b> : no trad # <b>" + id + "</b>", this);
-            }
+				if (key == id) return getContentAtLine(i);
+			}
 
-            return "['" + id + "' missing in " + iso + "]";
-        }
+			if (warning)
+			{
+				LocalizationManager.logw($"getContentById() <b>{iso}</b> : no trad # <b>" + id + "</b>", this);
+			}
 
-        public string getContentAtLine(int idx)
-        {
-            if (!lines[idx].Contains("" + LocalizationFile.LOCALIZ_CHAR_SPLIT)) return "";
-            string[] split = lines[idx].Split(LocalizationFile.LOCALIZ_CHAR_SPLIT);
-            string output = "";
-            for (int i = 1; i < split.Length; i++)
-            {
-                if (i != 1) output += "=";
-                output += split[i];
-            }
+			return "['" + id + "' missing in " + iso + "]";
+		}
 
-            //dans la trad on a des | pour faire des \n
-            output = output.Replace(ParserStatics.CELL_LINE_BREAK.ToString(), System.Environment.NewLine);
+		public string getContentAtLine(int idx)
+		{
+			if (!lines[idx].Contains("" + LocalizationFile.LOCALIZ_CHAR_SPLIT)) return "";
+			string[] split = lines[idx].Split(LocalizationFile.LOCALIZ_CHAR_SPLIT);
+			string output = "";
+			for (int i = 1; i < split.Length; i++)
+			{
+				if (i != 1) output += "=";
+				output += split[i];
+			}
 
-            return output;
-        }
+			//dans la trad on a des | pour faire des \n
+			output = output.Replace(ParserStatics.CELL_LINE_BREAK.ToString(), System.Environment.NewLine);
 
-        public string getIdAtLine(int idx)
-        {
-            if (!lines[idx].Contains("" + LocalizationFile.LOCALIZ_CHAR_SPLIT)) return "";
-            string[] split = lines[idx].Split(LocalizationFile.LOCALIZ_CHAR_SPLIT);
-            return split[0];
-        }
+			return output;
+		}
 
-        public int getLineCount()
-        {
-            return lines.Length;
-        }
+		public string getIdAtLine(int idx)
+		{
+			if (!lines[idx].Contains("" + LocalizationFile.LOCALIZ_CHAR_SPLIT)) return "";
+			string[] split = lines[idx].Split(LocalizationFile.LOCALIZ_CHAR_SPLIT);
+			return split[0];
+		}
 
-        public bool isLoaded()
-        {
-            return textAsset != null;
-        }
+		public int getLineCount()
+		{
+			return lines.Length;
+		}
 
-        public bool overrideKey(string key, string newText)
-        {
-            for (int i = 0; i < lines.Length; i++)
-            {
-                if (!lines[i].Contains(LOCALIZ_CHAR_SPLIT.ToString())) continue;
-                if (!lines[i].Contains(key)) continue;
+		public bool isLoaded()
+		{
+			return textAsset != null;
+		}
 
-                string[] splited = lines[i].Split(LOCALIZ_CHAR_SPLIT);
-                if (splited[0] != key) continue;
-                if (splited[1] == newText) continue;
-                splited[1] = newText;
-                lines[i] = splited[0] + LOCALIZ_CHAR_SPLIT + splited[1];
-                return true;
-            }
-            return false;
-        }
+		public bool overrideKey(string key, string newText)
+		{
+			for (int i = 0; i < lines.Length; i++)
+			{
+				if (!lines[i].Contains(LOCALIZ_CHAR_SPLIT.ToString())) continue;
+				if (!lines[i].Contains(key)) continue;
 
-        public void rewriteAsset()
-        {
-            StreamWriter file = new StreamWriter("Assets/Resources/" + getLangFileResourcesPath(iso));
+				string[] splited = lines[i].Split(LOCALIZ_CHAR_SPLIT);
+				if (splited[0] != key) continue;
+				if (splited[1] == newText) continue;
+				splited[1] = newText;
+				lines[i] = splited[0] + LOCALIZ_CHAR_SPLIT + splited[1];
+				return true;
+			}
+			return false;
+		}
 
-            string[] rawLines = splitLineBreak(textAsset.text);
-            int numberOfRewrite = 0;
+		public void rewriteAsset()
+		{
+			StreamWriter file = new StreamWriter("Assets/Resources/" + getLangFileResourcesPath(iso));
 
-            for (int i = 0; i < lines.Length; i++)
-            {
-                if (!lines[i].Contains(LOCALIZ_CHAR_SPLIT.ToString())) continue;
-                string[] splited = lines[i].Split(LOCALIZ_CHAR_SPLIT);
+			string[] rawLines = splitLineBreak(textAsset.text);
+			int numberOfRewrite = 0;
 
-                for (int j = 0; j < rawLines.Length; j++)
-                {
-                    if (!rawLines[j].Contains(LOCALIZ_CHAR_SPLIT.ToString())) continue;
-                    string[] rawSplited = rawLines[j].Split(LOCALIZ_CHAR_SPLIT);
-                    if (rawSplited[0] != splited[0]) continue;
-                    rawLines[j] = lines[i];
-                    numberOfRewrite++;
-                }
-            }
+			for (int i = 0; i < lines.Length; i++)
+			{
+				if (!lines[i].Contains(LOCALIZ_CHAR_SPLIT.ToString())) continue;
+				string[] splited = lines[i].Split(LOCALIZ_CHAR_SPLIT);
 
-            Debug.Log("rewrited " + numberOfRewrite + " lines");
+				for (int j = 0; j < rawLines.Length; j++)
+				{
+					if (!rawLines[j].Contains(LOCALIZ_CHAR_SPLIT.ToString())) continue;
+					string[] rawSplited = rawLines[j].Split(LOCALIZ_CHAR_SPLIT);
+					if (rawSplited[0] != splited[0]) continue;
+					rawLines[j] = lines[i];
+					numberOfRewrite++;
+				}
+			}
 
-            string allNew = "";
-            for (int i = 0; i < rawLines.Length; i++)
-            {
-                allNew += rawLines[i] + Environment.NewLine;
-            }
+			Debug.Log("rewrited " + numberOfRewrite + " lines");
 
-            file.Write(allNew);
-            file.Close();
-        }
+			string allNew = "";
+			for (int i = 0; i < rawLines.Length; i++)
+			{
+				allNew += rawLines[i] + Environment.NewLine;
+			}
 
-        /// <summary>
-        /// format path to language file
-        /// path within Resources/
-        /// </summary>
-        public string getLangFileResourcesPath(IsoLanguages iso, bool ext = true)
-        {
-            return Path.Combine(LocalizationPaths.folderLocalization,
-                LocalizationPaths.folderLangs,
-                "lang_" + iso + (ext ? LocalizationPaths.langExtDot : string.Empty));
-        }
+			file.Write(allNew);
+			file.Close();
+		}
 
-        static public string[] splitLineBreak(string fileContent)
-        {
-            //return fileContent.Split(new char[] { '\r', '\n' }, StringSplitOptions.None);
-            return fileContent.Split(new string[] { LocalizationFile.SPREADSHEET_LINE_BREAK }, StringSplitOptions.None);
-        }
+		/// <summary>
+		/// format path to language file
+		/// path within Resources/
+		/// </summary>
+		public string getLangFileResourcesPath(IsoLanguages iso, bool ext = true)
+		{
+			return Path.Combine(LocalizationPaths.folderLocalization,
+				LocalizationPaths.folderLangs,
+				"lang_" + iso + (ext ? LocalizationPaths.langExtDot : string.Empty));
+		}
 
-    }
+		static public string[] splitLineBreak(string fileContent)
+		{
+			//return fileContent.Split(new char[] { '\r', '\n' }, StringSplitOptions.None);
+			return fileContent.Split(new string[] { LocalizationFile.SPREADSHEET_LINE_BREAK }, StringSplitOptions.None);
+		}
+
+	}
 }

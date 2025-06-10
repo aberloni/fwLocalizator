@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 using UnityEditor;
 using fwp.localizator.editor;
+using Unity.Properties;
 
 namespace fwp.localizator.dialog.editor
 {
@@ -39,15 +40,17 @@ namespace fwp.localizator.dialog.editor
 			findDialogsUids();
 		}
 
-		private void OnGUI()
+		protected override string getTitle() => DialogManager.instance.GetType().Name;
+
+		protected override void draw()
 		{
+			base.draw();
+
 			if (DialogManager.instance == null)
 			{
 				GUILayout.Label("no manager");
 				return;
 			}
-
-			UtilStyles.drawSectionTitle(DialogManager.instance.GetType().Name);
 
 			filter.drawFilterField();
 
@@ -59,11 +62,12 @@ namespace fwp.localizator.dialog.editor
 			GUILayout.EndScrollView();
 		}
 
-		void refresh()
+		override protected void refresh(bool verbose = false)
 		{
+			base.refresh(verbose);
 			dialogs = fetchDialogObjects();
 
-			Debug.Log($"      -> solved x{dialogs.Length} scriptable dialogs");
+			if (verbose) Debug.Log($"      -> solved x{dialogs.Length} scriptable dialogs");
 			findDialogsUids();
 		}
 
@@ -91,8 +95,7 @@ namespace fwp.localizator.dialog.editor
 			foreach (var l in lines)
 			{
 				// split UID=VAL
-				var split = l.Split("=");
-				var uid = split[0];
+				var uid = l.Split("=")[0];
 
 				// only keep uid with autofill numbering
 				if (!uid.Contains("-")) continue;
@@ -100,12 +103,16 @@ namespace fwp.localizator.dialog.editor
 				// split UID-{NUM}
 				uid = uid.Substring(0, uid.LastIndexOf("-"));
 
-				if (!tmp.Contains(uid)) tmp.Add(uid);
+				if (!tmp.Contains(uid))
+				{
+					if (DialogManager.verbose) Debug.Log("+" + uid);
+					tmp.Add(uid);
+				}
 			}
 
 			dialogsUids = tmp.ToArray();
 
-			Debug.Log($"      -> solved x{dialogsUids.Length} uids dialogs");
+			if (DialogManager.verbose) Debug.Log($"      -> solved x{dialogsUids.Length} uids dialogs");
 		}
 
 		public bool hasDialogInstance(string dialogUid)
@@ -174,8 +181,9 @@ namespace fwp.localizator.dialog.editor
 				{
 					if (GUILayout.Button("update", btnM))
 					{
+						Debug.Log("dialog.update " + dial.name, dial);
+
 						dial.edUpdate();
-						dirty = true;
 						UnityEditor.Selection.activeObject = dial;
 					}
 					if (GUILayout.Button(" > ", btnS))
@@ -195,20 +203,21 @@ namespace fwp.localizator.dialog.editor
 			bool _generate = false;
 			bool _update = false;
 
+			bool dirty = false;
+
 			if (GUILayout.Button("generate all missing dialogs")) _generate = true;
 			if (GUILayout.Button("update all dialogs")) _update = true;
 
-			bool dirty = false;
-
 			if (!_generate && !_update)
 				return;
+
 			EditorUtility.DisplayProgressBar("process", "fetching...", 0f);
 
 			for (int i = 0; i < dialogsUids.Length; i++)
 			{
 				var d = dialogsUids[i];
 
-				if(EditorUtility.DisplayCancelableProgressBar("processing x" + dialogsUids.Length, "#" + i + ":" + d + "...", (i * 1f) / (dialogsUids.Length * 1f)))
+				if (EditorUtility.DisplayCancelableProgressBar("processing x" + dialogsUids.Length, "#" + i + ":" + d + "...", (i * 1f) / (dialogsUids.Length * 1f)))
 				{
 					i = dialogsUids.Length;
 					continue;
@@ -238,6 +247,7 @@ namespace fwp.localizator.dialog.editor
 				Debug.Log("dialog process : nothing was done");
 			}
 
+			refresh();
 		}
 
 #if UNITY_EDITOR

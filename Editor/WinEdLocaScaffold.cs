@@ -29,6 +29,29 @@ namespace fwp.localizator.editor
 
 		}
 
+		abstract protected string getTitle();
+
+		private void OnGUI()
+		{
+			if (UtilStyles.drawSectionTitle(getTitle()))
+			{
+				Debug.Log("title.refresh");
+				refresh(true);
+			}
+
+			draw();
+		}
+
+		virtual protected void refresh(bool verbose = false)
+		{
+
+		}
+
+		virtual protected void draw()
+		{
+
+		}
+
 		/// <summary>
 		/// to override orignal manager
 		/// </summary>

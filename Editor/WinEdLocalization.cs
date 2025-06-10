@@ -28,15 +28,24 @@ namespace fwp.localizator.editor
 			LocalizatorUtilsEditor.getSheetsData(true);
 		}
 
-		private void OnGUI()
+		protected override void refresh(bool verbose)
 		{
-			UtilStyles.drawSectionTitle(LocalizationManager.instance.GetType().Name);
+			base.refresh(verbose);
+			LocalizatorUtilsEditor.getSheetsData(true);
+			if (verbose)
+			{
+				Debug.Log("sheets x" + Sheets.Length);
+				foreach (var s in Sheets) Debug.Log(s.name + " tabs x" + s.tabs.Length);
+			}
 
-			draw();
 		}
 
-		virtual protected void draw()
+		protected override string getTitle() => LocalizationManager.instance.GetType().Name;
+
+		override protected void draw()
 		{
+			base.draw();
+
 			LocalizationManager.verbose = EditorGUILayout.Toggle("verbose", LocalizationManager.verbose);
 
 			drawLangSelector(LocalizationManager.instance.getSupportedLanguages());
@@ -71,7 +80,7 @@ namespace fwp.localizator.editor
 		{
 			GUILayout.BeginHorizontal();
 			GUILayout.Label("APP (unity)   : " + Application.systemLanguage + " (iso : " + LocalizationManager.sysToIso(Application.systemLanguage) + ")");
-			if(LocalizationManager.instance != null)
+			if (LocalizationManager.instance != null)
 			{
 				GUILayout.Label("SYS           : " + LocalizationManager.instance.getSystemLanguage());
 				GUILayout.Label("BUILD (#if)   : " + LocalizationManager.instance.getFilteredSystemLanguage());
@@ -101,7 +110,7 @@ namespace fwp.localizator.editor
 			GUILayout.Space(10f);
 
 			EditorGUI.BeginChangeCheck();
-			foldDownload = EditorGUILayout.BeginFoldoutHeaderGroup(foldDownload, 
+			foldDownload = EditorGUILayout.BeginFoldoutHeaderGroup(foldDownload,
 				"sheets x" + sheets.Length, UtilStyles.FoldHeaderTitle());
 
 			if (EditorGUI.EndChangeCheck()) // unfold
@@ -119,6 +128,8 @@ namespace fwp.localizator.editor
 				foreach (var sheet in sheets)
 				{
 					GUILayout.BeginHorizontal();
+					if (GUILayout.Button("?", btnXS)) UnityEditor.Selection.activeObject = sheet;
+					EditorGUILayout.ObjectField(sheet, sheet.GetType(), true);
 					GUILayout.Label("URL : " + sheet.sheetUrlUid);
 					if (GUILayout.Button(button_browse, btnM)) OpenInFileBrowser.browseUrl(sheet.url);
 					GUILayout.EndHorizontal();
@@ -190,7 +201,7 @@ namespace fwp.localizator.editor
 			var langs = LocalizationManager.instance.lang_files;
 
 			EditorGUI.BeginChangeCheck();
-			foldLang = EditorGUILayout.BeginFoldoutHeaderGroup(foldLang, 
+			foldLang = EditorGUILayout.BeginFoldoutHeaderGroup(foldLang,
 				"langs files x" + langs.Length, UtilStyles.FoldHeaderTitle());
 
 			if (EditorGUI.EndChangeCheck())
