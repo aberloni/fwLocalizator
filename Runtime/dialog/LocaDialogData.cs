@@ -55,7 +55,7 @@ namespace fwp.localizator.dialog
 		}
 
 #if UNITY_EDITOR
-		public void edUpdate()
+		virtual public void edUpdateContent()
 		{
 			edFillDialogLines();
 

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 
 using UnityEditor;
 using fwp.localizator.editor;
-using Unity.Properties;
 
 namespace fwp.localizator.dialog.editor
 {
@@ -183,7 +182,7 @@ namespace fwp.localizator.dialog.editor
 					{
 						Debug.Log("dialog.update " + dial.name, dial);
 
-						dial.edUpdate();
+						dial.edUpdateContent();
 						UnityEditor.Selection.activeObject = dial;
 					}
 					if (GUILayout.Button(" > ", btnS))
@@ -228,7 +227,7 @@ namespace fwp.localizator.dialog.editor
 					if (_update)
 					{
 						var dial = getDialog(d);
-						if (dial != null) dial.edUpdate();
+						if (dial != null) dial.edUpdateContent();
 
 						dirty = true;
 					}
