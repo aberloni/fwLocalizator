@@ -135,17 +135,18 @@ namespace fwp.localizator
 		/// <summary>
 		/// loca file has a key matching param
 		/// removeDigit : should we compare with ending digits or not
+		/// 
+		/// this is a strict comparison : keys MUST match (space & case)
 		/// </summary>
-		public bool hasId(string id, bool removeDigit)
+		public bool hasId(string id, bool removeTrailingDigit)
 		{
-			id = id.Trim().ToLower();
 			if (string.IsNullOrEmpty(id)) return false;
 			foreach (var l in lines)
 			{
-				var key = l.Split('=')[0].Trim().ToLower();
+				var key = l.Split('=')[0];
 
 				// key{-num}, remove it
-				if (removeDigit && char.IsDigit(key[^1]))
+				if (removeTrailingDigit && char.IsDigit(key[^1]))
 				{
 					key = key.Substring(0, key.LastIndexOf("-"));
 				}
