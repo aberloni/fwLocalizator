@@ -235,11 +235,14 @@ namespace fwp.localizator
 			return file.getContentById(id, warning);
 		}
 
-		public bool hasKey(string key) => hasKey(key, getSavedIsoLanguage());
-		public bool hasKey(string key, IsoLanguages iso)
+		/// <summary>
+		/// check if localization file has matching key (strict comparison)
+		/// </summary>
+		public bool hasKey(string key, bool ignoreDigits = true) => hasKey(key, getSavedIsoLanguage(), ignoreDigits);
+		public bool hasKey(string key, IsoLanguages iso, bool ignoreDigits = true)
 		{
 			LocalizationFile file = instance.getFileByLang(iso);
-			return file.hasId(key, false);
+			return file.hasId(key, ignoreDigits);
 		}
 		
 		public void nextLanguage()

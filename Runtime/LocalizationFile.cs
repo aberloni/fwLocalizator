@@ -138,7 +138,7 @@ namespace fwp.localizator
 		/// 
 		/// this is a strict comparison : keys MUST match (space & case)
 		/// </summary>
-		public bool hasId(string id, bool removeTrailingDigit)
+		public bool hasId(string id, bool ignoreDigits)
 		{
 			if (string.IsNullOrEmpty(id)) return false;
 			foreach (var l in lines)
@@ -146,7 +146,7 @@ namespace fwp.localizator
 				var key = l.Split('=')[0];
 
 				// key{-num}, remove it
-				if (removeTrailingDigit && char.IsDigit(key[^1]))
+				if (ignoreDigits && char.IsDigit(key[^1]))
 				{
 					key = key.Substring(0, key.LastIndexOf("-"));
 				}
