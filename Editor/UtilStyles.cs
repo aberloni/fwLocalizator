@@ -6,8 +6,8 @@ public class UtilStyles
 {
 
 	static GUIStyle fontBold;
-    static public GUIStyle FontBold()
-    {
+	static public GUIStyle FontBold()
+	{
 		if (fontBold == null)
 		{
 			fontBold = new GUIStyle();
@@ -18,29 +18,31 @@ public class UtilStyles
 		return fontBold;
 	}
 
-    static private GUIStyle foldoutSection;
-    static public GUIStyle FoldoutSection(int size = 15)
-    {
-        if(foldoutSection == null)
-        {
+	static private GUIStyle foldoutSection;
+	static public GUIStyle FoldoutSection(int size = 15)
+	{
+		if (foldoutSection == null)
+		{
 			foldoutSection = new GUIStyle(EditorStyles.foldout);
 
 			foldoutSection.richText = true;
 			foldoutSection.normal.textColor = Color.white;
 
 			foldoutSection.fontStyle = FontStyle.Bold;
-        }
+		}
 
 		foldoutSection.fontSize = size;
 
-        return foldoutSection;
-    }
+		return foldoutSection;
+	}
 
-    static private GUIStyle sectionTitle;
-    static public GUIStyle SectionTitle(int size = 15, TextAnchor anchor = TextAnchor.MiddleCenter, int leftMargin = 10)
-    {
-        if (sectionTitle == null)
-        {
+	static private GUIStyle sectionTitle;
+	static public GUIStyle SectionTitle(int size = 15, TextAnchor anchor = TextAnchor.MiddleCenter, 
+		int verticalMargin = 10,
+		int horizontalMargin = 10)
+	{
+		if (sectionTitle == null)
+		{
 			sectionTitle = new GUIStyle();
 
 			sectionTitle.richText = true;
@@ -48,13 +50,16 @@ public class UtilStyles
 			sectionTitle.normal.textColor = Color.white;
 
 			sectionTitle.fontStyle = FontStyle.Bold;
-			sectionTitle.margin = new RectOffset(leftMargin, 10, 10, 10);
-        }
+			
+			sectionTitle.margin = new RectOffset(
+				horizontalMargin, horizontalMargin, 
+				verticalMargin, verticalMargin);
+		}
 
 		sectionTitle.fontSize = size;
 
-        return sectionTitle;
-    }
+		return sectionTitle;
+	}
 
 	static GUIStyle foldHeaderTitle;
 	static public GUIStyle FoldHeaderTitle()
@@ -100,11 +105,8 @@ public class UtilStyles
 	/// <summary>
 	/// draw a label with speficic style
 	/// </summary>
-	static public bool drawSectionTitle(string label, float spaceMargin = 20f, int leftMargin = 10)
+	static public bool drawSectionTitle(string label, int vSpace = 10, int hSpace = 10)
 	{
-		if (spaceMargin > 0f)
-			GUILayout.Space(spaceMargin);
-
-		return GUILayout.Button(label, SectionTitle(15, TextAnchor.UpperLeft, leftMargin));
+		return GUILayout.Button(label, SectionTitle(15, TextAnchor.UpperLeft, vSpace, hSpace));
 	}
 }

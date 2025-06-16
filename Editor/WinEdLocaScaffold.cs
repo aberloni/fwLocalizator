@@ -31,20 +31,27 @@ namespace fwp.localizator.editor
 
 		abstract protected string getTitle();
 
+		Vector2 globalScroll;
 		private void OnGUI()
 		{
-			if (UtilStyles.drawSectionTitle(getTitle()))
-			{
-				Debug.Log("title.refresh");
-				refresh(true);
-			}
-
+			drawHeader();
+			GUILayout.BeginScrollView(globalScroll);
 			draw();
+			GUILayout.EndScrollView();
 		}
 
 		virtual protected void refresh(bool verbose = false)
 		{
 
+		}
+
+		virtual protected void drawHeader()
+		{
+			if (UtilStyles.drawSectionTitle(getTitle(), 15, 15))
+			{
+				Debug.Log("title.refresh");
+				refresh(true);
+			}
 		}
 
 		virtual protected void draw()
