@@ -137,12 +137,17 @@ namespace fwp.localizator.editor
 					bool _fold = drawFoldout("Show all tabs", "tab" + sheet.sheetUrlUid);
 					if (!_fold) continue;
 
-					EditorGUI.indentLevel++;
+					if (GUILayout.Button("download all tabs"))
+					{
+						ImportSheetUtils.ssheet_import(sheet);
+						GenerateSheetUtils.csv_generate(sheet);
+						GenerateSheetUtils.trads_generate();
+					}
+
 					foreach (var tab in sheet.tabs)
 					{
 						using (new GUILayout.HorizontalScope())
 						{
-							GUILayout.Space(20f);
 							GUILayout.Label(tab.tabName + "#" + tab.tabUrlId + " (" + tab.parseType + ")");
 
 							if (GUILayout.Button(button_browse, btnS))

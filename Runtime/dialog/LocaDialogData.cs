@@ -88,11 +88,11 @@ namespace fwp.localizator.dialog
 				string fullId = uid + dialog_line_number_separator + ((index < 10) ? "0" + index : index.ToString());
 				Debug.Log($"({iso})?" + fullId);
 
-				if (!LocalizationManager.instance.hasKey(fullId, iso))
+				if (!LocalizationManager.instance.hasKey(fullId, iso, false))
 				{
 					// stop
 					index = max_fetch_lines;
-					Debug.Log(fullId + " not in localization");
+					Debug.Log("not present in localization files : <b>" + fullId + "</b>");
 				}
 				else
 				{

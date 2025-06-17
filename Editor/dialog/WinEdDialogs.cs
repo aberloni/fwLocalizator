@@ -8,10 +8,10 @@ using fwp.localizator.editor;
 
 namespace fwp.localizator.dialog.editor
 {
-	public class WinEdDialogs : WinEdLocaScaffold
+	abstract public class WinEdDialogs : WinEdLocaScaffold
 	{
-		[MenuItem("Window/Localizator/(win) dialogs")]
-		static void init() => EditorWindow.GetWindow(typeof(WinEdDialogs));
+		//[MenuItem("Window/Localizator/(win) dialogs")]
+		//static void init() => EditorWindow.GetWindow(typeof(WinEdDialogs));
 
 		/// <summary>
 		/// scriptable objects
@@ -24,8 +24,6 @@ namespace fwp.localizator.dialog.editor
 		public string[] dialogsUids = null;
 
 		Vector2 scrollTabDialogs;
-
-		override protected void generateManager() => new DialogManager();
 
 		protected override void OnEnable()
 		{
@@ -134,7 +132,7 @@ namespace fwp.localizator.dialog.editor
 			if (dialogs == null)
 				return;
 
-			bool fold = drawFoldout("in :   scriptables x" + dialogs.Length, "scriptables");
+			bool fold = drawFoldout("scriptables x" + dialogs.Length, "scriptables");
 			if (!fold) return;
 
 			foreach (var d in dialogs)
@@ -151,7 +149,7 @@ namespace fwp.localizator.dialog.editor
 			if (dialogsUids == null)
 				return;
 
-			bool fold = drawFoldout("in :   loca dialogs UIDs x" + dialogsUids.Length, "loca");
+			bool fold = drawFoldout("loca dialogs UIDs x" + dialogsUids.Length, "loca");
 			if (!fold) return;
 
 			drawGlobalDialogButtons();

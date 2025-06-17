@@ -60,14 +60,18 @@ namespace fwp.localizator.editor
 			csv.save();
 		}
 
+		static public void csv_generate(LocaDataSheet sheet)
+		{
+			foreach (var tab in sheet.tabs)
+			{
+				csv_file_generate(tab);
+			}
+		}
 		static public void csvs_generate(LocaDataSheet[] sheets)
 		{
 			foreach (var sheet in sheets)
 			{
-				foreach (var tab in sheet.tabs)
-				{
-					csv_file_generate(tab);
-				}
+				csv_generate(sheet);
 			}
 		}
 

@@ -9,7 +9,7 @@ namespace fwp.localizator.dialog
 	/// editor : everything
 	/// runtime : will load from Resources/
 	/// </summary>
-	public class DialogManager
+	abstract public class DialogManager
 	{
 		static public bool verbose;
 
@@ -62,7 +62,7 @@ namespace fwp.localizator.dialog
 			return null;
 		}
 
-		virtual protected System.Type getDialogType() => typeof(LocaDialogData);
+		abstract protected System.Type getDialogType(); // => typeof(LocaDialogData);
 
 #if UNITY_EDITOR
 		/// <summary>
@@ -70,9 +70,20 @@ namespace fwp.localizator.dialog
 		/// </summary>
 		public LocaDialogData createDialog(string uid)
 		{
-			var inst = ScriptableObject.CreateInstance(getDialogType());
+			var dialogType = getDialogType();
+			if(dialogType == null)
+			{
+				Debug.LogError("no dialog type given ? " + dialogType);
+				return null;
+			}
 
-			Debug.Assert(inst != null, "could not create scriptable dialog");
+			var inst = ScriptableObject.CreateInstance(dialogType);
+			if(inst == null)
+			{
+				Debug.LogError("could not create scriptable dialog");
+				Debug.LogError(dialogType.ToString());
+				return null;
+			}
 
 			//string path = DialogManager.sysDialogs;
 			string path = DialogManager.assetDialogs;
