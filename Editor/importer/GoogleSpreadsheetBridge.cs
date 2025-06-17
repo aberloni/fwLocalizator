@@ -33,7 +33,7 @@ namespace fwp.localizator.editor
 			UnityWebRequest uwr = UnityWebRequest.Get(ssheetUrl);
 			//uwr.url = ssheetUrl;
 
-			Debug.Log("<color=green>query</color> : " + uwr.url);
+			Debug.Log("<color=orange>query</color> : " + uwr.url);
 
 			float time = Time.realtimeSinceStartup;
 
@@ -41,11 +41,13 @@ namespace fwp.localizator.editor
 			while (!async.isDone) ;
 			if (uwr.result == UnityWebRequest.Result.ProtocolError)
 			{
+				Debug.Log("<color=red>failed</color> : " + ssheetUrl);
+				Debug.LogError(uwr.url);
 				Debug.LogError(uwr.error);
 				return string.Empty;
 			}
 
-			Debug.Log("query took : " + (Time.realtimeSinceStartup - time) + " second(s)");
+			Debug.Log("<color=green>success</color> query took : " + (Time.realtimeSinceStartup - time) + " second(s)");
 
 			string txt = uwr.downloadHandler.text;
 
