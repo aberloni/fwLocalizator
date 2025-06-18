@@ -23,6 +23,7 @@ namespace fwp.localizator.editor
 		public string Url => googleSpreadsheetEditPrefix + tabUrlId;
 
 		public string DisplayName => tabName + "&" + tabUrlId;
+        public string TxtFileName => tabName + "_" + tabUrlId;
 
         /// <summary>
         /// relative to Assets/

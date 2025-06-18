@@ -30,10 +30,10 @@ namespace fwp.localizator.editor
 				return null;
 			}
 
+			// [path]/tab_uid.txt
 			foreach (var t in tabsFiles)
 			{
-				if (t.Contains(tab.tabUrlId))
-					return t;
+				if (t.Contains(tab.TxtFileName)) return t;
 			}
 
 			return null;
@@ -43,7 +43,7 @@ namespace fwp.localizator.editor
 		{
 			string path = raw_file_locate(tab);
 
-			Debug.Log("parsing (" + tab.parseType + ") : " + path);
+			Debug.Log("parsing (" + tab.tabUrlId + "|" + tab.parseType + ") : " + path);
 
 			// read and create csv
 			var csv = new CsvParser(tab, path);

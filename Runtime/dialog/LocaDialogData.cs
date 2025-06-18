@@ -107,13 +107,16 @@ namespace fwp.localizator.dialog
 			}
 
 			edInjectDialogLines(tmp.ToArray());
+
+			UnityEditor.EditorUtility.SetDirty(this);
 		}
 
 		/// <summary>
 		/// all generated lines
 		/// how to inject them
+		/// return : something changed
 		/// </summary>
-		abstract protected void edInjectDialogLines(iDialogLine[] newLines);
+		abstract protected bool edInjectDialogLines(iDialogLine[] newLines);
 
 		bool dUnfold;
 		public void drawLines()
