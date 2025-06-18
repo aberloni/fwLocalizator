@@ -27,7 +27,7 @@ namespace fwp.localizator.editor
 		/// <summary>
 		/// [tabName]_[ssheetGUID]
 		/// </summary>
-		public string ParserFileName => Tab.tabName + "_" + tabUid;
+		public string ParserFileName => Tab.TxtFileName;
 
 		public DataSheetTab Tab => LocalizatorUtilsEditor.tab_fetch(tabUid);
 

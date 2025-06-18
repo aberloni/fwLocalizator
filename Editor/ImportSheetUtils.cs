@@ -94,7 +94,7 @@ namespace fwp.localizator.editor
             }
 
             //string fileName = getTabIdFileName(tabId);
-            string fileName = dt.tabName + "_" + dt.tabUrlId;
+            string fileName = dt.TxtFileName;
 
             string filePath = Path.Combine(_folder, fileName + LocalizationPaths.langExtDot);
             File.WriteAllText(filePath, fileContent);

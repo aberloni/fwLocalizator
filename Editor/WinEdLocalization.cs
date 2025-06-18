@@ -148,7 +148,7 @@ namespace fwp.localizator.editor
 					{
 						using (new GUILayout.HorizontalScope())
 						{
-							GUILayout.Label(tab.tabName + "#" + tab.tabUrlId + " (" + tab.parseType + ")");
+							GUILayout.Label(tab.TxtFileName + " (" + tab.parseType + ")");
 
 							if (GUILayout.Button(button_browse, btnS))
 							{
