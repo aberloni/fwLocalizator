@@ -108,9 +108,15 @@ namespace fwp.localizator.editor
 
 			StringBuilder output = new StringBuilder();
 
+			Debug.Log("generating file : " + lang);
+			Debug.Log("parsers x" + parsers.Length);
+
 			foreach (var csv in parsers)
 			{
-				output.AppendLine(csv.getLangFileContent(lang));
+				string content = csv.getLangFileContent(lang);
+				Debug.Log("	+csv	" + csv.ParserFileName + "	(" + lang + ")	len:" + content.Length);
+
+				output.AppendLine(content);
 			}
 
 			//save
@@ -124,6 +130,7 @@ namespace fwp.localizator.editor
 
 			Debug.Log("saving : " + outputPath + " (" + output.Length + " char)");
 
+			// https://learn.microsoft.com/en-us/dotnet/api/system.io.file.writealltext?view=net-9.0
 			File.WriteAllText(outputPath, output.ToString());
 		}
 
