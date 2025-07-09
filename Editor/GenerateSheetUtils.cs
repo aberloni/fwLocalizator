@@ -122,7 +122,10 @@ namespace fwp.localizator.editor
 			//save
 
 			if (!Directory.Exists(LocalizationPaths.sysLangs))
+			{
+				Debug.Log("create missing directory : " + LocalizationPaths.sysLangs);
 				Directory.CreateDirectory(LocalizationPaths.sysLangs);
+			}
 
 			string outputPath = Path.Combine(
 				LocalizationPaths.sysLangs,
