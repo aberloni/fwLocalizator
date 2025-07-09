@@ -100,6 +100,7 @@ namespace fwp.localizator.editor
 				}
 			}
 			GUILayout.EndHorizontal();
+
 		}
 
 		bool foldDownload;
@@ -222,8 +223,11 @@ namespace fwp.localizator.editor
 
 			if (foldLang)
 			{
+				if (GUILayout.Button("clear cache(s)")) CsvParser.refreshCache();
+
 				if (GUILayout.Button("generate trad files"))
 				{
+					CsvParser.refreshCache();
 					LocalizationManager.instance.reloadFiles();
 					GenerateSheetUtils.trads_generate();
 				}
@@ -237,6 +241,7 @@ namespace fwp.localizator.editor
 
 					if (GUILayout.Button("update", btnS))
 					{
+						CsvParser.refreshCache();
 						//var sheet = mgr.getSheets()[0];
 						//LocalizationFile file = mgr.getFileByLang(l.iso);
 						GenerateSheetUtils.trad_file_generate(l.iso);
