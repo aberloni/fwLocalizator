@@ -13,15 +13,21 @@ namespace fwp.localizator.dialog.editor
 		//[MenuItem("Window/Localizator/(win) dialogs")]
 		//static void init() => EditorWindow.GetWindow(typeof(WinEdDialogs));
 
-		/// <summary>
-		/// scriptable objects
-		/// </summary>
-		public LocaDialogData[] dialogs = null;
+		public class LocaAssoc
+		{
+			public LocaDialogData dialog;
+			//public string duid;
+		}
 
 		/// <summary>
-		/// all possible dialogs from localization
+		/// all duid matching a dialog
 		/// </summary>
-		public string[] dialogsUids = null;
+		public Dictionary<string, LocaAssoc> dialogs = null;
+
+		/// <summary>
+		/// dialogs without matching duid
+		/// </summary>
+		public LocaDialogData[] dialogsIssues = null;
 
 		Vector2 scrollTabDialogs;
 
@@ -34,7 +40,7 @@ namespace fwp.localizator.dialog.editor
 		protected override void OnFocus()
 		{
 			base.OnFocus();
-			findDialogsUids();
+			findDialogsUids(); // focus
 		}
 
 		protected override string getTitle() => DialogManager.instance.GetType().Name;
@@ -53,8 +59,11 @@ namespace fwp.localizator.dialog.editor
 
 			scrollTabDialogs = GUILayout.BeginScrollView(scrollTabDialogs);
 
-			drawFoldLocalizationFiles(filter.filter);
-			drawFoldScriptableFiles(filter.filter);
+			// all possible dialogs (from localiz)
+			drawFoldLocalizationFiles();
+
+			// all existing scriptables
+			drawFoldScriptableFiles();
 
 			GUILayout.EndScrollView();
 		}
@@ -62,17 +71,17 @@ namespace fwp.localizator.dialog.editor
 		override protected void refresh(bool verbose = false)
 		{
 			base.refresh(verbose);
-			dialogs = fetchDialogObjects();
 
-			if (verbose) Debug.Log($"      -> solved x{dialogs.Length} scriptable dialogs");
-			findDialogsUids();
+			findDialogsUids(); // refresh
 		}
 
-		public void findDialogsUids()
+		/// <summary>
+		/// regen all data
+		/// </summary>
+		void findDialogsUids()
 		{
 			var mgr = LocalizationManager.instance;
-			if (mgr == null)
-				return;
+			if (mgr == null) return;
 
 			var _iso = mgr.getSavedIsoLanguage();
 
@@ -87,7 +96,7 @@ namespace fwp.localizator.dialog.editor
 			// fetching all possible UIDs (from trad file)
 
 			List<string> tmp = new List<string>();
-			var lines = file.getLines();
+			var lines = file.getLines(); // lines of target translation file
 
 			foreach (var l in lines)
 			{
@@ -100,6 +109,8 @@ namespace fwp.localizator.dialog.editor
 				// split UID-{NUM}
 				uid = uid.Substring(0, uid.LastIndexOf("-"));
 
+				if (filter.HasFilter && !filter.MatchFilter(uid)) continue;
+
 				if (!tmp.Contains(uid))
 				{
 					if (DialogManager.verbose) Debug.Log("+" + uid);
@@ -107,85 +118,97 @@ namespace fwp.localizator.dialog.editor
 				}
 			}
 
-			dialogsUids = tmp.ToArray();
-
+			string[] dialogsUids = tmp.ToArray();
 			if (DialogManager.verbose) Debug.Log($"      -> solved x{dialogsUids.Length} uids dialogs");
+
+			if (dialogs == null) dialogs = new(); // regen dico
+			else dialogs.Clear();
+
+			foreach (var d in dialogsUids)
+			{
+				dialogs.Add(d, new LocaAssoc());
+			}
+
+			LocaDialogData[] scriptables = fetchScriptablesEditor(filter.filter);
+			List<LocaDialogData> issues = new();
+			foreach (var s in scriptables)
+			{
+				if (dialogs.ContainsKey(s.name))
+				{
+					dialogs[s.name].dialog = s;
+				}
+				else
+				{
+					issues.Add(s);
+				}
+			}
+			dialogsIssues = issues.ToArray();
 		}
 
-		public bool hasDialogInstance(string dialogUid)
-			=> getDialog(dialogUid) != null;
+		public bool hasDialogInstance(string dialogUid) => getDialog(dialogUid) != null;
 
+		/// <summary>
+		/// don't call often when there are a lot of dialogs
+		/// </summary>
 		public LocaDialogData getDialog(string uid)
 		{
-			if (dialogs == null) return null;
-
-			foreach (var d in dialogs)
-			{
-				if (d == null) continue;
-				if (d.match(uid)) return d as LocaDialogData;
-			}
+			if (dialogs.ContainsKey(uid)) return dialogs[uid].dialog;
 			return null;
 		}
 
-		public void drawFoldScriptableFiles(string filter)
+		public void drawFoldScriptableFiles()
 		{
-			if (dialogs == null)
+			if (dialogs == null || dialogs.Count <= 0)
 				return;
 
-			bool fold = drawFoldout("scriptables x" + dialogs.Length, "scriptables");
+			bool fold = drawFoldout("scriptables x" + dialogs.Count, "scriptables");
 			if (!fold) return;
 
 			foreach (var d in dialogs)
 			{
-				if (d == null) continue;
-				if (!string.IsNullOrEmpty(filter) && !d.getDialogUid().Contains(filter)) continue;
-
-				d.drawLines();
+				if (d.Value.dialog == null) continue;
+				d.Value.dialog.drawLines();
 			}
 		}
 
-		public void drawFoldLocalizationFiles(string filter)
+		public void drawFoldLocalizationFiles()
 		{
-			if (dialogsUids == null)
+			if (dialogs == null || dialogs.Count <= 0)
 				return;
 
-			bool fold = drawFoldout("loca dialogs UIDs x" + dialogsUids.Length, "loca");
+			bool fold = drawFoldout("loca dialogs UIDs x" + dialogs.Count, "loca");
 			if (!fold) return;
 
 			drawGlobalDialogButtons();
 
 			bool dirty = false;
-			foreach (var d in dialogsUids)
+			foreach (var kp in dialogs)
 			{
-				if (d == null) continue;
-				if (!string.IsNullOrEmpty(filter) && !d.Contains(filter)) continue;
-
 				GUILayout.BeginHorizontal();
-				GUILayout.Label(d);
-				var dial = getDialog(d);
+				GUILayout.Label(kp.Key);
 
-				if (dial == null)
+				if (kp.Value.dialog == null)
 				{
 					if (GUILayout.Button("create", btnM))
 					{
-						dial = DialogManager.instance.createDialog(d);
+						kp.Value.dialog = DialogManager.instance.createDialog(kp.Key);
 
 						dirty = true;
 					}
 				}
 
-				if (dial != null)
+				if (kp.Value.dialog != null)
 				{
 					if (GUILayout.Button("update", btnM))
 					{
-						Debug.Log("dialog.update " + dial.name, dial);
+						Debug.Log("dialog.update " + kp.Value.dialog.name, kp.Value.dialog);
 
-						dial.edUpdateContent();
-						UnityEditor.Selection.activeObject = dial;
+						kp.Value.dialog.edUpdateContent();
+						UnityEditor.Selection.activeObject = kp.Value.dialog;
 					}
 					if (GUILayout.Button(" > ", btnS))
 					{
-						UnityEditor.Selection.activeObject = dial;
+						UnityEditor.Selection.activeObject = kp.Value.dialog;
 					}
 				}
 
@@ -195,6 +218,9 @@ namespace fwp.localizator.dialog.editor
 			if (dirty) refresh();
 		}
 
+		/// <summary>
+		/// global routines
+		/// </summary>
 		void drawGlobalDialogButtons()
 		{
 			bool _generate = false;
@@ -210,31 +236,31 @@ namespace fwp.localizator.dialog.editor
 
 			EditorUtility.DisplayProgressBar("process", "fetching...", 0f);
 
-			for (int i = 0; i < dialogsUids.Length; i++)
+			int cnt = 0;
+			foreach (var kp in dialogs)
 			{
-				var d = dialogsUids[i];
+				var d = kp.Value.dialog;
 
-				if (EditorUtility.DisplayCancelableProgressBar("processing x" + dialogsUids.Length, "#" + i + ":" + d + "...", (i * 1f) / (dialogsUids.Length * 1f)))
+				if (EditorUtility.DisplayCancelableProgressBar("processing x" + dialogs.Count, "#" + cnt + ":" + d + "...", (cnt * 1f) / (dialogs.Count * 1f)))
 				{
-					i = dialogsUids.Length;
-					continue;
+					break;
 				}
 
-				if (hasDialogInstance(d))
+				if (d != null)
 				{
 					if (_update)
 					{
-						var dial = getDialog(d);
-						if (dial != null) dial.edUpdateContent();
-
+						d.edUpdateContent();
 						dirty = true;
 					}
 				}
 				else if (_generate)
 				{
-					DialogManager.instance.createDialog(d);
+					d = DialogManager.instance.createDialog(kp.Key);
 					dirty = true;
 				}
+
+				cnt++;
 			}
 
 			EditorUtility.ClearProgressBar();
@@ -267,16 +293,6 @@ namespace fwp.localizator.dialog.editor
 		}
 #endif
 
-		static public LocaDialogData[] fetchDialogObjects(string filter = null)
-		{
-			LocaDialogData[] ss = null;
-
-#if UNITY_EDITOR
-			ss = fetchScriptablesEditor(filter);
-#endif
-
-			return ss;
-		}
 	}
 
 }

@@ -6,7 +6,7 @@ namespace fwp.localizator.editor
 {
 	using System.IO;
 	using System.Text;
-	
+
 	/// <summary>
 	/// must fill with leading numbers
 	/// </summary>
@@ -165,7 +165,7 @@ namespace fwp.localizator.editor
 
 		public void generateLocalization()
 		{
-			Debug.Log("		generate <b>localization</b> for lines x" + lines.Count);
+			Debug.Log("		generate <b>localization</b> out of lines x" + lines.Count);
 
 			int _col = (int)Tab.tabParams.uidColumn;
 
@@ -174,7 +174,12 @@ namespace fwp.localizator.editor
 				Debug.Assert(line != null);
 				string key = line.cells[_col];
 
-				Debug.Assert(!string.IsNullOrEmpty(key));
+				if (string.IsNullOrEmpty(key))
+				{
+					Debug.LogWarning($"{Tab.tabName} :	a key is null");
+					Debug.LogWarning("line is : " + line.raw);
+					continue;
+				}
 
 				CsvLineLang llang = new(key);
 				var langs = System.Enum.GetValues(typeof(IsoLanguages));

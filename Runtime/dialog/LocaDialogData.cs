@@ -26,8 +26,27 @@ namespace fwp.localizator.dialog
 		/// </summary>
 		const int max_fetch_lines = 50;
 
-		public string getDialogUid() => name;
+		/// <summary>
+		/// to avoid garbage when fetchin object.name
+		/// </summary>
+		string _name = null;
+		string Name
+		{
+			get
+			{
+				if (_name == null) _name = name;
+				return _name;
+			}
+		}
 
+		virtual public string getDialogUid()
+		{
+			return Name;
+		}
+
+		/// <summary>
+		/// virtual : default is comparing name
+		/// </summary>
 		virtual public bool match(string uid)
 		{
 			return getDialogUid() == uid;
@@ -77,7 +96,7 @@ namespace fwp.localizator.dialog
 
 			var t = getLineDataType();
 
-			Debug.Log("<b>autofill</b> " + name + " (up to : " + max_fetch_lines + ")");
+			Debug.Log("<b>autofill</b> " + Name + " (up to : " + max_fetch_lines + ")");
 
 			IsoLanguages iso = IsoLanguages.en;
 
