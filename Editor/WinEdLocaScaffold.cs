@@ -15,18 +15,36 @@ namespace fwp.localizator.editor
 		protected GUILayoutOption btnS => GUILayout.Width(75f);
 		protected GUILayoutOption btnM => GUILayout.Width(100f);
 
-		protected WinHelpFilter filter = new();
+		protected WinHelpFilter filter = null;
 
 		Dictionary<string, bool> edFoldout = new Dictionary<string, bool>();
 
-		virtual protected void OnEnable()
+		/// <summary>
+		/// sealed
+		/// when window is created
+		/// </summary>
+		void OnEnable()
 		{
+			create();
+		}
+
+		virtual protected void create()
+		{
+			if (filter == null)
+			{
+				filter = new((filter) =>
+				{
+					Debug.Log("filter >> " + filter);
+					refresh();
+				});
+			}
+
 			generateManager();
 		}
 
 		virtual protected void OnFocus()
 		{
-
+			refresh();
 		}
 
 		abstract protected string getTitle();
@@ -40,10 +58,8 @@ namespace fwp.localizator.editor
 			GUILayout.EndScrollView();
 		}
 
-		virtual protected void refresh(bool verbose = false)
-		{
-
-		}
+		virtual protected void refresh(bool forced = false)
+		{ }
 
 		virtual protected void drawHeader()
 		{

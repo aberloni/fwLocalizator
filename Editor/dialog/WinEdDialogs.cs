@@ -31,19 +31,9 @@ namespace fwp.localizator.dialog.editor
 
 		Vector2 scrollTabDialogs;
 
-		protected override void OnEnable()
-		{
-			base.OnEnable();
-			refresh();
-		}
-
-		protected override void OnFocus()
-		{
-			base.OnFocus();
-			findDialogsUids(); // focus
-		}
-
 		protected override string getTitle() => DialogManager.instance.GetType().Name;
+
+		IsoLanguages Iso => LocalizationManager.instance != null ? LocalizationManager.instance.getSavedIsoLanguage() : IsoLanguages.en;
 
 		protected override void draw()
 		{
@@ -57,13 +47,26 @@ namespace fwp.localizator.dialog.editor
 
 			filter.drawFilterField();
 
+			if (LocalizationManager.instance == null)
+			{
+				GUILayout.Label("no loca manager?");
+				return;
+			}
+
+			GUILayout.Label($"using lang : {Iso}");
+
 			scrollTabDialogs = GUILayout.BeginScrollView(scrollTabDialogs);
 
 			// all possible dialogs (from localiz)
 			drawFoldLocalizationFiles();
 
+			GUILayout.Space(10f);
 			// all existing scriptables
 			drawFoldScriptableFiles();
+
+			GUILayout.Space(10f);
+			// all existing scriptables without matching uids from loca
+			drawIssues();
 
 			GUILayout.EndScrollView();
 		}
@@ -83,13 +86,13 @@ namespace fwp.localizator.dialog.editor
 			var mgr = LocalizationManager.instance;
 			if (mgr == null) return;
 
-			var _iso = mgr.getSavedIsoLanguage();
+			string _filter = filter != null && filter.HasFilter ? filter.filter : null;
 
 			// get french (default)
-			var file = mgr.getFileByLang(_iso);
+			var file = mgr.getFileByLang(Iso);
 			if (file == null)
 			{
-				Debug.LogWarning($"no {_iso} file ?");
+				Debug.LogWarning($"no {Iso} file ?");
 				return;
 			}
 
@@ -109,7 +112,7 @@ namespace fwp.localizator.dialog.editor
 				// split UID-{NUM}
 				uid = uid.Substring(0, uid.LastIndexOf("-"));
 
-				if (filter.HasFilter && !filter.MatchFilter(uid)) continue;
+				if (!string.IsNullOrEmpty(_filter) && !uid.Contains(_filter)) continue;
 
 				if (!tmp.Contains(uid))
 				{
@@ -129,7 +132,7 @@ namespace fwp.localizator.dialog.editor
 				dialogs.Add(d, new LocaAssoc());
 			}
 
-			LocaDialogData[] scriptables = fetchScriptablesEditor(filter.filter);
+			LocaDialogData[] scriptables = fetchScriptablesEditor(_filter);
 			List<LocaDialogData> issues = new();
 			foreach (var s in scriptables)
 			{
@@ -156,13 +159,33 @@ namespace fwp.localizator.dialog.editor
 			return null;
 		}
 
-		public void drawFoldScriptableFiles()
+		void drawIssues()
+		{
+			bool fold = drawFoldout("issues", "dialog_issues");
+			if (!fold) return;
+
+			GUILayout.Label("all dialogs scriptable without matching DUID in translation file");
+
+			if (dialogsIssues == null || dialogsIssues.Length <= 0)
+				return;
+
+			foreach (var d in dialogsIssues)
+			{
+				if (d == null) continue;
+
+				d.drawLines();
+			}
+		}
+
+		void drawFoldScriptableFiles()
 		{
 			if (dialogs == null || dialogs.Count <= 0)
 				return;
 
-			bool fold = drawFoldout("scriptables x" + dialogs.Count, "scriptables");
+			bool fold = drawFoldout("generated scriptables", "dialog_scriptables");
 			if (!fold) return;
+
+			GUILayout.Label("all dialogs scriptable existing in resources");
 
 			foreach (var d in dialogs)
 			{
@@ -176,10 +199,12 @@ namespace fwp.localizator.dialog.editor
 			if (dialogs == null || dialogs.Count <= 0)
 				return;
 
-			bool fold = drawFoldout("loca dialogs UIDs x" + dialogs.Count, "loca");
+			bool fold = drawFoldout("loca dialogs UIDs x" + dialogs.Count, "dialog_locas");
 			if (!fold) return;
 
 			drawGlobalDialogButtons();
+
+			GUILayout.Label($"all DUID found in translation file {LocalizationManager.instance.getSavedIsoLanguage()}");
 
 			bool dirty = false;
 			foreach (var kp in dialogs)
@@ -228,8 +253,8 @@ namespace fwp.localizator.dialog.editor
 
 			bool dirty = false;
 
-			if (GUILayout.Button("generate all missing dialogs")) _generate = true;
-			if (GUILayout.Button("update all dialogs")) _update = true;
+			if (dialogsIssues.Length > 0 && GUILayout.Button("generate missing dialogs")) _generate = true;
+			if (GUILayout.Button("update dialogs")) _update = true;
 
 			if (!_generate && !_update)
 				return;
