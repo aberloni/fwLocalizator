@@ -268,9 +268,9 @@ namespace fwp.localizator.dialog.editor
 			{
 				var d = kp.Value.dialog;
 
-				string title = $"processing {cnt} / {dialogs.Count} ...";
+				string header = $"processing {cnt} / {dialogs.Count} ...";
 				float progr = (cnt * 1f) / (dialogs.Count * 1f);
-				if (EditorUtility.DisplayCancelableProgressBar(title, d.name, progr))
+				if (EditorUtility.DisplayCancelableProgressBar(((int)progr * 100) + "%", header, progr))
 				{
 					break;
 				}
