@@ -20,16 +20,17 @@ namespace fwp.localizator.editor
 	public class CsvParser
 	{
 		/// <summary>
-		/// guid of ssheet tab
+		/// parent tab
+		/// assigned during generation
 		/// </summary>
-		public string tabUid;
+		public DataSheetTab tab;
 
 		/// <summary>
 		/// [tabName]_[ssheetGUID]
 		/// </summary>
-		public string ParserFileName => Tab.TxtFileName;
+		public string ParserFileName => tab.TxtFileName;
 
-		public DataSheetTab Tab => LocalizatorUtilsEditor.tab_fetch(tabUid);
+		//public DataSheetTab Tab => LocalizatorUtilsEditor.tab_fetch(tabUid);
 
 		/// <summary>
 		/// contains header of column
@@ -49,22 +50,23 @@ namespace fwp.localizator.editor
 
 		public void logRaw()
 		{
+			Debug.Log("parser.raw	<b>" + tab.DisplayName + "</b>	lines x" + lines.Count);
+
 			for (int i = 0; i < lines.Count; i++)
 			{
 				var line = lines[i];
-				//Debug.Log("#" + i + " => " + line.stringify());
-				Debug.Log("#" + i + " cells x" + line.cells.Count);
-				foreach (var c in line.cells) Debug.Log(" > " + c);
+				Debug.Log("	#" + i + " cells x" + line.cells.Count);
+				foreach (var c in line.cells) Debug.Log("		> " + c);
 			}
 		}
 
 		public void logLocalized(IsoLanguages iso)
 		{
-			Debug.Log("parser.log : " + iso + " x" + localizes.Count);
+			Debug.Log("parser.loca	<b>" + tab.DisplayName + "</b>	iso:" + iso + " x" + localizes.Count);
 			foreach (var l in localizes)
 			{
-				if (!l.hasLocalization(iso)) Debug.Log(l.key + "=[missing " + iso + "]");
-				else Debug.Log(l.key + " = " + l.localized[(int)iso]);
+				if (!l.hasLocalization(iso)) Debug.Log(l.key + "=<color=red>[missing " + iso + "]</color>");
+				else Debug.Log(l.key + "	= " + l.localized[(int)iso]);
 			}
 		}
 
@@ -126,7 +128,7 @@ namespace fwp.localizator.editor
 		{
 			string raw = File.ReadAllText(path);
 
-			tabUid = tab.tabUrlId;
+			this.tab = tab;
 
 			// some cleaning
 			raw = presetupRaw(raw);
@@ -167,7 +169,7 @@ namespace fwp.localizator.editor
 		{
 			Debug.Log("		generate <b>localization</b> out of lines x" + lines.Count);
 
-			int _col = (int)Tab.tabParams.uidColumn;
+			int _col = (int)tab.tabParams.uidColumn;
 
 			foreach (var line in lines)
 			{
@@ -176,7 +178,7 @@ namespace fwp.localizator.editor
 
 				if (string.IsNullOrEmpty(key))
 				{
-					Debug.LogWarning($"{Tab.tabName} :	a key is null");
+					Debug.LogWarning($"{tab.tabName} :	a key is null");
 					Debug.LogWarning("line is : " + line.raw);
 					continue;
 				}
@@ -487,14 +489,30 @@ namespace fwp.localizator.editor
 		static public CsvParser getParser(DataSheetTab tab)
 		{
 			var ps = loadParsers();
-			foreach (var p in ps)
+
+			List<CsvParser> ret = new();
+
+			foreach (var parser in ps)
 			{
-				if (p.tabUid == tab.tabUrlId)
+				if (parser.tab.compare(tab))
 				{
-					return p;
+					ret.Add(parser);
 				}
 			}
-			return null;
+
+			if (ret.Count > 1)
+			{
+				Debug.LogWarning("found multiple instance of tab" + tab.tabUrlId);
+				return null;
+			}
+
+			if (ret.Count <= 0)
+			{
+				Debug.LogWarning("missing parser : " + tab.tabUrlId);
+				return null;
+			}
+
+			return ret[0];
 		}
 
 		static public string getCellValue(string lineUid, int cell)
@@ -513,7 +531,7 @@ namespace fwp.localizator.editor
 						{
 							if (LocalizationManager.verbose)
 							{
-								Debug.Log("found " + lineUid + " cell in CSV:" + csv.tabUid + " => returning column #" + cell);
+								Debug.Log("found " + lineUid + " cell in CSV:" + csv.tab.DisplayName + " => returning column #" + cell);
 							}
 
 							return l.cells[cell];
