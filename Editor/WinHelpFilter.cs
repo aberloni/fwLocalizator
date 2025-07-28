@@ -41,6 +41,11 @@ namespace fwp.localizator
 
 			string val = GUILayout.TextArea(_filter);
 
+			if(GUILayout.Button("apply", GUILayout.Width(50f)))
+			{
+				_filter = null;
+			}
+
 			if (GUILayout.Button("clear", GUILayout.Width(50f)))
 			{
 				val = string.Empty;

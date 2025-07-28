@@ -57,6 +57,8 @@ namespace fwp.localizator.dialog.editor
 
 			scrollTabDialogs = GUILayout.BeginScrollView(scrollTabDialogs);
 
+			drawGlobalDialogButtons();
+
 			// all possible dialogs (from localiz)
 			drawFoldLocalizationFiles();
 
@@ -202,8 +204,6 @@ namespace fwp.localizator.dialog.editor
 			bool fold = drawFoldout("loca dialogs UIDs x" + dialogs.Count, "dialog_locas");
 			if (!fold) return;
 
-			drawGlobalDialogButtons();
-
 			GUILayout.Label($"all DUID found in translation file {LocalizationManager.instance.getSavedIsoLanguage()}");
 
 			bool dirty = false;
@@ -253,8 +253,10 @@ namespace fwp.localizator.dialog.editor
 
 			bool dirty = false;
 
-			if (dialogsIssues.Length > 0 && GUILayout.Button("generate missing dialogs")) _generate = true;
+			GUILayout.BeginHorizontal();
+			if (GUILayout.Button("generate missing dialogs")) _generate = true;
 			if (GUILayout.Button("update dialogs")) _update = true;
+			GUILayout.EndHorizontal();
 
 			if (!_generate && !_update)
 				return;
