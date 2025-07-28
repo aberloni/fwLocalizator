@@ -70,6 +70,15 @@ namespace fwp.localizator.editor
 			}
 		}
 
+		public void logMissing(IsoLanguages iso)
+		{
+			Debug.Log("parser.loca.missing	<b>" + tab.DisplayName + "</b>	iso:" + iso + " x" + localizes.Count);
+			foreach (var l in localizes)
+			{
+				if (!l.hasLocalization(iso)) Debug.Log(l.key + "=<color=red>[missing " + iso + "]</color>");
+			}
+		}
+
 		public int getLangColumnIndex(IsoLanguages lang, bool warning = false)
 		{
 			if (lines.Count <= 0)

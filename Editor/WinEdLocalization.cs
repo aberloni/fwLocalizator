@@ -182,15 +182,17 @@ namespace fwp.localizator.editor
 									Selection.activeObject = AssetDatabase.LoadAssetAtPath("Assets/" + tab.CacheCsv, typeof(UnityEngine.Object));
 								}
 
-								if (GUILayout.Button("log raw", btnS))
+								if (GUILayout.Button("log:raw", btnS))
 								{
-									var p = CsvParser.getParser(tab);
-									p?.logRaw();
+									CsvParser.getParser(tab)?.logRaw();
 								}
-								if (GUILayout.Button("log loca", btnS))
+								if (GUILayout.Button("log:loca", btnS))
 								{
-									var p = CsvParser.getParser(tab);
-									p?.logLocalized(iso);
+									CsvParser.getParser(tab)?.logLocalized(iso);
+								}
+								if (GUILayout.Button("log.missing", btnS))
+								{
+									CsvParser.getParser(tab)?.logMissing(iso);
 								}
 							}
 						}
