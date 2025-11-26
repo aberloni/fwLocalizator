@@ -2,12 +2,6 @@
 using UnityEngine;
 using System.IO;
 using System;
-using System.Globalization;
-
-
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace fwp.localizator
 {
@@ -141,14 +135,29 @@ namespace fwp.localizator
 		public bool hasId(string id, bool ignoreDigits)
 		{
 			if (string.IsNullOrEmpty(id)) return false;
+
+			if (lines.Length <= 0)
+			{
+				Debug.LogWarning("hasId :: no lines");
+				return false;
+			}
+
 			foreach (var l in lines)
 			{
+				// key{-num}=value
 				var key = l.Split('=')[0];
 
-				// key{-num}, remove it
-				if (ignoreDigits && char.IsDigit(key[^1]))
+				// must ignore digits ? for pattern : key{-num} => remove it
+				if (ignoreDigits)
 				{
-					key = key.Substring(0, key.LastIndexOf("-"));
+					// key-num
+					int dashIndex = key.LastIndexOf("-");
+
+					// has "-" && last char is digit ?
+					if (dashIndex > 0 && char.IsDigit(key[^1]))
+					{
+						key = key.Substring(0, dashIndex);
+					}
 				}
 
 				//Debug.Log(id + " vs " + key);
