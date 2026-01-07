@@ -538,7 +538,7 @@ namespace fwp.localizator.editor
 					{
 						if (val.Contains(lineUid))
 						{
-							if (LocalizationManager.verbose)
+							if (LocalizationManager.Verbose)
 							{
 								Debug.Log("found " + lineUid + " cell in CSV:" + csv.tab.DisplayName + " => returning column #" + cell);
 							}
@@ -549,7 +549,7 @@ namespace fwp.localizator.editor
 				}
 			}
 
-			if (LocalizationManager.verbose)
+			if (LocalizationManager.Verbose)
 			{
 				Debug.LogWarning("could not find a cell value for uid : " + lineUid);
 			}

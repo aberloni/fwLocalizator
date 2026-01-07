@@ -46,7 +46,7 @@ namespace fwp.localizator.editor
 		{
 			base.draw();
 
-			LocalizationManager.verbose = EditorGUILayout.Toggle("verbose", LocalizationManager.verbose);
+			LocalizationManager.Verbose = EditorGUILayout.Toggle("verbose", LocalizationManager.Verbose);
 
 			drawLangSelector(LocalizationManager.instance.getSupportedLanguages());
 

@@ -7,114 +7,114 @@ using UnityEngine;
 /// </summary>
 namespace fwp.localizator.editor
 {
-    using fwp.localizator;
-    using System.IO;
-    using UnityEditor;
+	using fwp.localizator;
+	using System.IO;
+	using UnityEditor;
 
-    public class ImportSheetUtils
-    {
-        static public bool verbose => LocalizationManager.verbose;
+	public class ImportSheetUtils
+	{
+		static public bool verbose => LocalizationManager.Verbose;
 
-        /// <summary>
-        /// import and save multiple spreadsheets
-        /// </summary>
-        static public void ssheets_import(LocaDataSheet[] sheets)
-        {
-            if (verbose) Debug.Log("import x" + sheets.Length + " sheets");
-                 
-            for (int i = 0; i < sheets.Length; i++)
-            {
-                ssheet_import(sheets[i]);
-            }
-        }
+		/// <summary>
+		/// import and save multiple spreadsheets
+		/// </summary>
+		static public void ssheets_import(LocaDataSheet[] sheets)
+		{
+			if (verbose) Debug.Log("import x" + sheets.Length + " sheets");
 
-        /// <summary>
-        /// import and save a single spreadsheet
-        /// returns : path to generated files
-        /// </summary>
-        static public void ssheet_import(LocaDataSheet sheet)
-        {
-            if (sheet == null)
-            {
-                Debug.LogError("no scriptable with tabs ids ?");
-                return;
-            }
+			for (int i = 0; i < sheets.Length; i++)
+			{
+				ssheet_import(sheets[i]);
+			}
+		}
 
-            DataSheetTab[] tabs = sheet.tabs;
+		/// <summary>
+		/// import and save a single spreadsheet
+		/// returns : path to generated files
+		/// </summary>
+		static public void ssheet_import(LocaDataSheet sheet)
+		{
+			if (sheet == null)
+			{
+				Debug.LogError("no scriptable with tabs ids ?");
+				return;
+			}
 
-            if (verbose) Debug.Log("import x" + tabs.Length + " tabs");
+			DataSheetTab[] tabs = sheet.tabs;
 
-            EditorUtility.DisplayProgressBar("importing loca " + sheet.url, "fetching...", 0f);
+			if (verbose) Debug.Log("import x" + tabs.Length + " tabs");
 
-            for (int i = 0; i < sheet.tabs.Length; i++)
-            {
-                var tab = sheet.tabs[i];
+			EditorUtility.DisplayProgressBar("importing loca " + sheet.url, "fetching...", 0f);
 
-                EditorUtility.DisplayProgressBar("importing tab" + tab.DisplayName, "fetching...", (1f * i) / (1f * tabs.Length));
-                tab_import(sheet, tab);
-            }
+			for (int i = 0; i < sheet.tabs.Length; i++)
+			{
+				var tab = sheet.tabs[i];
 
-            EditorUtility.ClearProgressBar();
+				EditorUtility.DisplayProgressBar("importing tab" + tab.DisplayName, "fetching...", (1f * i) / (1f * tabs.Length));
+				tab_import(sheet, tab);
+			}
 
-            AssetDatabase.Refresh();
-        }
+			EditorUtility.ClearProgressBar();
 
-        /// <summary>
-        /// specific tab of a spreadsheet
-        /// </summary>
-        static public string tab_import(LocaDataSheet sheet, DataSheetTab tab)
-        {
-            int idx = sheet.getTabIndex(tab);
+			AssetDatabase.Refresh();
+		}
 
-            //EditorUtility.DisplayProgressBar("importing tab "+tab.displayName, "fetching...", 0f);
-            
-            string filePath = importAndSaveSheetTab(sheet.sheetUrlUid, tab);
-            sheet.tabs[idx] = tab;
+		/// <summary>
+		/// specific tab of a spreadsheet
+		/// </summary>
+		static public string tab_import(LocaDataSheet sheet, DataSheetTab tab)
+		{
+			int idx = sheet.getTabIndex(tab);
 
-            //EditorUtility.ClearProgressBar();
+			//EditorUtility.DisplayProgressBar("importing tab "+tab.displayName, "fetching...", 0f);
 
-            return tab.Cache;
-        }
+			string filePath = importAndSaveSheetTab(sheet.sheetUrlUid, tab);
+			sheet.tabs[idx] = tab;
 
-        /// <summary>
-        /// where the download and treatment of original CSV is done
-        /// return : complete file path
-        /// </summary>
-        static protected string importAndSaveSheetTab(string sheetUrl, DataSheetTab dt)
-        {
-            //fileContent is raw downloadHandler text
-            string fileContent = GoogleSpreadsheetBridge.ssheet_import(sheetUrl, dt.tabUrlId);
+			//EditorUtility.ClearProgressBar();
 
-            // path/to/sheets.ext
-            string _folder = LocalizationPaths.sysImports;
+			return tab.Cache;
+		}
 
-            if (!Directory.Exists(_folder))
-            {
-                Directory.CreateDirectory(_folder);
-            }
+		/// <summary>
+		/// where the download and treatment of original CSV is done
+		/// return : complete file path
+		/// </summary>
+		static protected string importAndSaveSheetTab(string sheetUrl, DataSheetTab dt)
+		{
+			//fileContent is raw downloadHandler text
+			string fileContent = GoogleSpreadsheetBridge.ssheet_import(sheetUrl, dt.tabUrlId);
 
-            //string fileName = getTabIdFileName(tabId);
-            string fileName = dt.TxtFileName;
+			// path/to/sheets.ext
+			string _folder = LocalizationPaths.sysImports;
 
-            string filePath = Path.Combine(_folder, fileName + LocalizationPaths.langExtDot);
-            File.WriteAllText(filePath, fileContent);
+			if (!Directory.Exists(_folder))
+			{
+				Directory.CreateDirectory(_folder);
+			}
 
-            //FileStream stream = File.OpenRead(filePath);
-            //stream.Close();
+			//string fileName = getTabIdFileName(tabId);
+			string fileName = dt.TxtFileName;
 
-            Debug.Log("  saved : <b>" + fileName + "</b> ; chars saved in file : " + fileContent.Length);
+			string filePath = Path.Combine(_folder, fileName + LocalizationPaths.langExtDot);
+			File.WriteAllText(filePath, fileContent);
 
-            return filePath;
-        }
+			//FileStream stream = File.OpenRead(filePath);
+			//stream.Close();
 
-        static protected string getTabIdFileName(string tabId)
-        {
-            LocaDataSheet data = LocalizationStatics.getScriptableObjectInEditor<LocaDataSheet>();
+			Debug.Log("  saved : <b>" + fileName + "</b> ; chars saved in file : " + fileContent.Length);
 
-            if (data == null) return string.Empty;
+			return filePath;
+		}
 
-            return data.getMatchingLabel(tabId);
-        }
+		static protected string getTabIdFileName(string tabId)
+		{
+			LocaDataSheet data = LocalizationStatics.getScriptableObjectInEditor<LocaDataSheet>();
 
-    }
+			if (data == null) return string.Empty;
+
+			return data.getMatchingLabel(tabId);
+		}
+
+	}
 }

@@ -19,7 +19,26 @@ namespace fwp.localizator
 	/// </summary>
 	public class LocalizationManager
 	{
-		static public bool verbose = false;
+		static public bool Verbose
+		{
+			get
+			{
+				return PlayerPrefs.GetInt("loca_verbose", 0) == 1;
+			}
+			set
+			{
+				PlayerPrefs.SetInt("loca_verbose", value ? 1 : 0);
+				logLocaVerbose();
+			}
+		}
+
+#if UNITY_EDITOR
+		[MenuItem("Window/Localizator/verbose.log")]
+		static void logLocaVerbose() => Debug.Log("LocalizationManager.Verbose:" + Verbose);
+
+		[MenuItem("Window/Localizator/loca.verbose.toggle?")]
+		static void toggleLocaVerbose() => Verbose = !Verbose;
+#endif
 
 		/// for [MenuItem]
 		public const string _asset_menu_path = "Localizator/";
@@ -223,7 +242,7 @@ namespace fwp.localizator
 		/// </summary>
 		public string getContent(string id, IsoLanguages iso, bool warning = false)
 		{
-			if(string.IsNullOrEmpty(id))
+			if (string.IsNullOrEmpty(id))
 			{
 				log("empty id given to get content");
 				return "[empty UID]";
@@ -244,7 +263,7 @@ namespace fwp.localizator
 			LocalizationFile file = instance.getFileByLang(iso);
 			return file.hasId(key, ignoreDigits);
 		}
-		
+
 		public void nextLanguage()
 		{
 			IsoLanguages cur = getSavedIsoLanguage();
@@ -390,8 +409,7 @@ namespace fwp.localizator
 
 		static public void log(string content, object target = null)
 		{
-			if (!verbose)
-				return;
+			if (!Verbose) return;
 
 			Debug.Log("(Loca) "
 				+ ((target != null) ? target.GetType().ToString() : string.Empty)

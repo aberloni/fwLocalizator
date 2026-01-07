@@ -15,7 +15,7 @@ namespace fwp.localizator.editor
 
 	public class GenerateSheetUtils
 	{
-		static public bool verbose => LocalizationManager.verbose;
+		static public bool verbose => LocalizationManager.Verbose;
 
 		static public string raw_file_locate(DataSheetTab tab)
 		{
