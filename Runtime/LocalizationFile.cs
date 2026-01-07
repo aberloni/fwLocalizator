@@ -11,10 +11,8 @@ namespace fwp.localizator
 	/// </summary>
 	public class LocalizationFile
 	{
-		public const string SPREADSHEET_LINE_BREAK = "\r\n"; // spreadsheet line break
 		public const char SPREADSHEET_CELL_BREAK = ','; // spreadsheet cell separator
-		public const char SPREADSHEET_CELL_LINE_BREAK = '\n'; // spreadsheet cell text line break
-
+		
 		public const char LOCALIZ_CHAR_COMMENT = '#'; //id=content
 		public const string LOCALIZ_CHAR_COMMENT2 = "\\\\"; //id=content
 		public const char LOCALIZ_CHAR_SPLIT = '='; //id=content
@@ -45,8 +43,6 @@ namespace fwp.localizator
 
 			string langFilePath = getLangFileResourcesPath(iso, false); // resources/, path to lang file, no ext
 			textAsset = Resources.Load(langFilePath) as TextAsset;
-
-			//Debug.Log(ta.name);
 
 			if (textAsset == null)
 			{
@@ -299,7 +295,7 @@ namespace fwp.localizator
 		static public string[] splitLineBreak(string fileContent)
 		{
 			//return fileContent.Split(new char[] { '\r', '\n' }, StringSplitOptions.None);
-			return fileContent.Split(new string[] { LocalizationFile.SPREADSHEET_LINE_BREAK }, StringSplitOptions.None);
+			return fileContent.Split(new string[] { "\r\n", Environment.NewLine }, StringSplitOptions.None);
 		}
 
 	}
