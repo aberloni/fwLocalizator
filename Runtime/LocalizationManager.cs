@@ -27,8 +27,11 @@ namespace fwp.localizator
 			}
 			set
 			{
-				PlayerPrefs.SetInt("loca_verbose", value ? 1 : 0);
-				logLocaVerbose();
+				if(Verbose != value)
+				{
+					PlayerPrefs.SetInt("loca_verbose", value ? 1 : 0);
+					logLocaVerbose();
+				}
 			}
 		}
 
