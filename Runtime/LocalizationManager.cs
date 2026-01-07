@@ -27,7 +27,7 @@ namespace fwp.localizator
 			}
 			set
 			{
-				if(Verbose != value)
+				if (Verbose != value)
 				{
 					PlayerPrefs.SetInt("loca_verbose", value ? 1 : 0);
 					logLocaVerbose();
@@ -212,15 +212,15 @@ namespace fwp.localizator
 		/// tries a getContent
 		/// if fails return default value (en ?)
 		/// </summary>
-		public string getContentSafe(string id, bool warning = false)
-			=> getContentSafe(id, getSavedIsoLanguage(), warning);
+		public string getContentSafe(string id)
+			=> getContentSafe(id, getSavedIsoLanguage());
 
-		public string getContentSafe(string id, IsoLanguages lang, bool warning = false)
+		public string getContentSafe(string id, IsoLanguages lang)
 		{
 			string output = getContent(id);
 			if (output.Length <= 0)
 			{
-				output = getContent(id, languageFallback, warning);
+				output = getContent(id, languageFallback);
 			}
 
 			if (output.Length <= 0)
@@ -235,15 +235,15 @@ namespace fwp.localizator
 		/// <summary>
 		/// natural flow (using ppref ios)
 		/// </summary>
-		public string getContent(string id, bool warning = false)
+		public string getContent(string id)
 		{
-			return getContent(id, getSavedIsoLanguage(), warning);
+			return getContent(id, getSavedIsoLanguage());
 		}
 
 		/// <summary>
 		/// with specific iso given
 		/// </summary>
-		public string getContent(string id, IsoLanguages iso, bool warning = false)
+		public string getContent(string id, IsoLanguages iso)
 		{
 			if (string.IsNullOrEmpty(id))
 			{
@@ -254,7 +254,8 @@ namespace fwp.localizator
 			LocalizationFile file = instance.getFileByLang(iso);
 			Debug.Assert(file != null, "no file found for language : " + iso);
 
-			return file.getContentById(id, warning);
+			string ret = file.getContentById(id);
+			return ret;
 		}
 
 		/// <summary>

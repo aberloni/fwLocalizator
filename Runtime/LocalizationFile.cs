@@ -167,13 +167,13 @@ namespace fwp.localizator
 			return false;
 		}
 
-		public string getContentById(string id, bool warning = false)
+		public string getContentById(string id)
 		{
 			if (id == null) return "[no id]";
 
 			if (id.Length <= 0)
 			{
-				Debug.LogWarning("no id given to gather content loca ?");
+				if (LocalizationManager.Verbose) Debug.LogWarning("no id given to gather content loca ?");
 				return "[no id given / empty]";
 			}
 
@@ -191,9 +191,10 @@ namespace fwp.localizator
 				if (key == id) return getContentAtLine(i);
 			}
 
-			if (warning)
+			if (LocalizationManager.Verbose)
 			{
-				LocalizationManager.logw($"getContentById() <b>{iso}</b> : no trad # <b>" + id + "</b>", this);
+				Debug.LogWarning($"getContentById() FAILED	# <b>" + id + "</b>");
+				Debug.LogWarning($"lang:<b>{iso}</b> & lines x" + lines.Length);
 			}
 
 			return "['" + id + "' missing in " + iso + "]";
