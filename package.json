@@ -1,6 +1,6 @@
 {
   "name": "com.ab.fwp.localizator",
-  "version": "0.2.8",
+  "version": "0.2.10",
   "displayName": "ab:localizator",
   "description": "framework to import localization",
   "keywords": [
