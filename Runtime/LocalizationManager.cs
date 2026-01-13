@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using System;
+using System.IO.IsolatedStorage;
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -54,6 +56,7 @@ namespace fwp.localizator
 
 		/// <summary>
 		/// list of reactor candidates to lang change
+		/// interface should sub/unsub to this to get reaction event
 		/// </summary>
 		static public List<iLanguageChangeReact> reacts = new List<iLanguageChangeReact>();
 
@@ -81,9 +84,12 @@ namespace fwp.localizator
 
 		virtual public IsoLanguages[] getSupportedLanguages()
 		{
-			return new IsoLanguages[]{
-				IsoLanguages.en, IsoLanguages.fr, IsoLanguages.de, IsoLanguages.es, IsoLanguages.it
-			};
+			List<IsoLanguages> isos = new();
+			for (int i = 0; i < System.Enum.GetValues(typeof(IsoLanguages)).Length; i++)
+			{
+				isos.Add((IsoLanguages)i);
+			}
+			return isos.ToArray();
 		}
 
 		public bool isIsoLanguageSupported(IsoLanguages iso)
@@ -314,19 +320,19 @@ namespace fwp.localizator
 			if (applySwap) applyLanguage(iso); // apply
 		}
 
-		protected void setLanguage(IsoLanguages iso)
+		/// <summary>
+		/// save given language to pprefs (can be override)
+		/// this won't trigger reaction
+		/// </summary>
+		virtual protected void setLanguage(IsoLanguages iso)
 		{
-
 #if UNITY_EDITOR
 			EditorPrefs.SetInt(ppref_language, (int)iso);
+#else
+			PlayerPrefs.SetInt(ppref_language, (int)iso);
 #endif
-			//LabySaveManager.getStream().setOption(LANG_PREFIX, (float)iso); // save
-
-			//how to save
-			//...
-
 		}
-
+		
 		protected IsoLanguages loadLanguage()
 		{
 			int idx = -1;
@@ -400,8 +406,14 @@ namespace fwp.localizator
 				case SystemLanguage.French: return IsoLanguages.fr;
 				case SystemLanguage.German: return IsoLanguages.de;
 				case SystemLanguage.Italian: return IsoLanguages.it;
-				case SystemLanguage.Chinese: return IsoLanguages.zh;
-				case SystemLanguage.Portuguese: return IsoLanguages.po;
+
+				case SystemLanguage.Chinese:
+				case SystemLanguage.ChineseSimplified:
+					return IsoLanguages.zh_hans;
+
+				case SystemLanguage.ChineseTraditional: return IsoLanguages.zh_hant;
+
+				case SystemLanguage.Portuguese: return IsoLanguages.pt;
 				case SystemLanguage.Spanish: return IsoLanguages.es;
 				default:
 					Debug.LogWarning("language " + sys + " is not supported ; returning system");

@@ -13,10 +13,19 @@ namespace fwp.localizator
 {
     /// <summary>
     /// all possible languages
+    /// https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes
+    /// https://en.wikipedia.org/wiki/ISO_639-3
+    /// https://chinese.stackexchange.com/questions/6147/which-one-of-these-two-iso-639-2-code-refers-to-traditional-chinese-chi-or-zho
     /// </summary>
     public enum IsoLanguages
     {
-        en, fr, de, es, it, po, ru, zh
+        en, fr, de, es, it, 
+        pt, // portuguese
+        ru, // russian
+
+        ja, // japanese
+        ko, // korean
+        zh_hant, zh_hans, // chinese trad, chinese simpl
     }
 
     /// <summary>
@@ -29,13 +38,11 @@ namespace fwp.localizator
 
     public static class ParserStatics
     {
-
         //public const int HEADER_SKIP_LINE_COUNT = 3;
         public const char SPREAD_LINE_BREAK = '@';
         public const char CELL_LINE_BREAK = '|';
         public const char SPREAD_CELL_SEPARATOR = ',';
         public const char SPREAD_CELL_ESCAPE_VALUE = '"';
-
     }
 
     public static class LocalizationStatics
