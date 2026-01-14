@@ -2,6 +2,7 @@
 using UnityEngine;
 using System.IO;
 using System.Text.RegularExpressions;
+using UnityEngine.UI;
 
 namespace fwp.localizator.subtitles
 {
@@ -14,6 +15,8 @@ namespace fwp.localizator.subtitles
 	/// > assign text field (tmpro)
 	/// > update(timecode)
 	/// 
+	/// ONLY WORKS WITH .txt files (using <TextAsset>)
+	/// 
 	/// </summary>
 	public class LocalizationSubtitleFile
 	{
@@ -22,10 +25,7 @@ namespace fwp.localizator.subtitles
 		/// Text Assets are a format for imported text files. When you drop a text file into your Project Folder, 
 		/// it will be converted to a Text Asset. The supported text formats are:
 		/// </summary>
-		readonly string[] supportedExtensions = new[]
-		{
-			"txt","html", "htm","xml","bytes","json","csv","yaml","fnt",
-		};
+		// readonly string[] supportedExtensions = new[] { "txt","html", "htm","xml","bytes","json","csv","yaml","fnt", };
 
 		const string locaSubPath = "localization/subtitles/";
 		const string regLineEnding = "\r\n|\r|\n";
@@ -51,16 +51,22 @@ namespace fwp.localizator.subtitles
 			setupForVideo(videoFileName);
 		}
 
+		/// <summary>
+		/// solve all data based on video file name
+		/// seek subtitle file within resources path
+		/// </summary>
 		public void setupForVideo(string videoFileName)
 		{
+
 			_path = Path.Combine(locaSubPath, videoFileName);
 
-			ta = Resources.Load(_path) as TextAsset;
+			ta = Resources.Load<TextAsset>(_path);
 
 			//https://docs.unity3d.com/Manual/class-TextAsset.html
 			if (ta == null)
 			{
-				Debug.LogError("no sub at : " + _path);
+				Debug.LogError("failed to load TextAsset @ " + _path);
+				Debug.LogError("check for compatible file extension");
 				return;
 			}
 
@@ -164,9 +170,9 @@ namespace fwp.localizator.subtitles
 
 	/// <summary>
 	/// 
-	/// 1
-	/// 00:01:26,880 --> 00:01:32,160
-	/// J'ai commencé la photo en 2011-2012 environ.
+	/// #0 >	1
+	/// #1 >	00:01:26,880 --> 00:01:32,160
+	/// #2 >	a subtitle sentence.
 	/// 
 	/// </summary>
 	public class LocalizationSubtitleLine
@@ -211,11 +217,18 @@ namespace fwp.localizator.subtitles
 
 			//Debug.Log(timecode + " --> " + timecode_end);
 
-			//content
-			rawLine = rawLines[2];
-			buffLine = LocalizationManager.instance.getContent(rawLine);
+			rawLine = rawLines[2]; // actual subtitle line (after timings)
+			buffLine = localizeLine(rawLine); // localized value
 
 			LocalizationSubtitleFile.log("generated subtitle line #" + rawLine + " [" + timecode_start + " , " + timecode_end + "]   : " + buffLine);
+		}
+
+		virtual protected string localizeLine(string line)
+		{
+			if (LocalizationManager.instance != null)
+				return LocalizationManager.instance.getContent(rawLine);
+
+			return line;
 		}
 
 		public bool isWithingLineTimecodeRange(double timecode)
