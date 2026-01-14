@@ -3,7 +3,7 @@ using UnityEngine;
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace fwp.localizator.subtitle
+namespace fwp.localizator.subtitles
 {
 
 	/// <summary>
@@ -33,7 +33,18 @@ namespace fwp.localizator.subtitle
 
 		List<LocalizationSubtitleLine> lines = new List<LocalizationSubtitleLine>();
 
+		string _path;
 		TMPro.TextMeshProUGUI txt;
+
+		public bool IsValid
+		{
+			get
+			{
+				if (string.IsNullOrEmpty(_path)) return false;
+				if (lines == null) return false;
+				return lines.Count > 0;
+			}
+		}
 
 		public LocalizationSubtitleFile(string videoFileName)
 		{
@@ -42,14 +53,14 @@ namespace fwp.localizator.subtitle
 
 		public void setupForVideo(string videoFileName)
 		{
-			string path = Path.Combine(locaSubPath, videoFileName);
+			_path = Path.Combine(locaSubPath, videoFileName);
 
-			ta = Resources.Load(path) as TextAsset;
+			ta = Resources.Load(_path) as TextAsset;
 
 			//https://docs.unity3d.com/Manual/class-TextAsset.html
 			if (ta == null)
 			{
-				Debug.LogError("no sub at : " + path);
+				Debug.LogError("no sub at : " + _path);
 				return;
 			}
 
@@ -90,7 +101,7 @@ namespace fwp.localizator.subtitle
 			}
 
 #if UNITY_EDITOR
-			log("<b>loaded subtitles</b> for video : " + videoFileName + " | at path : " + path + " | lines count : " + lines.Count);
+			log("<b>loaded subtitles</b> for video : " + videoFileName + " | at path : " + _path + " | lines count : " + lines.Count);
 			if (lines.Count > 0) log("<b>loaded subtitles</b>  L first line : " + lines[0].buffLine);
 			else log("no subtitles will be displayed ...");
 #endif
@@ -130,9 +141,19 @@ namespace fwp.localizator.subtitle
 
 		}
 
-		public bool isValid()
+		public string stringify()
 		{
-			return true;
+			string ret = "[srt]" + _path + " x" + lines.Count;
+
+			if (!IsValid) ret += " INVALID";
+			else
+			{
+				foreach (var l in lines)
+				{
+					ret += "\n> " + l;
+				}
+			}
+			return ret;
 		}
 
 		static public void log(string msg, object tar = null)
