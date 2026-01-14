@@ -1,48 +1,41 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace fwp.localizator
+namespace fwp.localizator.subtitle
 {
 
 	/// <summary>
-	///  Text Assets are a format for imported text files. When you drop a text file into your Project Folder, it will be converted to a Text Asset. The supported text formats are:
-	///     .txt
-	///     .html
-	///     .htm
-	///     .xml
-	///     .bytes
-	///     .json
-	///     .csv
-	///     .yaml
-	///     .fnt
-	///     
-	/// structure
+	/// for structure see sample file
+	/// search for file in Resources/localization/subtitles/
 	/// 
-	/// 1
-	/// 00:01:26,880 --> 00:01:32,160
-	/// J'ai commencé la photo en 2011-2012 environ.
-	/// 
-	/// 2
-	/// 00:01:33,050 --> 00:01:38,510
-	/// J'ai débuté avec un appareil classique. Je faisais beaucoup de photos de rue.
+	/// > load file
+	/// > assign text field (tmpro)
+	/// > update(timecode)
 	/// 
 	/// </summary>
-
-	public class LocalizationSubtitlesFile
+	public class LocalizationSubtitleFile
 	{
 
+		/// <summary>
+		/// Text Assets are a format for imported text files. When you drop a text file into your Project Folder, 
+		/// it will be converted to a Text Asset. The supported text formats are:
+		/// </summary>
+		readonly string[] supportedExtensions = new[]
+		{
+			"txt","html", "htm","xml","bytes","json","csv","yaml","fnt",
+		};
+
+		const string locaSubPath = "localization/subtitles/";
+		const string regLineEnding = "\r\n|\r|\n";
 		TextAsset ta;
 
 		List<LocalizationSubtitleLine> lines = new List<LocalizationSubtitleLine>();
 
 		TMPro.TextMeshProUGUI txt;
 
-		const string locaSubPath = "localization/subtitles/";
-
-		public LocalizationSubtitlesFile(string videoFileName)
+		public LocalizationSubtitleFile(string videoFileName)
 		{
 			setupForVideo(videoFileName);
 		}
@@ -60,12 +53,10 @@ namespace fwp.localizator
 				return;
 			}
 
-			//DO NOT REMOVE EMPTY LINES (separator)
-			//MACOS : NewLine va bien séparer les lignes mais il va rester le '\r' linux qui compte comme un char
-			//string[] rawLines = ta.text.Split(new string[] { System.Environment.NewLine }, System.StringSplitOptions.None);
+			// NOTE: DO NOT REMOVE EMPTY LINES (separator)
 
 			//https://stackoverflow.com/questions/1508203/best-way-to-split-string-into-lines
-			string[] rawLines = Regex.Split(ta.text, "\r\n|\r|\n");
+			string[] rawLines = Regex.Split(ta.text, regLineEnding);
 
 			if (rawLines.Length <= 0) Debug.LogWarning("no lines from raw text");
 			else
@@ -99,9 +90,9 @@ namespace fwp.localizator
 			}
 
 #if UNITY_EDITOR
-			Debug.Log("<b>loaded subtitles</b> for video : " + videoFileName + " | at path : " + path + " | lines count : " + lines.Count);
-			if (lines.Count > 0) Debug.Log("<b>loaded subtitles</b>  L first line : " + lines[0].buffLine);
-			else Debug.LogWarning("no subtitles will be displayed ...");
+			log("<b>loaded subtitles</b> for video : " + videoFileName + " | at path : " + path + " | lines count : " + lines.Count);
+			if (lines.Count > 0) log("<b>loaded subtitles</b>  L first line : " + lines[0].buffLine);
+			else log("no subtitles will be displayed ...");
 #endif
 
 			//for (int i = 0; i < lines.Count; i++) Debug.Log("  " + lines[i].line);
@@ -144,6 +135,10 @@ namespace fwp.localizator
 			return true;
 		}
 
+		static public void log(string msg, object tar = null)
+		{
+			Debug.Log("[subtitles] " + msg, tar as Object);
+		}
 	}
 
 	/// <summary>
@@ -199,14 +194,14 @@ namespace fwp.localizator
 			rawLine = rawLines[2];
 			buffLine = LocalizationManager.instance.getContent(rawLine);
 
-			Debug.Log("  generated subtitle line #" + rawLine + " [" + timecode_start + " , " + timecode_end + "]   : " + buffLine);
+			LocalizationSubtitleFile.log("generated subtitle line #" + rawLine + " [" + timecode_start + " , " + timecode_end + "]   : " + buffLine);
 		}
 
 		public bool isWithingLineTimecodeRange(double timecode)
 		{
 			//Debug.Log(timecode + " ? " + timecode_start + " , " + timecode_end);
-
 			return (timecode_start < timecode && timecode_end > timecode);
 		}
+
 	}
 }
