@@ -32,7 +32,11 @@ namespace fwp.localizator
 				if (Verbose != value)
 				{
 					PlayerPrefs.SetInt("loca_verbose", value ? 1 : 0);
+#if UNITY_EDITOR
+					// feedback state change
 					logLocaVerbose();
+#endif
+
 				}
 			}
 		}
