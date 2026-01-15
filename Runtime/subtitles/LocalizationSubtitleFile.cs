@@ -132,11 +132,8 @@ namespace fwp.localizator.subtitles
 
 		public void update(double timecode)
 		{
-			if (lines.Count <= 0)
-			{
-				Debug.LogWarning("sub file has x0 lines to match timecode " + timecode);
-				return;
-			}
+			// can't update invalid subtitle
+			if (!IsValid) return;
 
 			txt.text = string.Empty;
 
@@ -154,15 +151,18 @@ namespace fwp.localizator.subtitles
 
 		public string stringify()
 		{
-			string ret = "[srt]" + _path + " x" + lines.Count;
+			string ret = "[srt] ";
 
-			if (!IsValid) ret += " INVALID";
-			else
+			if (!IsValid)
 			{
-				foreach (var l in lines)
-				{
-					ret += "\n> " + l;
-				}
+				ret += "	INVALID";
+				return ret;
+			}
+
+			ret += _path + " x" + lines.Count;
+			foreach (var l in lines)
+			{
+				ret += "\n> " + l;
 			}
 			return ret;
 		}
