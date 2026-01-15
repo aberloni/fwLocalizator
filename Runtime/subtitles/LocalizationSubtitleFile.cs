@@ -36,11 +36,15 @@ namespace fwp.localizator.subtitles
 		string _path;
 		TMPro.TextMeshProUGUI txt;
 
+		/// <summary>
+		/// was setup and HAS LINES
+		/// </summary>
 		public bool IsValid
 		{
 			get
 			{
-				if (string.IsNullOrEmpty(_path)) return false;
+				if (ta == null) return false;
+				// if (string.IsNullOrEmpty(_path)) return false;
 				if (lines == null) return false;
 				return lines.Count > 0;
 			}
@@ -57,16 +61,17 @@ namespace fwp.localizator.subtitles
 		/// </summary>
 		public void setupForVideo(string videoFileName)
 		{
-
 			_path = Path.Combine(locaSubPath, videoFileName);
-
 			ta = Resources.Load<TextAsset>(_path);
 
 			//https://docs.unity3d.com/Manual/class-TextAsset.html
 			if (ta == null)
 			{
-				Debug.LogError("failed to load TextAsset @ " + _path);
-				Debug.LogError("check for compatible file extension");
+				Debug.LogWarning("<color=red>failed to load</color> TextAsset @ " + _path);
+				Debug.LogWarning("> file does not exist ? or must be .txt");
+
+				_path = null; // invalid
+
 				return;
 			}
 
