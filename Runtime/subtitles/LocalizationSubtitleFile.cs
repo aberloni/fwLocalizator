@@ -279,6 +279,8 @@ namespace fwp.localizator.subtitles
 				return false;
 			}
 
+			if (verbose) Debug.Log($"timecode {timecode} match ! {rawLine}");
+
 			return true;
 		}
 
