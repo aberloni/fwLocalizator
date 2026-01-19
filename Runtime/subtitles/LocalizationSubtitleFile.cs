@@ -20,6 +20,7 @@ namespace fwp.localizator.subtitles
 	/// </summary>
 	public class LocalizationSubtitleFile
 	{
+		bool verbose = false;
 
 		/// <summary>
 		/// Text Assets are a format for imported text files. When you drop a text file into your Project Folder, 
@@ -50,16 +51,26 @@ namespace fwp.localizator.subtitles
 			}
 		}
 
-		public LocalizationSubtitleFile(string videoFileName)
+		/// <summary>
+		/// activate some logs
+		/// </summary>
+		public bool FlagVerbose() => verbose = true;
+
+		public LocalizationSubtitleFile(string videoFileName, bool setVerbose = false)
 		{
-			setupForVideo(videoFileName);
+			if (setVerbose) FlagVerbose();
+
+			if (!string.IsNullOrEmpty(videoFileName))
+			{
+				setupForVideo(videoFileName);
+			}
 		}
 
 		/// <summary>
 		/// solve all data based on video file name
 		/// seek subtitle file within resources path
 		/// </summary>
-		public void setupForVideo(string videoFileName)
+		public LocalizationSubtitleFile setupForVideo(string videoFileName)
 		{
 			_path = Path.Combine(locaSubPath, videoFileName);
 			ta = Resources.Load<TextAsset>(_path);
@@ -67,12 +78,15 @@ namespace fwp.localizator.subtitles
 			//https://docs.unity3d.com/Manual/class-TextAsset.html
 			if (ta == null)
 			{
-				Debug.LogWarning("<color=red>failed to load</color> TextAsset @ " + _path);
-				Debug.LogWarning("> file does not exist ? or must be .txt");
+				if (verbose)
+				{
+					Debug.LogWarning("<color=red>failed to load</color> TextAsset @ " + _path);
+					Debug.LogWarning("> file does not exist ? or must be .txt");
+				}
 
 				_path = null; // invalid
 
-				return;
+				return null;
 			}
 
 			// NOTE: DO NOT REMOVE EMPTY LINES (separator)
@@ -83,7 +97,7 @@ namespace fwp.localizator.subtitles
 			if (rawLines.Length <= 0) Debug.LogWarning("no lines from raw text");
 			else
 			{
-				Debug.Log("solving sub(s) out of x" + rawLines.Length + " lines");
+				if (verbose) log("solving sub(s) out of x" + rawLines.Length + " lines");
 
 				lines = new List<LocalizationSubtitleLine>();
 
@@ -118,6 +132,8 @@ namespace fwp.localizator.subtitles
 #endif
 
 			//for (int i = 0; i < lines.Count; i++) Debug.Log("  " + lines[i].line);
+
+			return this;
 		}
 
 		public void assignTextfield(TMPro.TextMeshProUGUI txt)
@@ -133,7 +149,11 @@ namespace fwp.localizator.subtitles
 		public void update(double timecode)
 		{
 			// can't update invalid subtitle
-			if (!IsValid) return;
+			if (!IsValid)
+			{
+				if (verbose) log("updating invalid");
+				return;
+			}
 
 			txt.text = string.Empty;
 
@@ -224,10 +244,16 @@ namespace fwp.localizator.subtitles
 
 			rawLine = rawLines[2]; // actual subtitle line (after timings)
 			buffLine = localizeLine(rawLine); // localized value
-
-			LocalizationSubtitleFile.log("generated subtitle line #" + rawLine + " [" + timecode_start + " , " + timecode_end + "]   : " + buffLine);
 		}
 
+		public string stringify()
+		{
+			return "line #" + rawLine + " [" + timecode_start + " , " + timecode_end + "] : " + buffLine;
+		}
+
+		/// <summary>
+		/// specific way to localize line loca UID
+		/// </summary>
 		virtual protected string localizeLine(string line)
 		{
 			if (LocalizationManager.instance != null)
@@ -236,10 +262,21 @@ namespace fwp.localizator.subtitles
 			return line;
 		}
 
-		public bool isWithingLineTimecodeRange(double timecode)
+		public bool isWithingLineTimecodeRange(double timecode, bool verbose = false)
 		{
-			//Debug.Log(timecode + " ? " + timecode_start + " , " + timecode_end);
-			return (timecode_start < timecode && timecode_end > timecode);
+			if (timecode < timecode_start)
+			{
+				if (verbose) Debug.Log($"timecode {timecode} < start {timecode_start}");
+				return false;
+			}
+
+			if (timecode > timecode_end)
+			{
+				if (verbose) Debug.Log($"timecode {timecode} > end {timecode_end}");
+				return false;
+			}
+
+			return true;
 		}
 
 	}
