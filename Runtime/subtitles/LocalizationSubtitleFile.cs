@@ -163,10 +163,13 @@ namespace fwp.localizator.subtitles
 				{
 					txt.text = lines[i].buffLine;
 
-					//Debug.Log("sub | time?"+timecode + " , text:" + txt.text);
+					if (verbose) log($"time?{timecode} > text:{txt.text}");
+
+					return;
 				}
 			}
 
+			if (verbose) log($"timecode is oob");
 		}
 
 		public string stringify()
