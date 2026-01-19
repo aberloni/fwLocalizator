@@ -171,7 +171,7 @@ namespace fwp.localizator.subtitles
 
 		public string stringify()
 		{
-			string ret = "[srt] ";
+			string ret = " ↓↓↓ ";
 
 			if (!IsValid)
 			{
@@ -182,7 +182,7 @@ namespace fwp.localizator.subtitles
 			ret += _path + " x" + lines.Count;
 			foreach (var l in lines)
 			{
-				ret += "\n> " + l;
+				ret += "\n> " + l.stringify();
 			}
 			return ret;
 		}
