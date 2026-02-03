@@ -11,6 +11,8 @@ namespace fwp.localizator.editor
 	abstract public class WinEdLocaScaffold : EditorWindow
 	{
 
+
+        protected void Separator() => GUILayout.Box("", GUILayout.Height(1), GUILayout.ExpandWidth(true));
 		protected GUILayoutOption btnXS => GUILayout.Width(50f);
 		protected GUILayoutOption btnS => GUILayout.Width(75f);
 		protected GUILayoutOption btnM => GUILayout.Width(100f);

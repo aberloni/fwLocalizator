@@ -9,10 +9,14 @@ namespace fwp.localizator.editor
 
 	public class WinEdLocalization : WinEdLocaScaffold
 	{
-		[MenuItem("Window/Localizator/(win) loca")]
+		// https://www.alanwood.net/unicode/arrows.html
+		const string symbol_download = "⬇"; // ⇓
+		const string symbol_cloud = "☁︎";
+
+		[MenuItem("Window/Localizator/+panel:localization")]
 		static void init() => EditorWindow.GetWindow(typeof(WinEdLocalization));
 
-		const string button_browse = "open URL";
+		protected override string getTitle() => LocalizationManager.instance.GetType().Name;
 
 		LocaDataSheet[] Sheets => LocalizatorUtilsEditor.getSheetsData();
 
@@ -40,8 +44,6 @@ namespace fwp.localizator.editor
 
 		}
 
-		protected override string getTitle() => LocalizationManager.instance.GetType().Name;
-
 		override protected void draw()
 		{
 			base.draw();
@@ -60,7 +62,7 @@ namespace fwp.localizator.editor
 		{
 			GUILayout.Label("spreadsheet params", UtilStyles.SectionTitle());
 
-			if (GUILayout.Button("process all (download > parse > trads)", GUILayout.Height(30f)))
+			if (GUILayout.Button(symbol_download+ " all (download > parse > trads)", GUILayout.Height(30f)))
 			{
 				var sheets = LocalizatorUtilsEditor.getSheetsData(true);
 				ImportSheetUtils.ssheets_import(sheets);
@@ -107,6 +109,7 @@ namespace fwp.localizator.editor
 		void drawFoldSheetSection()
 		{
 			var sheets = LocalizatorUtilsEditor.getSheetsData();
+			var iso = LocalizationManager.instance.getSavedIsoLanguage();
 
 			GUILayout.Space(10f);
 
@@ -124,39 +127,42 @@ namespace fwp.localizator.editor
 
 			if (foldDownload)
 			{
-				var iso = LocalizationManager.instance.getSavedIsoLanguage();
-
 				foreach (var sheet in sheets)
 				{
+					GUILayout.Space(5f);
+
 					GUILayout.BeginHorizontal();
-					if (GUILayout.Button("?", btnXS)) UnityEditor.Selection.activeObject = sheet;
+					
 					EditorGUILayout.ObjectField(sheet, sheet.GetType(), true);
-					GUILayout.Label("URL : " + sheet.sheetUrlUid);
-					if (GUILayout.Button(button_browse, btnM)) OpenInFileBrowser.browseUrl(sheet.url);
-					GUILayout.EndHorizontal();
-
-					bool _fold = drawFoldout("Show all tabs", "tab" + sheet.sheetUrlUid);
-					if (!_fold) continue;
-
-					if (GUILayout.Button("download all tabs"))
+					if (GUILayout.Button("?", btnXS)) UnityEditor.Selection.activeObject = sheet;
+					
+					if (GUILayout.Button(symbol_download + " tabs", btnS))
 					{
 						ImportSheetUtils.ssheet_import(sheet);
 						GenerateSheetUtils.csv_generate(sheet);
 						GenerateSheetUtils.trads_generate();
 					}
 
+					if (GUILayout.Button(symbol_cloud, btnXS)) OpenInFileBrowser.browseUrl(sheet.url);
+
+					GUILayout.EndHorizontal();
+
+					bool _fold = drawFoldout("Show all tabs", "tab" + sheet.sheetUrlUid);
+					if (!_fold) continue;
+
+					GUILayout.Label("URL : " + sheet.sheetUrlUid);
+
 					foreach (var tab in sheet.tabs)
 					{
 						using (new GUILayout.HorizontalScope())
 						{
+							
 							GUILayout.Label(tab.TxtFileName + " (" + tab.parseType + ")");
 
-							if (GUILayout.Button(button_browse, btnS))
-							{
+							if (GUILayout.Button(symbol_cloud, btnXS))
 								OpenInFileBrowser.browseUrl(sheet.url + tab.Url);
-							}
 
-							if (GUILayout.Button("download", btnM))
+							if (GUILayout.Button(symbol_download, btnXS))
 							{
 								// import tab
 								ImportSheetUtils.tab_import(sheet, tab);
@@ -170,8 +176,6 @@ namespace fwp.localizator.editor
 
 							if (!string.IsNullOrEmpty(tab.Cache))
 							{
-								GUILayout.Label("cache");
-
 								if (GUILayout.Button("txt", btnS))
 								{
 									Selection.activeObject = AssetDatabase.LoadAssetAtPath("Assets/" + tab.CacheTxt, typeof(TextAsset));
