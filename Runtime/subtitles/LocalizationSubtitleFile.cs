@@ -113,28 +113,30 @@ namespace fwp.localizator.subtitles
 					// remove line endings
 					string line = rawLines[i].TrimEnd();
 
-					if (verbose) Debug.Log($"  #{i} (" + line.Length + ") --> " + line);
+					if (verbose_deep) Debug.Log($"  #{i} (" + line.Length + ") --> " + line);
 
-					if (line.Length > 2) // this line has content, keep it
+					// this line has content, keep it
+					if (line.Length > 0)
 					{
-						cntEmptyLines++;
 						tmp.Add(line);
-						if (verbose) Debug.Log("+entry content | " + line);
+						if (verbose) Debug.Log(" >> " + line);
 					}
 					else // empty line
 					{
+						cntEmptyLines++;
+
 						// has gathered enough content along the loop ? creating sub with it
 						// need 3x elements : number|timing|phrase
 						if (tmp.Count > 2)
 						{
 							lines.Add(new LocalizationSubtitleLine(tmp));
-							if (verbose) Debug.Log("+subtitle entry | size x" + tmp.Count);
+							if (verbose) Debug.Log("+entry | size x" + tmp.Count);
 						}
 						tmp.Clear();
 					}
 				}
 
-				if(cntEmptyLines <= 0)
+				if (cntEmptyLines <= 0)
 				{
 					Debug.LogWarning("entries for subtitles MUST HAVE empty line in between each");
 				}
