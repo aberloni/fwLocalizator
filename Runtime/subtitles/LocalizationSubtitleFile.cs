@@ -21,6 +21,7 @@ namespace fwp.localizator.subtitles
 	public class LocalizationSubtitleFile
 	{
 		bool verbose = false;
+		bool verbose_deep = false;
 
 		/// <summary>
 		/// Text Assets are a format for imported text files. When you drop a text file into your Project Folder, 
@@ -55,6 +56,7 @@ namespace fwp.localizator.subtitles
 		/// activate some logs
 		/// </summary>
 		public bool FlagVerbose() => verbose = true;
+		public bool FlagVerboseDeep() => verbose_deep = true;
 
 		public LocalizationSubtitleFile(string videoFileName, bool setVerbose = false)
 		{
@@ -101,28 +103,41 @@ namespace fwp.localizator.subtitles
 
 				lines = new List<LocalizationSubtitleLine>();
 
-				List<string> tmp = new List<string>();
+				List<string> tmp = new();
+
+				int cntEmptyLines = 0;
 
 				//tmp will gather data until an empty line is reached
 				for (int i = 0; i < rawLines.Length; i++)
 				{
-					string line = rawLines[i];
+					// remove line endings
+					string line = rawLines[i].TrimEnd();
 
-					//Debug.Log("  --> (" + line.Length + ") " + line);
+					if (verbose) Debug.Log($"  #{i} (" + line.Length + ") --> " + line);
 
-					if (line.Length <= 0) // search for empty line (might have line endings !) ...
+					if (line.Length > 2) // this line has content, keep it
 					{
-						//has gathered content ? creating sub with it
+						cntEmptyLines++;
+						tmp.Add(line);
+						if (verbose) Debug.Log("+entry content | " + line);
+					}
+					else // empty line
+					{
+						// has gathered enough content along the loop ? creating sub with it
+						// need 3x elements : number|timing|phrase
 						if (tmp.Count > 2)
 						{
 							lines.Add(new LocalizationSubtitleLine(tmp));
-							//Debug.Log("added new sub ! new total : x" + lines.Count);
+							if (verbose) Debug.Log("+subtitle entry | size x" + tmp.Count);
 						}
 						tmp.Clear();
 					}
-					else tmp.Add(line);
 				}
 
+				if(cntEmptyLines <= 0)
+				{
+					Debug.LogWarning("entries for subtitles MUST HAVE empty line in between each");
+				}
 			}
 
 #if UNITY_EDITOR
@@ -151,7 +166,7 @@ namespace fwp.localizator.subtitles
 			// can't update invalid subtitle
 			if (!IsValid)
 			{
-				if (verbose) log("updating invalid");
+				if (verbose_deep) log("updating invalid");
 				return;
 			}
 
@@ -163,13 +178,13 @@ namespace fwp.localizator.subtitles
 				{
 					txt.text = lines[i].buffLine;
 
-					if (verbose) log($"time?{timecode} > text:{txt.text}");
+					if (verbose_deep) log($"time?{timecode} > text:{txt.text}");
 
 					return;
 				}
 			}
 
-			if (verbose) log($"timecode is oob");
+			if (verbose_deep) log($"timecode is oob");
 		}
 
 		public string stringify()
