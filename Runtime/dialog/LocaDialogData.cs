@@ -34,7 +34,14 @@ namespace fwp.localizator.dialog
 		{
 			get
 			{
-				if (_name == null) _name = name;
+				if (string.IsNullOrEmpty(_name)) _name = name;
+
+				if (string.IsNullOrEmpty(_name))
+				{
+					Debug.LogError("wrong name hidden field ? " + name, this);
+					return name;
+				}
+
 				return _name;
 			}
 		}
@@ -85,9 +92,17 @@ namespace fwp.localizator.dialog
 		/// will generate a list of lines to play for this dialog
 		/// it will check if any localization exists for number from 1 to MAX
 		/// if there is any : add this UID
+		/// 
+		/// return : success
 		/// </summary>
-		public void edFillDialogLines()
+		public bool edFillDialogLines()
 		{
+			if (string.IsNullOrEmpty(Name))
+			{
+				Debug.LogError("issue with name, can't autofill with null/empty buffed name");
+				return false;
+			}
+
 			string uid = getDialogUid();
 
 			List<iDialogLine> tmp = new();
@@ -128,6 +143,8 @@ namespace fwp.localizator.dialog
 			edInjectDialogLines(tmp.ToArray());
 
 			UnityEditor.EditorUtility.SetDirty(this);
+
+			return true;
 		}
 
 		/// <summary>
