@@ -1,0 +1,108 @@
+using UnityEngine;
+using System.Collections.Generic;
+
+namespace fwp.localizator
+{
+
+    /// <summary>
+    /// loca files
+    /// </summary>
+    public class SheetsMind : LocalizationMind
+    {
+
+        public LocalizationFile[] lang_files;
+        
+        public SheetsMind()
+        {
+			ReplaceMind<SheetsMind>(this);
+			loadFiles();
+        }
+
+		public void reloadFiles()
+		{
+			loadFiles();
+		}
+
+		protected void loadFiles()
+		{
+
+			List<LocalizationFile> tmp = new List<LocalizationFile>();
+			var sups = Languages.getSupportedLanguages();
+			for (int i = 0; i < sups.Length; i++)
+			{
+				LocalizationFile file = new LocalizationFile(sups[i]);
+				if (file != null && file.IsLoaded) tmp.Add(file);
+			}
+			lang_files = tmp.ToArray();
+
+		}
+
+
+		protected void checkIntegrity()
+		{
+			for (int i = 0; i < lang_files.Length; i++)
+			{
+				for (int j = 0; j < lang_files.Length; j++)
+				{
+					if (lang_files[i].compare(lang_files[j]))
+					{
+						Debug.LogError("Issue comparing " + lang_files[i].iso + " VS " + lang_files[j].iso);
+					}
+				}
+			}
+		}
+
+		public LocalizationFile getFileByLang(IsoLanguages lang)
+		{
+			for (int i = 0; i < lang_files.Length; i++)
+			{
+				//debug, NOT runtime, to be sure content is updated
+				if (!Application.isPlaying) lang_files[i].debugRefresh();
+
+				if (lang_files[i].iso == lang)
+				{
+					return lang_files[i];
+				}
+			}
+			return null;
+		}
+
+		protected LocalizationFile getLangFileByLangLabel(string label)
+		{
+			for (int i = 0; i < lang_files.Length; i++)
+			{
+				if (lang_files[i].iso.ToString() == label) return lang_files[i];
+			}
+			Debug.LogWarning(" !!! <color=red>no file</color> for current lang : " + label);
+			return null;
+		}
+
+		public LocalizationFile getCurrentLangFile()
+		{
+#if UNITY_EDITOR
+			loadFiles();
+#endif
+
+			string lang = Languages.getSavedIsoLanguage().ToString();
+			LocalizationFile file = getLangFileByLangLabel(lang);
+
+			if (file == null)
+			{
+				Debug.LogWarning(" !!! <color=red>no file</color> for current lang : " + lang);
+				Debug.LogWarning(" !!! <color=red>this needs to be fixed before release</color> !!! ");
+
+				IsoLanguages iso = Languages.getSystemLanguageToIso();
+				Debug.LogWarning(" DEBUG <b>force</b> switching lang to '" + iso + "'");
+				Languages.setSavedLanguage(iso);
+
+				file = getLangFileByLangLabel(lang);
+			}
+
+			Debug.Assert(file != null, "file  " + lang + " should be assigned at this point ...");
+
+			return file;
+		}
+
+    }
+
+}

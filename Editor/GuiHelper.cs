@@ -5,9 +5,11 @@ using UnityEditor;
 static public class GuiHelper
 {
     static public void Separator() => GUILayout.Box("", GUILayout.Height(1), GUILayout.ExpandWidth(true));
-    static readonly public GUILayoutOption btnXS = GUILayout.Width(50f);
-    static readonly public GUILayoutOption btnS = GUILayout.Width(75f);
-    static readonly public GUILayoutOption btnM = GUILayout.Width(100f);
+    static readonly public GUILayoutOption wXS = GUILayout.Width(50f);
+    static readonly public GUILayoutOption wS = GUILayout.Width(75f);
+    static readonly public GUILayoutOption wM = GUILayout.Width(100f);
+    static readonly public GUILayoutOption wL = GUILayout.Width(150f);
+    static readonly public GUILayoutOption wXL = GUILayout.Width(200f);
 
     static readonly public GUIStyle wrapped = new GUIStyle()
     {

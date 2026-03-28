@@ -6,12 +6,11 @@ using UnityEditor;
 
 namespace fwp.localizator.editor
 {
-
 	public interface iLocaTab
 	{
 		public string GetTabName();
 		public void Refresh(bool hard);
-		public void Draw(LocalizationManager LManager);
+		public void Draw();
 	}
 
 	/// <summary>
@@ -20,10 +19,8 @@ namespace fwp.localizator.editor
 	/// 	=> dialogs
 	/// 
 	/// </summary>
-	abstract public class WinEdLocaScaffold<TManager> : EditorWindow where TManager : LocalizationManager
+	abstract public class WinEdLocaScaffold : EditorWindow
 	{
-		protected TManager LManager;
-
 		protected WinHelpFilter filter = null;
 
 		int tabSelected = 0;
@@ -31,11 +28,18 @@ namespace fwp.localizator.editor
 		GUIContent[] guiTabs;
 
 		/// <summary>
+		/// replace default minds
+		/// </summary>
+		virtual protected void ReplaceMinds()
+		{ }
+
+		/// <summary>
 		/// sealed
 		/// </summary>
 		void OnEnable()
 		{
-			LManager = GenerateManager();
+			LocalizationMind.InitMinds();
+			ReplaceMinds();
 			onEnable();
 		}
 
@@ -54,19 +58,18 @@ namespace fwp.localizator.editor
 			}
 
 			tabs = GenerateTabs();
-			guiTabs = new GUIContent[tabs.Length];
-			for (int i = 0; i < tabs.Length; i++)
+			if(tabs != null)
 			{
-				guiTabs[i] = new GUIContent(tabs[i].GetTabName());
+
+				guiTabs = new GUIContent[tabs.Length];
+				for (int i = 0; i < tabs.Length; i++)
+				{
+					guiTabs[i] = new GUIContent(tabs[i].GetTabName());
+				}
 			}
 		}
 
 		abstract public iLocaTab[] GenerateTabs();
-
-		/// <summary>
-		/// select type of loca manager to generate
-		/// </summary>
-		abstract public TManager GenerateManager();
 
 		/// <summary>
 		/// sealed
@@ -83,15 +86,18 @@ namespace fwp.localizator.editor
 		Vector2 globalScroll;
 		private void OnGUI()
 		{
-			LocalizationManager.Verbose = EditorGUILayout.Toggle("verbose", LocalizationManager.Verbose);
 			drawHeader();
+			GUILayout.Space(10);
+
 			drawTabs();
+			GUILayout.Space(10);
+
 			globalScroll = GUILayout.BeginScrollView(globalScroll);
 			draw();
 			GUILayout.EndScrollView();
 		}
 
-		virtual protected void refresh(bool forced = false)
+		virtual protected void refresh(bool hard = false)
 		{ }
 
 		virtual protected void drawHeader()
@@ -101,11 +107,20 @@ namespace fwp.localizator.editor
 				Debug.Log("> title.refresh");
 				refresh(true);
 			}
+
+			LocalizationMind.Verbose = EditorGUILayout.Toggle("verbose", LocalizationMind.Verbose);
+			if (LocalizationMind.Verbose)
+			{
+				GUILayout.Label("Languages:" + LocalizationMind.Languages);
+				GUILayout.Label("Sheets:" + LocalizationMind.Sheets);
+				GUILayout.Label("Dialogs:" + LocalizationMind.Dialogs);
+			}
+
 		}
 
 		void drawTabs()
 		{
-			if (guiTabs.Length <= 0) return;
+			if (guiTabs == null || guiTabs.Length <= 0) return;
 
 			int _tab = GUILayout.Toolbar(tabSelected, guiTabs);
 			if (_tab != tabSelected)
@@ -116,7 +131,8 @@ namespace fwp.localizator.editor
 
 		virtual protected void draw()
 		{
-			if(tabSelected >= 0) tabs[tabSelected].Draw(LManager);
+			if (tabs == null || tabs.Length <= 0) return;
+			if (tabSelected >= 0) tabs[tabSelected].Draw();
 		}
 
 

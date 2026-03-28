@@ -170,7 +170,7 @@ namespace fwp.localizator
 
 			if (id.Length <= 0)
 			{
-				if (LocalizationManager.Verbose) Debug.LogWarning("no id given to gather content loca ?");
+				if (LocalizationMind.Verbose) Debug.LogWarning("no id given to gather content loca ?");
 				return "[no id given / empty]";
 			}
 
@@ -188,7 +188,7 @@ namespace fwp.localizator
 				if (key == id) return getContentAtLine(i);
 			}
 
-			if (LocalizationManager.Verbose)
+			if (LocalizationMind.Verbose)
 			{
 				Debug.LogWarning($"getContentById() FAILED	# <b>" + id + "</b>");
 				Debug.LogWarning($"lang:<b>{iso}</b> & lines x" + lines.Length);

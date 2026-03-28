@@ -14,22 +14,22 @@ namespace fwp.localizator.editor
         public void Refresh(bool hard)
         { }
 
-        public void Draw(LocalizationManager LManager)
+        public void Draw()
         {
-            if (langs == null) langs = LManager.lang_files;
+            if (langs == null) langs = LocalizationMind.Sheets.lang_files;
 
-            drawSummary(LManager);
+            drawSummary();
             if (fileSelect >= 0) drawFile(langs[fileSelect]);
         }
 
-        void drawSummary(LocalizationManager LManager)
+        void drawSummary()
         {
             GUILayout.Space(10f);
 
-            var langs = LManager.lang_files;
+            var _langs = LocalizationMind.Sheets.lang_files;
 
             EditorGUI.BeginChangeCheck();
-            GUILayout.Label("langs files x" + langs.Length);
+            GUILayout.Label("langs files x" + _langs.Length);
 
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("clear csv cache(s)")) CsvParser.refreshCache();
@@ -37,32 +37,32 @@ namespace fwp.localizator.editor
             if (GUILayout.Button("(re)generate trad files"))
             {
                 CsvParser.refreshCache();
-                LManager.reloadFiles();
+                LocalizationMind.Sheets.reloadFiles();
                 GenerateSheetUtils.trads_generate();
             }
             GUILayout.EndHorizontal();
 
-            for (int i = 0; i < langs.Length; i++)
+            for (int i = 0; i < _langs.Length; i++)
             {
-                var LFile = langs[i];
+                var LFile = _langs[i];
 
                 GUILayout.BeginHorizontal();
 
-                if (GUILayout.Button(" ? ", GuiHelper.btnXS))
+                if (GUILayout.Button(" ? ", GuiHelper.wXS))
                 {
                     UnityEditor.Selection.activeObject = LFile.textAsset;
                 }
 
                 GUILayout.Label(LFile.iso.ToString());
-                GUILayout.Label("lines x" + LFile.GetLinesCount(), GuiHelper.btnM);
-                GUILayout.Label("char x" + LFile.textAsset.text.Length, GuiHelper.btnM);
+                GUILayout.Label("lines x" + LFile.GetLinesCount(), GuiHelper.wM);
+                GUILayout.Label("char x" + LFile.textAsset.text.Length, GuiHelper.wM);
 
-                if (GUILayout.Button("refresh", GuiHelper.btnS))
+                if (GUILayout.Button("refresh", GuiHelper.wS))
                 {
                     fileRefresh(LFile);
                 }
 
-                if (GUILayout.Button("debug", GuiHelper.btnS))
+                if (GUILayout.Button("debug", GuiHelper.wS))
                 {
                     fileRefresh(LFile);
                     fileSelect = i;

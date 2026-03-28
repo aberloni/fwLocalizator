@@ -14,7 +14,7 @@ namespace fwp.localizator.editor
         { }
 
         public string GetTabName() => "Sheets";
-        public void Draw(LocalizationManager LManager)
+        public void Draw()
         {
 
             GUILayout.Label("spreadsheet params", UtilStyles.SectionTitle());
@@ -33,7 +33,7 @@ namespace fwp.localizator.editor
                 sheets = LocalizatorUtilsEditor.getSheetsData();
             }
 
-            var iso = LManager.getSavedIsoLanguage();
+            var iso = LocalizationMind.Languages.getSavedIsoLanguage();
 
             GUILayout.Space(10f);
 
@@ -46,11 +46,11 @@ namespace fwp.localizator.editor
 
                 GUILayout.BeginHorizontal();
 
-                if (GUILayout.Button("?", GuiHelper.btnXS)) UnityEditor.Selection.activeObject = sheet;
+                if (GUILayout.Button("?", GuiHelper.wXS)) UnityEditor.Selection.activeObject = sheet;
 
                 EditorGUILayout.ObjectField(sheet, sheet.GetType(), true);
 
-                if (GUILayout.Button(symbol_download + " tabs", GuiHelper.btnS))
+                if (GUILayout.Button(symbol_download + " tabs", GuiHelper.wS))
                 {
                     ImportSheetUtils.ssheet_import(sheet);
                     GenerateSheetUtils.csv_generate(sheet);
@@ -64,7 +64,7 @@ namespace fwp.localizator.editor
 
                 
                 GUILayout.BeginHorizontal();
-                if (GUILayout.Button(symbol_cloud, GuiHelper.btnXS)) OpenInFileBrowser.browseUrl(sheet.url);
+                if (GUILayout.Button(symbol_cloud, GuiHelper.wXS)) OpenInFileBrowser.browseUrl(sheet.url);
                 GUILayout.Label("URL : " + sheet.sheetUrlUid);
                 GUILayout.EndHorizontal();
 
@@ -73,12 +73,12 @@ namespace fwp.localizator.editor
                     using (new GUILayout.HorizontalScope())
                     {
 
-                        if (GUILayout.Button(symbol_cloud, GuiHelper.btnXS))
+                        if (GUILayout.Button(symbol_cloud, GuiHelper.wXS))
                             OpenInFileBrowser.browseUrl(sheet.url + tab.Url);
 
                         GUILayout.Label(tab.TxtFileName + " (" + tab.parseType + ")");
 
-                        if (GUILayout.Button(symbol_download, GuiHelper.btnXS))
+                        if (GUILayout.Button(symbol_download, GuiHelper.wXS))
                         {
                             // import tab
                             ImportSheetUtils.tab_import(sheet, tab);
@@ -92,25 +92,25 @@ namespace fwp.localizator.editor
 
                         if (!string.IsNullOrEmpty(tab.Cache))
                         {
-                            if (GUILayout.Button("txt", GuiHelper.btnS))
+                            if (GUILayout.Button("txt", GuiHelper.wS))
                             {
                                 Selection.activeObject = AssetDatabase.LoadAssetAtPath("Assets/" + tab.CacheTxt, typeof(TextAsset));
                             }
 
-                            if (GUILayout.Button("csv", GuiHelper.btnS))
+                            if (GUILayout.Button("csv", GuiHelper.wS))
                             {
                                 Selection.activeObject = AssetDatabase.LoadAssetAtPath("Assets/" + tab.CacheCsv, typeof(UnityEngine.Object));
                             }
 
-                            if (GUILayout.Button("log:raw", GuiHelper.btnS))
+                            if (GUILayout.Button("log:raw", GuiHelper.wS))
                             {
                                 CsvParser.getParser(tab)?.logRaw();
                             }
-                            if (GUILayout.Button("log:loca", GuiHelper.btnS))
+                            if (GUILayout.Button("log:loca", GuiHelper.wS))
                             {
                                 CsvParser.getParser(tab)?.logLocalized(iso);
                             }
-                            if (GUILayout.Button("log.missing", GuiHelper.btnS))
+                            if (GUILayout.Button("log.missing", GuiHelper.wS))
                             {
                                 CsvParser.getParser(tab)?.logMissing(iso);
                             }

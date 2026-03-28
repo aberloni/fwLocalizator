@@ -13,14 +13,12 @@ namespace fwp.localizator.editor
 
 	public class ImportSheetUtils
 	{
-		static public bool verbose => LocalizationManager.Verbose;
-
 		/// <summary>
 		/// import and save multiple spreadsheets
 		/// </summary>
 		static public void ssheets_import(LocaDataSheet[] sheets)
 		{
-			if (verbose) Debug.Log("import x" + sheets.Length + " sheets");
+			LocalizationMind.log("import x" + sheets.Length + " sheets");
 
 			for (int i = 0; i < sheets.Length; i++)
 			{
@@ -42,7 +40,7 @@ namespace fwp.localizator.editor
 
 			DataSheetTab[] tabs = sheet.tabs;
 
-			if (verbose) Debug.Log("import x" + tabs.Length + " tabs");
+			LocalizationMind.log("import x" + tabs.Length + " tabs");
 
 			EditorUtility.DisplayProgressBar("importing loca " + sheet.url, "fetching...", 0f);
 

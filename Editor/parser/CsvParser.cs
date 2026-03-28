@@ -555,21 +555,15 @@ namespace fwp.localizator.editor
 					{
 						if (val.Contains(lineUid))
 						{
-							if (LocalizationManager.Verbose)
-							{
-								Debug.Log("found " + lineUid + " cell in CSV:" + csv.tab.DisplayName + " => returning column #" + cell);
-							}
-
+							LocalizationMind.log("found " + lineUid + " cell in CSV:" + csv.tab.DisplayName + " => returning column #" + cell);
+							
 							return l.cells[cell];
 						}
 					}
 				}
 			}
 
-			if (LocalizationManager.Verbose)
-			{
-				Debug.LogWarning("could not find a cell value for uid : " + lineUid);
-			}
+			LocalizationMind.logw("could not find a cell value for uid : " + lineUid);
 
 			return string.Empty;
 		}

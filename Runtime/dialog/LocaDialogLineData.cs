@@ -26,10 +26,7 @@ namespace fwp.localizator.dialog
 			this.uid = uid;
 		}
 
-		public string getContent()
-		{
-			return LocalizationManager.Instance.getContent(uid);
-		}
+		public string getContent() => Localization.getContent(uid);
 
 #if UNITY_EDITOR
 		//FOR DEBUG ONLY
@@ -39,13 +36,12 @@ namespace fwp.localizator.dialog
 		{
 			List<string> tmp = new List<string>();
 
-			if (verbose)
-				Debug.Log("log debug previews @ " + uid);
+			LocalizationMind.log("log debug previews @ " + uid);
 
-			var sups = LocalizationManager.Instance.getSupportedLanguages();
+			var sups = LocalizationMind.Languages.getSupportedLanguages();
 			foreach (IsoLanguages sup in sups)
 			{
-				var val = LocalizationManager.Instance.getContent(uid, sup);
+				var val = Localization.GetContent(uid, sup);
 				tmp.Add(val);
 
 				if (verbose)

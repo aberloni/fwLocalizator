@@ -4,11 +4,12 @@ using System.Collections;
 using System.Collections.Generic;
 
 using UnityEditor;
-using fwp.localizator.editor;
 
-namespace fwp.localizator.dialog.editor
+namespace fwp.localizator.editor
 {
-	abstract public class WinEdDialogs : WinEdLocaScaffold<LocalizationManager>
+	using fwp.localizator.dialog;
+
+	abstract public class WinEdDialogs : WinEdLocaScaffold
 	{
 		//[MenuItem("Window/Localizator/(win) dialogs")]
 		//static void init() => EditorWindow.GetWindow(typeof(WinEdDialogs));
@@ -31,27 +32,25 @@ namespace fwp.localizator.dialog.editor
 
 		Vector2 scrollTabDialogs;
 
-		protected override string getWindowTitle() => DialogManager.instance.GetType().Name;
+		protected override string getWindowTitle() => LocalizationMind.Dialogs.GetType().Name;
 
-		IsoLanguages Iso => LManager.getSavedIsoLanguage();
+		IsoLanguages Iso => LocalizationMind.Languages.getSavedIsoLanguage();
 
-        public override LocalizationManager GenerateManager() => new LocalizationManager();
-		
 		protected override void draw()
 		{
-			if (DialogManager.instance == null)
+			if (LocalizationMind.Dialogs == null)
 			{
-				GUILayout.Label("no manager");
+				GUILayout.Label("need mind<Dialog>");
+				return;
+			}
+
+			if (LocalizationMind.Sheets == null)
+			{
+				GUILayout.Label("need mind<Sheets>");
 				return;
 			}
 
 			filter.drawFilterField();
-
-			if (LocalizationManager.Instance == null)
-			{
-				GUILayout.Label("no loca manager?");
-				return;
-			}
 
 			GUILayout.Label($"using lang : {Iso}");
 
@@ -85,13 +84,10 @@ namespace fwp.localizator.dialog.editor
 		/// </summary>
 		void findDialogsUids()
 		{
-			var mgr = LocalizationManager.Instance;
-			if (mgr == null) return;
-
 			string _filter = filter != null && filter.HasFilter ? filter.filter : null;
 
 			// get french (default)
-			var file = mgr.getFileByLang(Iso);
+			var file = LocalizationMind.Sheets.getFileByLang(Iso);
 			if (file == null)
 			{
 				Debug.LogWarning($"no {Iso} file ?");
@@ -118,13 +114,13 @@ namespace fwp.localizator.dialog.editor
 
 				if (!tmp.Contains(uid))
 				{
-					if (DialogManager.verbose) Debug.Log("+" + uid);
+					LocalizationMind.log("+" + uid);
 					tmp.Add(uid);
 				}
 			}
 
 			string[] dialogsUids = tmp.ToArray();
-			if (DialogManager.verbose) Debug.Log($"      -> solved x{dialogsUids.Length} uids dialogs");
+			LocalizationMind.log($"      -> solved x{dialogsUids.Length} uids dialogs");
 
 			if (dialogs == null) dialogs = new(); // regen dico
 			else dialogs.Clear();
@@ -204,37 +200,38 @@ namespace fwp.localizator.dialog.editor
 			bool fold = GuiHelper.DrawFoldout("loca dialogs UIDs x" + dialogs.Count, "dialog_locas");
 			if (!fold) return;
 
-			GUILayout.Label($"all DUID found in translation file {LocalizationManager.Instance.getSavedIsoLanguage()}");
+			GUILayout.Label($"all DUID found in translation file {LocalizationMind.Languages.getSavedIsoLanguage()}");
 
 			bool dirty = false;
 			foreach (var kp in dialogs)
 			{
 				GUILayout.BeginHorizontal();
+
+				if (GUILayout.Button("?", GuiHelper.wXS)) Selection.activeObject = kp.Value.dialog;
+
 				GUILayout.Label(kp.Key);
+				if (kp.Value == null) continue;
 
 				if (kp.Value.dialog == null)
 				{
-					if (GUILayout.Button("create", GuiHelper.btnM))
+					if (GUILayout.Button("create", GuiHelper.wXL))
 					{
-						kp.Value.dialog = DialogManager.instance.createDialog(kp.Key);
+						kp.Value.dialog = LocalizationMind.Dialogs.createDialog(kp.Key);
 
 						dirty = true;
 					}
 				}
-
-				if (kp.Value.dialog != null)
+				else
 				{
-					if (GUILayout.Button("update", GuiHelper.btnM))
+					GUILayout.Label("lines x" + kp.Value.dialog.getLines().Length, GuiHelper.wS);
+					if (GUILayout.Button("update", GuiHelper.wM))
 					{
 						Debug.Log("dialog.update " + kp.Value.dialog.name, kp.Value.dialog);
 
 						kp.Value.dialog.edUpdateContent();
 						UnityEditor.Selection.activeObject = kp.Value.dialog;
 					}
-					if (GUILayout.Button(" > ", GuiHelper.btnS))
-					{
-						UnityEditor.Selection.activeObject = kp.Value.dialog;
-					}
+
 				}
 
 				GUILayout.EndHorizontal();
@@ -286,7 +283,7 @@ namespace fwp.localizator.dialog.editor
 				}
 				else if (_generate)
 				{
-					d = DialogManager.instance.createDialog(kp.Key);
+					d = LocalizationMind.Dialogs.createDialog(kp.Key);
 					dirty = true;
 				}
 

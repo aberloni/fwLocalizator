@@ -122,7 +122,7 @@ namespace fwp.localizator.dialog
 				string fullId = uid + dialog_line_number_separator + ((index < 10) ? "0" + index : index.ToString());
 				Debug.Log($"({iso})?" + fullId);
 
-				if (!LocalizationManager.Instance.hasKey(fullId, iso, false))
+				if (!Localization.HasKey(fullId, iso, false))
 				{
 					// stop
 					index = max_fetch_lines;

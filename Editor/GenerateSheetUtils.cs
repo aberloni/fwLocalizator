@@ -15,8 +15,6 @@ namespace fwp.localizator.editor
 
 	public class GenerateSheetUtils
 	{
-		static public bool verbose => LocalizationManager.Verbose;
-
 		static public string raw_file_locate(DataSheetTab tab)
 		{
 			// fetching all tabs txts
@@ -77,10 +75,9 @@ namespace fwp.localizator.editor
 
 		static public void trads_generate()
 		{
-			var sups = LocalizationManager.Instance.getSupportedLanguages();
+			var sups = LocalizationMind.Languages.getSupportedLanguages();
 
-			if (verbose)
-				Debug.Log("generating for x" + sups.Length + " languages");
+			LocalizationMind.log("generating for x" + sups.Length + " languages");
 
 			EditorUtility.DisplayProgressBar("converting loca", "loading...", 0f);
 
