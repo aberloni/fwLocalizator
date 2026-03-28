@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEditor;
-using PlasticGui.WorkspaceWindow.Items;
 
 namespace fwp.localizator.editor
 {
