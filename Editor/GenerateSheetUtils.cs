@@ -77,7 +77,7 @@ namespace fwp.localizator.editor
 
 		static public void trads_generate()
 		{
-			var sups = LocalizationManager.instance.getSupportedLanguages();
+			var sups = LocalizationManager.Instance.getSupportedLanguages();
 
 			if (verbose)
 				Debug.Log("generating for x" + sups.Length + " languages");
@@ -108,8 +108,7 @@ namespace fwp.localizator.editor
 
 			StringBuilder output = new StringBuilder();
 
-			Debug.Log("generating file : " + lang);
-			Debug.Log("parsers x" + parsers.Length);
+			Debug.Log("<color=white>file : <b>" + lang.ToString().ToUpper() + "</b></color> | parsers x" + parsers.Length);
 
 			foreach (var csv in parsers)
 			{

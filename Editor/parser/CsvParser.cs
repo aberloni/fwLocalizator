@@ -5,6 +5,7 @@ using UnityEngine;
 namespace fwp.localizator.editor
 {
 	using System.IO;
+	using System.IO.IsolatedStorage;
 	using System.Text;
 
 	/// <summary>
@@ -93,36 +94,29 @@ namespace fwp.localizator.editor
 
 			string langStr = lang.ToString().ToLower();
 
-			int langColumnIndex = -1;
 			for (int j = 0; j < langs.Length; j++)
 			{
 				string cellLang = langs[j].Trim().ToLower();
 
-				if (cellLang.Length < 2) // empty
-					continue;
+				// cell content is too small for lang
+				if (cellLang.Length < 2) continue; // empty~
 
-				//if(verbose) Debug.Log(cellLang + " (x" + langs.Length + ") vs " + langStr);
+				// Debug.Log("#" + j + " ? cell:" + cellLang + " vs " + langStr);
 
 				// is the right language ?
 				if (cellLang == langStr)
 				{
-					langColumnIndex = j;
-					//Debug.Log("found lang "+lang+" at column #"+ langColumnIndex);
+					// Debug.Log(" ! found lang " + lang + " at column #" + j);
+					return j;
 				}
 			}
 
-			if (langColumnIndex < 0)
+			if (warning)
 			{
-				if (warning)
-				{
-					Debug.LogWarning("sheet import : <b>no column</b> for lang : <b>" + lang + "</b>");
-					Debug.LogWarning("out of x" + langs.Length);
-				}
-
-				return -1;
+				Debug.LogWarning("sheet import : <b>no column</b> for lang : <b>" + lang + "</b> | out of langs x" + langs.Length);
 			}
 
-			return langColumnIndex;
+			return -1;
 		}
 
 		public CsvParser(DataSheetTab tab, string path)
@@ -180,6 +174,16 @@ namespace fwp.localizator.editor
 
 			int _col = (int)tab.tabParams.uidColumn;
 
+			Dictionary<string, int> langColumns = new();
+			var langs = System.Enum.GetValues(typeof(IsoLanguages));
+			for (int i = 0; i < langs.Length; i++)
+			{
+				IsoLanguages iso = (IsoLanguages)i;
+
+				// search lang col if current iso
+				langColumns.Add(iso.ToString(), getLangColumnIndex(iso));
+			}
+
 			foreach (var line in lines)
 			{
 				Debug.Assert(line != null);
@@ -192,15 +196,28 @@ namespace fwp.localizator.editor
 					continue;
 				}
 
-				CsvLineLang llang = new(key);
-				var langs = System.Enum.GetValues(typeof(IsoLanguages));
+				CsvLineLang csvLang = new(key);
 				for (int i = 0; i < langs.Length; i++)
 				{
-					int langCol = getLangColumnIndex((IsoLanguages)i);
+					IsoLanguages iso = (IsoLanguages)i;
+
+					// search lang col if current iso
+					int langCol = langColumns[iso.ToString()];
+
+					// iso not present in line
 					if (langCol < 0) continue;
-					llang.addLang((IsoLanguages)i, line.cells[langCol]);
+
+					if (langCol >= line.cells.Count)
+					{
+						Debug.LogWarning("line doesn't have enought cells (x" + line.cells.Count + ") for iso:" + iso + " (column:" + langCol + ")");
+						Debug.LogWarning("line	" + line);
+						continue;
+					}
+
+					csvLang.addLang((IsoLanguages)i, line.cells[langCol]);
 				}
-				localizes.Add(llang);
+
+				localizes.Add(csvLang);
 			}
 
 		}
@@ -208,7 +225,7 @@ namespace fwp.localizator.editor
 		/// <summary>
 		/// append 01,02,03 to keys
 		/// </summary>
-		public void fillAutoUid(int uidColumn)
+		public void fillAutoUid(int uidColumn, bool verbose = false)
 		{
 			Debug.Log("		autofill lines x" + lines.Count);
 			string _activeUid = string.Empty;
@@ -256,7 +273,7 @@ namespace fwp.localizator.editor
 
 				lines[j].cells[uidColumn] = key;
 
-				Debug.Log("  <b>autofilled</b> key : " + key);
+				if (verbose) Debug.Log("  <b>autofilled</b> key : " + key);
 			}
 
 		}

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace fwp.localizator
 {
@@ -31,11 +32,12 @@ namespace fwp.localizator
 			string output = string.Empty;
 			for (int i = 0; i < cells.Count; i++)
 			{
-				if (i > 0) output += ParserStatics.SPREAD_CELL_SEPARATOR;
-				output += cells[i];
+				output += i + "[" + cells[i] + "] ";
 			}
 			return output;
 		}
+
+		override public string ToString() => stringify();
 	}
 
 	/// <summary>

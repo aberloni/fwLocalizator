@@ -28,7 +28,7 @@ namespace fwp.localizator.dialog
 
 		public string getContent()
 		{
-			return LocalizationManager.instance.getContent(uid);
+			return LocalizationManager.Instance.getContent(uid);
 		}
 
 #if UNITY_EDITOR
@@ -42,10 +42,10 @@ namespace fwp.localizator.dialog
 			if (verbose)
 				Debug.Log("log debug previews @ " + uid);
 
-			var sups = LocalizationManager.instance.getSupportedLanguages();
+			var sups = LocalizationManager.Instance.getSupportedLanguages();
 			foreach (IsoLanguages sup in sups)
 			{
-				var val = LocalizationManager.instance.getContent(uid, sup);
+				var val = LocalizationManager.Instance.getContent(uid, sup);
 				tmp.Add(val);
 
 				if (verbose)

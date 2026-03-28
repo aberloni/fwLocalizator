@@ -23,14 +23,14 @@ namespace fwp.localizator
         /// </summary>
         public static void editor_switchLanguage(IsoLanguages newLang, bool swap = true)
         {
-            if (LocalizationManager.instance == null)
+            if (LocalizationManager.Instance == null)
             {
                 Debug.LogWarning("only at runtime");
                 Debug.LogWarning("can't set language: no instance of localization");
                 return;
             }
 
-            LocalizationManager.instance.setSavedLanguage(newLang, swap);
+            LocalizationManager.Instance.setSavedLanguage(newLang, swap);
         }
 
     }

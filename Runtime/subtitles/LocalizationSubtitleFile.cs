@@ -276,8 +276,8 @@ namespace fwp.localizator.subtitles
 		/// </summary>
 		virtual protected string localizeLine(string line)
 		{
-			if (LocalizationManager.instance != null)
-				return LocalizationManager.instance.getContent(rawLine);
+			if (LocalizationManager.Instance != null)
+				return LocalizationManager.Instance.getContent(rawLine);
 
 			return line;
 		}

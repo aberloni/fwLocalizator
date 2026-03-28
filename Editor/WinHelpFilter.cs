@@ -3,6 +3,9 @@ using UnityEngine;
 namespace fwp.localizator
 {
 
+	/// <summary>
+	/// textfield for filter
+	/// </summary>
 	public class WinHelpFilter
 	{
 		bool focused = false;

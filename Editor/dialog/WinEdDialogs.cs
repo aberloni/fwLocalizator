@@ -8,7 +8,7 @@ using fwp.localizator.editor;
 
 namespace fwp.localizator.dialog.editor
 {
-	abstract public class WinEdDialogs : WinEdLocaScaffold
+	abstract public class WinEdDialogs : WinEdLocaScaffold<LocalizationManager>
 	{
 		//[MenuItem("Window/Localizator/(win) dialogs")]
 		//static void init() => EditorWindow.GetWindow(typeof(WinEdDialogs));
@@ -31,14 +31,14 @@ namespace fwp.localizator.dialog.editor
 
 		Vector2 scrollTabDialogs;
 
-		protected override string getTitle() => DialogManager.instance.GetType().Name;
+		protected override string getWindowTitle() => DialogManager.instance.GetType().Name;
 
-		IsoLanguages Iso => LocalizationManager.instance != null ? LocalizationManager.instance.getSavedIsoLanguage() : IsoLanguages.en;
+		IsoLanguages Iso => LManager.getSavedIsoLanguage();
 
+        public override LocalizationManager GenerateManager() => new LocalizationManager();
+		
 		protected override void draw()
 		{
-			base.draw();
-
 			if (DialogManager.instance == null)
 			{
 				GUILayout.Label("no manager");
@@ -47,7 +47,7 @@ namespace fwp.localizator.dialog.editor
 
 			filter.drawFilterField();
 
-			if (LocalizationManager.instance == null)
+			if (LocalizationManager.Instance == null)
 			{
 				GUILayout.Label("no loca manager?");
 				return;
@@ -85,7 +85,7 @@ namespace fwp.localizator.dialog.editor
 		/// </summary>
 		void findDialogsUids()
 		{
-			var mgr = LocalizationManager.instance;
+			var mgr = LocalizationManager.Instance;
 			if (mgr == null) return;
 
 			string _filter = filter != null && filter.HasFilter ? filter.filter : null;
@@ -101,7 +101,7 @@ namespace fwp.localizator.dialog.editor
 			// fetching all possible UIDs (from trad file)
 
 			List<string> tmp = new List<string>();
-			var lines = file.getLines(); // lines of target translation file
+			var lines = file.GetLines(); // lines of target translation file
 
 			foreach (var l in lines)
 			{
@@ -163,7 +163,7 @@ namespace fwp.localizator.dialog.editor
 
 		void drawIssues()
 		{
-			bool fold = drawFoldout("issues", "dialog_issues");
+			bool fold = GuiHelper.DrawFoldout("issues", "dialog_issues");
 			if (!fold) return;
 
 			GUILayout.Label("all dialogs scriptable without matching DUID in translation file");
@@ -184,7 +184,7 @@ namespace fwp.localizator.dialog.editor
 			if (dialogs == null || dialogs.Count <= 0)
 				return;
 
-			bool fold = drawFoldout("generated scriptables", "dialog_scriptables");
+			bool fold = GuiHelper.DrawFoldout("generated scriptables", "dialog_scriptables");
 			if (!fold) return;
 
 			GUILayout.Label("all dialogs scriptable existing in resources");
@@ -201,10 +201,10 @@ namespace fwp.localizator.dialog.editor
 			if (dialogs == null || dialogs.Count <= 0)
 				return;
 
-			bool fold = drawFoldout("loca dialogs UIDs x" + dialogs.Count, "dialog_locas");
+			bool fold = GuiHelper.DrawFoldout("loca dialogs UIDs x" + dialogs.Count, "dialog_locas");
 			if (!fold) return;
 
-			GUILayout.Label($"all DUID found in translation file {LocalizationManager.instance.getSavedIsoLanguage()}");
+			GUILayout.Label($"all DUID found in translation file {LocalizationManager.Instance.getSavedIsoLanguage()}");
 
 			bool dirty = false;
 			foreach (var kp in dialogs)
@@ -214,7 +214,7 @@ namespace fwp.localizator.dialog.editor
 
 				if (kp.Value.dialog == null)
 				{
-					if (GUILayout.Button("create", btnM))
+					if (GUILayout.Button("create", GuiHelper.btnM))
 					{
 						kp.Value.dialog = DialogManager.instance.createDialog(kp.Key);
 
@@ -224,14 +224,14 @@ namespace fwp.localizator.dialog.editor
 
 				if (kp.Value.dialog != null)
 				{
-					if (GUILayout.Button("update", btnM))
+					if (GUILayout.Button("update", GuiHelper.btnM))
 					{
 						Debug.Log("dialog.update " + kp.Value.dialog.name, kp.Value.dialog);
 
 						kp.Value.dialog.edUpdateContent();
 						UnityEditor.Selection.activeObject = kp.Value.dialog;
 					}
-					if (GUILayout.Button(" > ", btnS))
+					if (GUILayout.Button(" > ", GuiHelper.btnS))
 					{
 						UnityEditor.Selection.activeObject = kp.Value.dialog;
 					}

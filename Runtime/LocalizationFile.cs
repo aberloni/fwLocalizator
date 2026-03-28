@@ -12,7 +12,7 @@ namespace fwp.localizator
 	public class LocalizationFile
 	{
 		public const char SPREADSHEET_CELL_BREAK = ','; // spreadsheet cell separator
-		
+
 		public const char LOCALIZ_CHAR_COMMENT = '#'; //id=content
 		public const string LOCALIZ_CHAR_COMMENT2 = "\\\\"; //id=content
 		public const char LOCALIZ_CHAR_SPLIT = '='; //id=content
@@ -27,20 +27,21 @@ namespace fwp.localizator
 
 		public bool editor_fold;
 
-		string[] lines;
+		string[] lines = null;
+
+		public string[] GetLines() => lines;
+		public int GetLinesCount() => lines.Length;
+
+		public bool IsLoaded => textAsset != null;
 
 		public LocalizationFile(IsoLanguages lang)
 		{
 			iso = lang;
-			setup();
+			set();
 		}
 
-		public string[] getLines() => lines;
-
-		void setup()
+		void set()
 		{
-			string lang = iso.ToString();
-
 			string langFilePath = getLangFileResourcesPath(iso, false); // resources/, path to lang file, no ext
 			textAsset = Resources.Load(langFilePath) as TextAsset;
 
@@ -85,7 +86,7 @@ namespace fwp.localizator
 
 		public void debugRefresh()
 		{
-			setup();
+			set();
 		}
 
 
@@ -218,16 +219,6 @@ namespace fwp.localizator
 			if (!lines[idx].Contains("" + LocalizationFile.LOCALIZ_CHAR_SPLIT)) return "";
 			string[] split = lines[idx].Split(LocalizationFile.LOCALIZ_CHAR_SPLIT);
 			return split[0];
-		}
-
-		public int getLineCount()
-		{
-			return lines.Length;
-		}
-
-		public bool isLoaded()
-		{
-			return textAsset != null;
 		}
 
 		public bool overrideKey(string key, string newText)

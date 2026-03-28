@@ -4,33 +4,45 @@ using System.Collections.Generic;
 
 using UnityEditor;
 
-
 namespace fwp.localizator.editor
 {
 
-	abstract public class WinEdLocaScaffold : EditorWindow
+	public interface iLocaTab
 	{
+		public string GetTabName();
+		public void Refresh(bool hard);
+		public void Draw(LocalizationManager LManager);
+	}
 
-
-        protected void Separator() => GUILayout.Box("", GUILayout.Height(1), GUILayout.ExpandWidth(true));
-		protected GUILayoutOption btnXS => GUILayout.Width(50f);
-		protected GUILayoutOption btnS => GUILayout.Width(75f);
-		protected GUILayoutOption btnM => GUILayout.Width(100f);
+	/// <summary>
+	/// base structure of localization window
+	/// 	=> spreadsheets import
+	/// 	=> dialogs
+	/// 
+	/// </summary>
+	abstract public class WinEdLocaScaffold<TManager> : EditorWindow where TManager : LocalizationManager
+	{
+		protected TManager LManager;
 
 		protected WinHelpFilter filter = null;
 
-		Dictionary<string, bool> edFoldout = new Dictionary<string, bool>();
+		int tabSelected = 0;
+		iLocaTab[] tabs;
+		GUIContent[] guiTabs;
 
 		/// <summary>
 		/// sealed
-		/// when window is created
 		/// </summary>
 		void OnEnable()
 		{
-			create();
+			LManager = GenerateManager();
+			onEnable();
 		}
 
-		virtual protected void create()
+		/// <summary>
+		/// enable
+		/// </summary>
+		virtual protected void onEnable()
 		{
 			if (filter == null)
 			{
@@ -41,21 +53,40 @@ namespace fwp.localizator.editor
 				});
 			}
 
-			generateManager();
+			tabs = GenerateTabs();
+			guiTabs = new GUIContent[tabs.Length];
+			for (int i = 0; i < tabs.Length; i++)
+			{
+				guiTabs[i] = new GUIContent(tabs[i].GetTabName());
+			}
 		}
 
-		virtual protected void OnFocus()
+		abstract public iLocaTab[] GenerateTabs();
+
+		/// <summary>
+		/// select type of loca manager to generate
+		/// </summary>
+		abstract public TManager GenerateManager();
+
+		/// <summary>
+		/// sealed
+		/// </summary>
+		void OnFocus() => onFocus();
+
+		virtual protected void onFocus()
 		{
 			refresh();
 		}
 
-		abstract protected string getTitle();
+		virtual protected string getWindowTitle() => "Localization";
 
 		Vector2 globalScroll;
 		private void OnGUI()
 		{
+			LocalizationManager.Verbose = EditorGUILayout.Toggle("verbose", LocalizationManager.Verbose);
 			drawHeader();
-			GUILayout.BeginScrollView(globalScroll);
+			drawTabs();
+			globalScroll = GUILayout.BeginScrollView(globalScroll);
 			draw();
 			GUILayout.EndScrollView();
 		}
@@ -65,50 +96,29 @@ namespace fwp.localizator.editor
 
 		virtual protected void drawHeader()
 		{
-			if (UtilStyles.drawSectionTitle(getTitle(), 15, 15))
+			if (UtilStyles.drawSectionTitle(getWindowTitle(), 15, 15))
 			{
-				Debug.Log("title.refresh");
+				Debug.Log("> title.refresh");
 				refresh(true);
+			}
+		}
+
+		void drawTabs()
+		{
+			if (guiTabs.Length <= 0) return;
+
+			int _tab = GUILayout.Toolbar(tabSelected, guiTabs);
+			if (_tab != tabSelected)
+			{
+				tabSelected = _tab;
 			}
 		}
 
 		virtual protected void draw()
 		{
-
+			if(tabSelected >= 0) tabs[tabSelected].Draw(LManager);
 		}
 
-		/// <summary>
-		/// to override orignal manager
-		/// </summary>
-		abstract protected void generateManager();
-
-		protected bool drawFoldout(string label, string uid, bool isSection = false)
-		{
-			bool foldState = false;
-			if (edFoldout.ContainsKey(uid))
-			{
-				foldState = edFoldout[uid];
-			}
-
-			bool _state;
-
-			if (isSection)
-			{
-				_state = EditorGUILayout.Foldout(foldState, label, true, UtilStyles.FoldoutSection(15));
-			}
-			else
-			{
-				_state = EditorGUILayout.Foldout(foldState, label, true);
-			}
-
-			if (_state != foldState)
-			{
-				if (!edFoldout.ContainsKey(uid)) edFoldout.Add(uid, false);
-				edFoldout[uid] = _state;
-			}
-
-			return _state;
-		}
 
 	}
 

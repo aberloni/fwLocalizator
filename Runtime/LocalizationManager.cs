@@ -56,7 +56,8 @@ namespace fwp.localizator
 
 		public const string ppref_language = "ppref_language";
 
-		static public LocalizationManager instance = null;
+		static public LocalizationManager Instance => instance;
+		static protected LocalizationManager instance = null;
 
 		/// <summary>
 		/// list of reactor candidates to lang change
@@ -119,7 +120,7 @@ namespace fwp.localizator
 			for (int i = 0; i < sups.Length; i++)
 			{
 				LocalizationFile file = new LocalizationFile(sups[i]);
-				if (file != null && file.isLoaded()) tmp.Add(file);
+				if (file != null && file.IsLoaded) tmp.Add(file);
 			}
 			lang_files = tmp.ToArray();
 
@@ -261,7 +262,7 @@ namespace fwp.localizator
 				return "[empty UID]";
 			}
 
-			LocalizationFile file = instance.getFileByLang(iso);
+			LocalizationFile file = getFileByLang(iso);
 			Debug.Assert(file != null, "no file found for language : " + iso);
 
 			string ret = file.getContentById(id);
@@ -274,7 +275,7 @@ namespace fwp.localizator
 		public bool hasKey(string key, bool ignoreDigits = true) => hasKey(key, getSavedIsoLanguage(), ignoreDigits);
 		public bool hasKey(string key, IsoLanguages iso, bool ignoreDigits = true)
 		{
-			LocalizationFile file = instance.getFileByLang(iso);
+			LocalizationFile file = getFileByLang(iso);
 			return file.hasId(key, ignoreDigits);
 		}
 
@@ -283,7 +284,7 @@ namespace fwp.localizator
 			IsoLanguages cur = getSavedIsoLanguage();
 
 			int supportIndex = -1;
-			var sups = instance.getSupportedLanguages();
+			var sups = getSupportedLanguages();
 			for (int i = 0; i < sups.Length; i++)
 			{
 				if (cur == sups[i])
