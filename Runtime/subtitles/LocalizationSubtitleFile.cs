@@ -276,7 +276,7 @@ namespace fwp.localizator.subtitles
 		/// </summary>
 		virtual protected string localizeLine(string line)
 		{
-			return Localization.getContent(rawLine);
+			return Localization.GetContent(rawLine);
 		}
 
 		public bool isWithingLineTimecodeRange(double timecode, bool verbose = false)

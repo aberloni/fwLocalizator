@@ -2,6 +2,7 @@
 using UnityEngine;
 using System.IO;
 using System;
+using System.Linq;
 
 namespace fwp.localizator
 {
@@ -11,6 +12,7 @@ namespace fwp.localizator
 	/// </summary>
 	public class LocalizationFile
 	{
+		const char KEY_VALUE_SPLIT = '=';
 		public const char SPREADSHEET_CELL_BREAK = ','; // spreadsheet cell separator
 
 		public const char LOCALIZ_CHAR_COMMENT = '#'; //id=content
@@ -20,6 +22,11 @@ namespace fwp.localizator
 		public const string LOCALIZ_MULTIPLE_END = "</multiple>"; //id=content
 		public const string FILESEPARATOR = "@";
 
+		public override string ToString()
+		{
+			return base.ToString() + "_" + iso;
+		}
+
 		//public string lang_name = ""; // fr, en, ...
 		public IsoLanguages iso;
 
@@ -27,9 +34,31 @@ namespace fwp.localizator
 
 		public bool editor_fold;
 
-		string[] lines = null;
+		string[] rawLines = null;
+		FileLine[] lines = null;
 
-		public string[] GetLines() => lines;
+		public struct FileLine
+		{
+			public override string ToString() => key + KEY_VALUE_SPLIT + value;
+
+			/// <summary>
+			/// key present in file (might have -digits)
+			/// </summary>
+			public string key;
+
+			/// <summary>
+			/// key without trailing numbers
+			/// </summary>
+			public string keyRoot;
+
+			/// <summary>
+			/// =value
+			/// </summary>
+			public string value;
+		}
+
+		// public string[] GetRawLines() => rawLines;
+		public FileLine[] GetLines() => lines;
 		public int GetLinesCount() => lines.Length;
 
 		public bool IsLoaded => textAsset != null;
@@ -39,6 +68,8 @@ namespace fwp.localizator
 			iso = lang;
 			set();
 		}
+
+		public void edRefresh() => set();
 
 		void set()
 		{
@@ -51,14 +82,14 @@ namespace fwp.localizator
 				return;
 			}
 
-			lines = splitLineBreak(textAsset.text);
+			rawLines = splitLineBreak(textAsset.text);
 
 			List<string> tmp = new List<string>();
 			bool multipleLine = false;
 			bool firstMultipleLine = false;
-			foreach (string line in lines)
+			foreach (string line in rawLines)
 			{
-				if (line.StartsWith("" + LocalizationFile.LOCALIZ_CHAR_COMMENT)) continue;
+				if (line.StartsWith(LOCALIZ_CHAR_COMMENT)) continue;
 				if (line.Length <= 1)
 				{
 					if (multipleLine) tmp[tmp.Count - 1] += "\n";
@@ -79,48 +110,30 @@ namespace fwp.localizator
 				else
 					tmp.Add(line);
 			}
-			lines = tmp.ToArray();
+			rawLines = tmp.ToArray();
 
+			List<FileLine> _lines = new();
+			foreach (var raw in rawLines)
+			{
+				var kp = raw.Split(KEY_VALUE_SPLIT);
+
+				var line = new FileLine()
+				{
+					key = kp[0],
+					value = kp[1]
+				};
+
+				// key-num
+				int dashIndex = line.key.LastIndexOf("-");
+
+				// has "-" && last char is digit ?
+				if (dashIndex > 0 && char.IsDigit(line.key[^1])) line.keyRoot = line.key.Substring(0, dashIndex);
+				else line.keyRoot = line.key;
+
+				_lines.Add(line);
+			}
+			lines = _lines.ToArray();
 			//Debug.Log("  " + path + " | " + lines.Length + " lines");
-		}
-
-		public void debugRefresh()
-		{
-			set();
-		}
-
-
-		/// <summary>
-		/// Permet de comparer deux fichiers de langue pour indiquer si ils sont compatibles
-		/// </summary>
-		public bool compare(LocalizationFile other)
-		{
-			List<string> ids = new List<string>();
-			for (int i = 0; i < lines.Length; i++)
-			{
-				string id = getIdAtLine(i);
-				if (id.Length > 0) ids.Add(id);
-			}
-
-			bool output = false;
-
-			bool found = false;
-			for (int i = 0; i < ids.Count; i++)
-			{
-				found = false;
-				for (int j = 0; j < other.lines.Length; j++)
-				{
-					string id = other.getIdAtLine(j);
-					if (id == ids[i]) found = true;
-				}
-				if (!found)
-				{
-					Debug.LogError("missing id " + ids[i] + " from file " + iso + " in file " + other.iso);
-					output = true; // error
-				}
-			}
-
-			return output;
 		}
 
 		/// <summary>
@@ -141,25 +154,9 @@ namespace fwp.localizator
 
 			foreach (var l in lines)
 			{
-				// key{-num}=value
-				var key = l.Split('=')[0];
-
 				// must ignore digits ? for pattern : key{-num} => remove it
-				if (ignoreDigits)
-				{
-					// key-num
-					int dashIndex = key.LastIndexOf("-");
-
-					// has "-" && last char is digit ?
-					if (dashIndex > 0 && char.IsDigit(key[^1]))
-					{
-						key = key.Substring(0, dashIndex);
-					}
-				}
-
-				//Debug.Log(id + " vs " + key);
-
-				if (key == id) return true;
+				if (ignoreDigits && l.keyRoot == id) return true;
+				if (l.key == id) return true;
 			}
 			return false;
 		}
@@ -175,9 +172,9 @@ namespace fwp.localizator
 			}
 
 			//Debug.Log("searching for " + id);
-			for (int i = 0; i < lines.Length; i++)
+			for (int i = 0; i < rawLines.Length; i++)
 			{
-				string key = lines[i].Split('=')[0];
+				string key = rawLines[i].Split('=')[0];
 
 				key = key.Trim();
 				id = id.Trim();
@@ -191,7 +188,7 @@ namespace fwp.localizator
 			if (LocalizationMind.Verbose)
 			{
 				Debug.LogWarning($"getContentById() FAILED	# <b>" + id + "</b>");
-				Debug.LogWarning($"lang:<b>{iso}</b> & lines x" + lines.Length);
+				Debug.LogWarning($"lang:<b>{iso}</b> & lines x" + rawLines.Length);
 			}
 
 			return "['" + id + "' missing in " + iso + "]";
@@ -199,8 +196,8 @@ namespace fwp.localizator
 
 		public string getContentAtLine(int idx)
 		{
-			if (!lines[idx].Contains("" + LocalizationFile.LOCALIZ_CHAR_SPLIT)) return "";
-			string[] split = lines[idx].Split(LocalizationFile.LOCALIZ_CHAR_SPLIT);
+			if (!rawLines[idx].Contains("" + LocalizationFile.LOCALIZ_CHAR_SPLIT)) return "";
+			string[] split = rawLines[idx].Split(LocalizationFile.LOCALIZ_CHAR_SPLIT);
 			string output = "";
 			for (int i = 1; i < split.Length; i++)
 			{
@@ -214,25 +211,44 @@ namespace fwp.localizator
 			return output;
 		}
 
-		public string getIdAtLine(int idx)
+#if UNITY_EDITOR
+		/// <summary>
+		/// compare two files to check if keys[] match
+		/// all keys contained into this file must exist in given other
+		/// </summary>
+		public bool edCompareKeys(LocalizationFile other)
 		{
-			if (!lines[idx].Contains("" + LocalizationFile.LOCALIZ_CHAR_SPLIT)) return "";
-			string[] split = lines[idx].Split(LocalizationFile.LOCALIZ_CHAR_SPLIT);
+			foreach (var l in lines)
+			{
+				if (!other.GetLines().Any(o => o.key == l.key))
+				{
+					Debug.LogError($"{other.iso} is missing id " + l.key + " (presnet in file {iso})");
+					return false;
+				}
+			}
+			return true;
+		}
+#endif
+
+		string getIdAtLine(int idx)
+		{
+			if (!rawLines[idx].Contains(LocalizationFile.LOCALIZ_CHAR_SPLIT)) return string.Empty;
+			string[] split = rawLines[idx].Split(LocalizationFile.LOCALIZ_CHAR_SPLIT);
 			return split[0];
 		}
 
 		public bool overrideKey(string key, string newText)
 		{
-			for (int i = 0; i < lines.Length; i++)
+			for (int i = 0; i < rawLines.Length; i++)
 			{
-				if (!lines[i].Contains(LOCALIZ_CHAR_SPLIT.ToString())) continue;
-				if (!lines[i].Contains(key)) continue;
+				if (!rawLines[i].Contains(LOCALIZ_CHAR_SPLIT.ToString())) continue;
+				if (!rawLines[i].Contains(key)) continue;
 
-				string[] splited = lines[i].Split(LOCALIZ_CHAR_SPLIT);
+				string[] splited = rawLines[i].Split(LOCALIZ_CHAR_SPLIT);
 				if (splited[0] != key) continue;
 				if (splited[1] == newText) continue;
 				splited[1] = newText;
-				lines[i] = splited[0] + LOCALIZ_CHAR_SPLIT + splited[1];
+				rawLines[i] = splited[0] + LOCALIZ_CHAR_SPLIT + splited[1];
 				return true;
 			}
 			return false;
@@ -245,17 +261,17 @@ namespace fwp.localizator
 			string[] rawLines = splitLineBreak(textAsset.text);
 			int numberOfRewrite = 0;
 
-			for (int i = 0; i < lines.Length; i++)
+			for (int i = 0; i < rawLines.Length; i++)
 			{
-				if (!lines[i].Contains(LOCALIZ_CHAR_SPLIT.ToString())) continue;
-				string[] splited = lines[i].Split(LOCALIZ_CHAR_SPLIT);
+				if (!rawLines[i].Contains(LOCALIZ_CHAR_SPLIT.ToString())) continue;
+				string[] splited = rawLines[i].Split(LOCALIZ_CHAR_SPLIT);
 
 				for (int j = 0; j < rawLines.Length; j++)
 				{
 					if (!rawLines[j].Contains(LOCALIZ_CHAR_SPLIT.ToString())) continue;
 					string[] rawSplited = rawLines[j].Split(LOCALIZ_CHAR_SPLIT);
 					if (rawSplited[0] != splited[0]) continue;
-					rawLines[j] = lines[i];
+					rawLines[j] = rawLines[i];
 					numberOfRewrite++;
 				}
 			}

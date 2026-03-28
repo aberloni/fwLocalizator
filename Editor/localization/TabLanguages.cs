@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
 
 namespace fwp.localizator.editor
 {
@@ -19,7 +20,10 @@ namespace fwp.localizator.editor
             if (langs == null) langs = LocalizationMind.Sheets.lang_files;
 
             drawSummary();
-            if (fileSelect >= 0) drawFile(langs[fileSelect]);
+            if (fileSelect >= 0)
+            {
+                drawFile(langs[fileSelect]);
+            }
         }
 
         void drawSummary()
@@ -45,6 +49,7 @@ namespace fwp.localizator.editor
             for (int i = 0; i < _langs.Length; i++)
             {
                 var LFile = _langs[i];
+                if (LFile == null) continue;
 
                 GUILayout.BeginHorizontal();
 
@@ -66,6 +71,35 @@ namespace fwp.localizator.editor
                 {
                     fileRefresh(LFile);
                     fileSelect = i;
+
+                    assoc_selected.Clear();
+                    assoc_user.Clear();
+                    if (LocalizationMind.Languages.getSavedIsoLanguage() == LFile.iso)
+                    {
+                        // just display lines content
+                        // each key of selected file
+                        foreach (var l in LFile.GetLines())
+                        {
+                            assoc_selected.Add(l.key, new BuffAssoc()
+                            {
+                                loca = Localization.GetContent(l.key, LFile.iso)
+                            });
+                        }
+                    }
+                    else
+                    {
+                        // each keys of user lang file
+                        var _file = LocalizationMind.Sheets.getFileByLang(LocalizationMind.Languages.getSavedIsoLanguage());
+                        foreach (var l in _file.GetLines())
+                        {
+                            assoc_user.Add(l.key, new BuffAssoc()
+                            {
+                                loca = Localization.GetContent(l.key, LFile.iso),
+                                locaUser = Localization.GetContent(l.key, _file.iso),
+                            });
+                        }
+                    }
+
                 }
 
                 GUILayout.EndHorizontal();
@@ -74,14 +108,47 @@ namespace fwp.localizator.editor
 
         void drawFile(LocalizationFile file)
         {
-            var lines = file.GetLines();
-            for (int i = 0; i < lines.Length; i++)
+            GUILayout.Label("debug." + file);
+
+            var curr_lang = "[" + file.iso + "]";
+            var user_lang = "[" + LocalizationMind.Languages.getSavedIsoLanguage() + "]";
+
+            if (assoc_user.Count <= 0)
             {
-                var l = lines[i];
-                GUILayout.Label("#" + i + " > " + l, GuiHelper.wrapped);
-                GUILayout.Space(2);
+                var lines = file.GetLines();
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    GUILayout.Label("#" + i + " " + lines[i], GuiHelper.wrapped);
+                }
             }
+            else
+            {
+                GUILayout.Label(curr_lang + " VS " + user_lang);
+
+                foreach (var a in assoc_user)
+                {
+                    GUILayout.Label(a.Key + "|" + a.Value.locaUser);
+
+                    string value = a.Value.loca;
+
+                    if (a.Value.loca.Contains("missing")) value = "<color=red>" + value + "</color>";
+                    else value = "<color=green>" + value + "</color>";
+                    
+                    GUILayout.Label(value, GuiHelper.wrapped);
+                }
+
+            }
+
         }
+
+        struct BuffAssoc
+        {
+            public string loca; // loca in file language
+            public string locaUser; // loca in user language
+        }
+
+        Dictionary<string, BuffAssoc> assoc_selected = new();
+        Dictionary<string, BuffAssoc> assoc_user = new();
 
         void fileRefresh(LocalizationFile LFile)
         {

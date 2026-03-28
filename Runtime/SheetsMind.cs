@@ -37,27 +37,28 @@ namespace fwp.localizator
 
 		}
 
-
+#if UNITY_EDITOR
 		protected void checkIntegrity()
 		{
 			for (int i = 0; i < lang_files.Length; i++)
 			{
 				for (int j = 0; j < lang_files.Length; j++)
 				{
-					if (lang_files[i].compare(lang_files[j]))
+					if (lang_files[i].edCompareKeys(lang_files[j]))
 					{
 						Debug.LogError("Issue comparing " + lang_files[i].iso + " VS " + lang_files[j].iso);
 					}
 				}
 			}
 		}
+#endif
 
 		public LocalizationFile getFileByLang(IsoLanguages lang)
 		{
 			for (int i = 0; i < lang_files.Length; i++)
 			{
 				//debug, NOT runtime, to be sure content is updated
-				if (!Application.isPlaying) lang_files[i].debugRefresh();
+				if (!Application.isPlaying) lang_files[i].edRefresh();
 
 				if (lang_files[i].iso == lang)
 				{

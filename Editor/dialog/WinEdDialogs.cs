@@ -101,14 +101,7 @@ namespace fwp.localizator.editor
 
 			foreach (var l in lines)
 			{
-				// split UID=VAL
-				var uid = l.Split("=")[0];
-
-				// only keep uid with autofill numbering
-				if (!uid.Contains("-")) continue;
-
-				// split UID-{NUM}
-				uid = uid.Substring(0, uid.LastIndexOf("-"));
+				string uid = l.keyRoot;
 
 				if (!string.IsNullOrEmpty(_filter) && !uid.Contains(_filter)) continue;
 

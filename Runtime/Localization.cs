@@ -26,7 +26,7 @@ namespace fwp.localizator
 		/// </summary>
 		static public string getContentSafe(string id)
 		{
-			string output = getContent(id);
+			string output = GetContent(id);
 			if (output.Length <= 0)
 			{
 				output = GetContent(id, LanguagesMind.GetLanguageFallback());
@@ -44,7 +44,7 @@ namespace fwp.localizator
 		/// <summary>
 		/// natural flow (using ppref ios)
 		/// </summary>
-		static public string getContent(string id)
+		static public string GetContent(string id)
 			=> GetContent(id, LocalizationMind.Languages.getSavedIsoLanguage());
 
 		/// <summary>

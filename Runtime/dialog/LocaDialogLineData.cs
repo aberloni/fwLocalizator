@@ -26,7 +26,7 @@ namespace fwp.localizator.dialog
 			this.uid = uid;
 		}
 
-		public string getContent() => Localization.getContent(uid);
+		public string getContent() => Localization.GetContent(uid);
 
 #if UNITY_EDITOR
 		//FOR DEBUG ONLY
