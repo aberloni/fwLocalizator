@@ -54,12 +54,22 @@ namespace fwp.localizator
 		{
 			if (string.IsNullOrEmpty(id))
 			{
-				LocalizationMind.log("empty id given to get content");
+				LocalizationMind.logw("empty id given to get content");
 				return "[empty UID]";
 			}
 
+			if (LocalizationMind.Sheets == null)
+			{
+				LocalizationMind.logw("can't : no mind.sheets");
+				return null;
+			}
+
 			LocalizationFile file = LocalizationMind.Sheets.getFileByLang(iso);
-			Debug.Assert(file != null, "no file found for language : " + iso);
+			if (file == null)
+			{
+				LocalizationMind.logw("can't : no file for iso:" + iso);
+				return null;
+			}
 
 			string ret = file.getContentById(id);
 			return ret;
