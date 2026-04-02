@@ -4,19 +4,19 @@ using System.Collections.Generic;
 namespace fwp.localizator
 {
 
-    /// <summary>
-    /// loca files
-    /// </summary>
-    public class SheetsMind : LocalizationMind
-    {
+	/// <summary>
+	/// loca files
+	/// </summary>
+	public class SheetsMind : LocalizationMind
+	{
 
-        public LocalizationFile[] lang_files;
-        
-        public SheetsMind()
-        {
+		public LocalizationFile[] lang_files;
+
+		public SheetsMind()
+		{
 			ReplaceMind<SheetsMind>(this);
 			loadFiles();
-        }
+		}
 
 		public void reloadFiles()
 		{
@@ -87,23 +87,9 @@ namespace fwp.localizator
 			string lang = Languages.getIso().ToString();
 			LocalizationFile file = getLangFileByLangLabel(lang);
 
-			if (file == null)
-			{
-				Debug.LogWarning(" !!! <color=red>no file</color> for current lang : " + lang);
-				Debug.LogWarning(" !!! <color=red>this needs to be fixed before release</color> !!! ");
-
-				IsoLanguages iso = Languages.getSystemLanguageToIso();
-				Debug.LogWarning(" DEBUG <b>force</b> switching lang to '" + iso + "'");
-				Languages.setIso(iso);
-
-				file = getLangFileByLangLabel(lang);
-			}
-
-			Debug.Assert(file != null, "file  " + lang + " should be assigned at this point ...");
-
 			return file;
 		}
 
-    }
+	}
 
 }

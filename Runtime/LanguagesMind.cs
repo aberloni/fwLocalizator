@@ -24,7 +24,7 @@ namespace fwp.localizator
 			ReplaceMind<LanguagesMind>(this);
 		}
 
-		virtual public IsoLanguages getLanguageFallback()
+		virtual protected IsoLanguages getLanguageFallback()
 		{
 			return IsoLanguages.en;
 		}
@@ -152,7 +152,7 @@ namespace fwp.localizator
 			{
 				logw($"{lang} not supported, fallback to system", this);
 
-				lang = getSystemLanguageToIso(); // sys OR fallback if sys is not supported
+				lang = getRawSystemLanguageToIso(); // sys OR fallback if sys is not supported
 			}
 
 			return lang;
@@ -163,21 +163,20 @@ namespace fwp.localizator
 		/// https://developer.nintendo.com/group/development/g1kr9vj6/forums/english/-/gts_message_boards/thread/269684575#636486
 		/// none defined language in player settings won't work
 		/// </summary>
-		public IsoLanguages getSystemLanguageToIso()
-		{
-			IsoLanguages lang = SysToIso(getFilteredSystemLanguage());
-			return lang;
-		}
+		static public IsoLanguages getRawSystemLanguageToIso() => SysToIso(getRawSystemLanguage());
 
-		public SystemLanguage getSystemLanguage() => Application.systemLanguage;
+		/// <summary>
+		/// raw unity detection
+		/// </summary>
+		static public SystemLanguage getRawSystemLanguage() => Application.systemLanguage;
 
 		/// <summary>
 		/// potential additionnal rules to override sys language
 		/// #if loca_en 
 		/// </summary>
-		virtual public SystemLanguage getFilteredSystemLanguage()
+		virtual public SystemLanguage getLanguageFiltered()
 		{
-			SystemLanguage langDefault = Application.systemLanguage;
+			SystemLanguage langDefault = getRawSystemLanguage();
 
 #if loca_en
 			langDefault = SystemLanguage.English;
