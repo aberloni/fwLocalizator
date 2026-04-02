@@ -172,17 +172,9 @@ namespace fwp.localizator
 			}
 
 			//Debug.Log("searching for " + id);
-			for (int i = 0; i < rawLines.Length; i++)
+			for (int i = 0; i < lines.Length; i++)
 			{
-				string key = rawLines[i].Split('=')[0];
-
-				key = key.Trim();
-				id = id.Trim();
-
-				//srt_outro_museum_05 == srt_outro_museum_05
-				//Debug.Log(key + " ("+key.Length+") == " + id+" ("+id.Length+")");
-
-				if (key == id) return getContentAtLine(i);
+				if (lines[i].key == id) return getContentAtLine(i);
 			}
 
 			if (LocalizationMind.Verbose)
