@@ -24,10 +24,11 @@ namespace fwp.localizator
 			ReplaceMind<LanguagesMind>(this);
 		}
 
-		virtual protected IsoLanguages getLanguageFallback()
-		{
-			return IsoLanguages.en;
-		}
+		/// <summary>
+		/// fallback is when trying to get a safe localization
+		/// what language cannot fail ?
+		/// </summary>
+		virtual public IsoLanguages getLanguageFallback() => IsoLanguages.en;
 
 		public bool isIsoLanguageSupported(IsoLanguages iso)
 		{
@@ -110,11 +111,16 @@ namespace fwp.localizator
 		/// </summary>
 		virtual protected void setLanguage(IsoLanguages iso)
 		{
+			if (Application.isEditor)
+			{
 #if UNITY_EDITOR
-			UnityEditor.EditorPrefs.SetInt(ppref_language, (int)iso);
-#else
-			PlayerPrefs.SetInt(ppref_language, (int)iso);
+				UnityEditor.EditorPrefs.SetInt(ppref_language, (int)iso);
 #endif
+			}
+			else
+			{
+				PlayerPrefs.SetInt(ppref_language, (int)iso);
+			}
 		}
 
 		/// <summary>
@@ -122,12 +128,18 @@ namespace fwp.localizator
 		/// </summary>
 		virtual protected IsoLanguages getLanguage()
 		{
-			int idx = -1;
+			int idx = (int)getLanguageFallback();
+			if (Application.isEditor)
+			{
 #if UNITY_EDITOR
-			idx = UnityEditor.EditorPrefs.GetInt(ppref_language, -1);
-#else
-			idx = PlayerPrefs.GetInt(ppref_language, (int)getSystemLanguageToIso());
+				idx = UnityEditor.EditorPrefs.GetInt(ppref_language, -1);
 #endif
+			}
+			else
+			{
+				idx = PlayerPrefs.GetInt(ppref_language, (int)Languages.getLanguageFiltered());
+			}
+
 			return (IsoLanguages)idx;
 		}
 
@@ -210,13 +222,7 @@ namespace fwp.localizator
 					break;
 			}
 
-			return GetLanguageFallback();
-		}
-
-		static public IsoLanguages GetLanguageFallback()
-		{
-			if (Languages != null) return Languages.getLanguageFallback();
-			return IsoLanguages.en;
+			return getRawSystemLanguageToIso();
 		}
 
 		public string stringifySupported

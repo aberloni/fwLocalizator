@@ -26,10 +26,13 @@ namespace fwp.localizator
 		/// </summary>
 		static public string getContentSafe(string id)
 		{
+			// normal get
 			string output = GetContent(id);
+
+			// failed, try again with fallback
 			if (output.Length <= 0)
 			{
-				output = GetContent(id, LanguagesMind.GetLanguageFallback());
+				output = GetContent(id, LocalizationMind.Languages.getLanguageFallback());
 			}
 
 			if (output.Length <= 0)
