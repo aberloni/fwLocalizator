@@ -38,6 +38,15 @@ namespace fwp.localizator.subtitles
 		string _path;
 		TMPro.TextMeshProUGUI txt;
 
+		public bool HasSubtitleSet
+		{
+			get
+			{
+				if (txt == null) return false;
+				return txt.text.Length > 0;
+			}
+		}
+
 		/// <summary>
 		/// was setup and HAS LINES
 		/// </summary>
@@ -163,30 +172,42 @@ namespace fwp.localizator.subtitles
 			//Debug.Log("setupAndStart");
 		}
 
-		public void update(double timecode)
+		/// <summary>
+		/// true : some text is assigned
+		/// </summary>
+		public bool update(double timecode)
 		{
+			if (txt == null) return false;
+
 			// can't update invalid subtitle
-			if (!IsValid)
+			if (IsValid)
 			{
-				if (verbose_deep) log("updating invalid");
-				return;
-			}
-
-			txt.text = string.Empty;
-
-			for (int i = 0; i < lines.Count; i++)
-			{
-				if (lines[i].isWithingLineTimecodeRange(timecode))
+				string line = null;
+				for (int i = 0; i < lines.Count; i++)
 				{
-					txt.text = lines[i].buffLine;
+					if (lines[i].isWithingLineTimecodeRange(timecode))
+					{
+						line = lines[i].buffLine;
+						break;
+					}
+				}
 
+
+				if (line != null)
+				{
+					txt.SetText(line);
 					if (verbose_deep) log($"time?{timecode} > text:{txt.text}");
-
-					return;
+				}
+				else
+				{
+					txt.SetText(string.Empty);
 				}
 			}
 
 			if (verbose_deep) log($"timecode is oob");
+
+			txt.enabled = HasSubtitleSet;
+			return HasSubtitleSet;
 		}
 
 		public string stringify()
