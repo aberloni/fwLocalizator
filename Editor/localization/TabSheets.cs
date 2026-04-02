@@ -33,7 +33,7 @@ namespace fwp.localizator.editor
                 sheets = LocalizatorUtilsEditor.getSheetsData();
             }
 
-            var iso = LocalizationMind.Languages.getSavedIsoLanguage();
+            var iso = LocalizationMind.Languages.getIso();
 
             GUILayout.Space(10f);
 

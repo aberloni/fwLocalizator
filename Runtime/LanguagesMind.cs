@@ -49,7 +49,7 @@ namespace fwp.localizator
 			return isos.ToArray();
 		}
 
-		public void applySavedLanguage() => applyLanguage(getSavedIsoLanguage());
+		public void applySavedLanguage() => applyLanguage(getIso());
 
 		/// <summary>
 		/// A apl quand on change la lang
@@ -58,7 +58,7 @@ namespace fwp.localizator
 		{
 			Debug.Log("<color=cyan>applyLanguage</color> to <b>" + newLang + "</b>!");
 
-			IsoLanguages iso = getSavedIsoLanguage();
+			IsoLanguages iso = getIso();
 
 			if (!Application.isPlaying)
 			{
@@ -77,7 +77,7 @@ namespace fwp.localizator
 
 		public void nextLanguage()
 		{
-			IsoLanguages cur = getSavedIsoLanguage();
+			IsoLanguages cur = getIso();
 
 			int supportIndex = -1;
 			var sups = getSupportedLanguages();
@@ -102,19 +102,11 @@ namespace fwp.localizator
 
 			log("next language is : " + cur + " / " + sups.Length, this);
 
-			setSavedLanguage(cur, true);
-		}
-
-		public void setSavedLanguage(IsoLanguages iso, bool applySwap = false)
-		{
-			setLanguage(iso);
-
-			if (applySwap) applyLanguage(iso); // apply
+			setIso(cur, true);
 		}
 
 		/// <summary>
-		/// save given language to pprefs (can be override)
-		/// this won't trigger reaction
+		/// apply lang where it should be localy stored
 		/// </summary>
 		virtual protected void setLanguage(IsoLanguages iso)
 		{
@@ -125,26 +117,33 @@ namespace fwp.localizator
 #endif
 		}
 
-		protected IsoLanguages loadLanguage()
+		/// <summary>
+		/// extract lang from where it's stored
+		/// </summary>
+		virtual protected IsoLanguages getLanguage()
 		{
 			int idx = -1;
-
 #if UNITY_EDITOR
 			idx = UnityEditor.EditorPrefs.GetInt(ppref_language, -1);
+#else
+			idx = PlayerPrefs.GetInt(ppref_language, (int)getSystemLanguageToIso());
 #endif
+			return (IsoLanguages)idx;
+		}
 
-			if (idx >= 0) return (IsoLanguages)idx;
-			return getSystemLanguageToIso();
+		public void setIso(IsoLanguages iso, bool applySwap = false)
+		{
+			setLanguage(iso);
+			if (applySwap) applyLanguage(iso); // apply
 		}
 
 		/// <summary>
 		/// uses sys language as default
 		/// </summary>
-		public IsoLanguages getSavedIsoLanguage()
+		public IsoLanguages getIso()
 		{
-
 			//default value
-			IsoLanguages lang = loadLanguage();
+			IsoLanguages lang = getLanguage();
 
 			//how to load
 			//IsoLanguages lang = (IsoLanguages)LabySaveManager.getStream().getOption(LANG_PREFIX, (int)sysToIso(langDefault));

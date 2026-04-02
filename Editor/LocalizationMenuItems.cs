@@ -29,7 +29,7 @@ namespace fwp.localizator
                 return;
             }
 
-            LocalizationMind.Languages.setSavedLanguage(newLang, swap);
+            LocalizationMind.Languages.setIso(newLang, swap);
         }
 
     }

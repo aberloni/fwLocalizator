@@ -84,7 +84,7 @@ namespace fwp.localizator
 			loadFiles();
 #endif
 
-			string lang = Languages.getSavedIsoLanguage().ToString();
+			string lang = Languages.getIso().ToString();
 			LocalizationFile file = getLangFileByLangLabel(lang);
 
 			if (file == null)
@@ -94,7 +94,7 @@ namespace fwp.localizator
 
 				IsoLanguages iso = Languages.getSystemLanguageToIso();
 				Debug.LogWarning(" DEBUG <b>force</b> switching lang to '" + iso + "'");
-				Languages.setSavedLanguage(iso);
+				Languages.setIso(iso);
 
 				file = getLangFileByLangLabel(lang);
 			}

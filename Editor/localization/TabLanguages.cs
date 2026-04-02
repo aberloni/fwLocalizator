@@ -74,7 +74,7 @@ namespace fwp.localizator.editor
 
                     assoc_selected.Clear();
                     assoc_user.Clear();
-                    if (LocalizationMind.Languages.getSavedIsoLanguage() == LFile.iso)
+                    if (LocalizationMind.Languages.getIso() == LFile.iso)
                     {
                         // just display lines content
                         // each key of selected file
@@ -89,7 +89,7 @@ namespace fwp.localizator.editor
                     else
                     {
                         // each keys of user lang file
-                        var _file = LocalizationMind.Sheets.getFileByLang(LocalizationMind.Languages.getSavedIsoLanguage());
+                        var _file = LocalizationMind.Sheets.getFileByLang(LocalizationMind.Languages.getIso());
                         foreach (var l in _file.GetLines())
                         {
                             assoc_user.Add(l.key, new BuffAssoc()
@@ -111,7 +111,7 @@ namespace fwp.localizator.editor
             GUILayout.Label("debug." + file);
 
             var curr_lang = "[" + file.iso + "]";
-            var user_lang = "[" + LocalizationMind.Languages.getSavedIsoLanguage() + "]";
+            var user_lang = "[" + LocalizationMind.Languages.getIso() + "]";
 
             if (assoc_user.Count <= 0)
             {

@@ -45,7 +45,7 @@ namespace fwp.localizator
 		/// natural flow (using ppref ios)
 		/// </summary>
 		static public string GetContent(string id)
-			=> GetContent(id, LocalizationMind.Languages.getSavedIsoLanguage());
+			=> GetContent(id, LocalizationMind.Languages.getIso());
 
 		/// <summary>
 		/// with specific iso given
@@ -78,7 +78,7 @@ namespace fwp.localizator
 		/// <summary>
 		/// check if localization file has matching key (strict comparison)
 		/// </summary>
-		static public bool HasKey(string key, bool ignoreDigits = true) => HasKey(key, LocalizationMind.Languages.getSavedIsoLanguage(), ignoreDigits);
+		static public bool HasKey(string key, bool ignoreDigits = true) => HasKey(key, LocalizationMind.Languages.getIso(), ignoreDigits);
 		static public bool HasKey(string key, IsoLanguages iso, bool ignoreDigits = true)
 		{
 			LocalizationFile file = LocalizationMind.Sheets.getFileByLang(iso);

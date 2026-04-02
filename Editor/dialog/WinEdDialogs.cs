@@ -34,7 +34,7 @@ namespace fwp.localizator.editor
 
 		protected override string getWindowTitle() => LocalizationMind.Dialogs.GetType().Name;
 
-		IsoLanguages Iso => LocalizationMind.Languages.getSavedIsoLanguage();
+		IsoLanguages Iso => LocalizationMind.Languages.getIso();
 
 		protected override void draw()
 		{
@@ -193,7 +193,7 @@ namespace fwp.localizator.editor
 			bool fold = GuiHelper.DrawFoldout("loca dialogs UIDs x" + dialogs.Count, "dialog_locas");
 			if (!fold) return;
 
-			GUILayout.Label($"all DUID found in translation file {LocalizationMind.Languages.getSavedIsoLanguage()}");
+			GUILayout.Label($"all DUID found in translation file {LocalizationMind.Languages.getIso()}");
 
 			bool dirty = false;
 			foreach (var kp in dialogs)

@@ -57,7 +57,7 @@ namespace fwp.localizator.editor
 			if (LocalizationMind.Languages != null)
 			{
 				GUILayout.Label("SYS(filtered): " + LocalizationMind.Languages.getFilteredSystemLanguage());
-				GUILayout.Label("USER: " + LocalizationMind.Languages.getSavedIsoLanguage());
+				GUILayout.Label("USER: " + LocalizationMind.Languages.getIso());
 			}
 			GUILayout.EndHorizontal();
 
@@ -69,7 +69,7 @@ namespace fwp.localizator.editor
 				{
 					if (GUILayout.Button(s.ToString()))
 					{
-						LocalizationMind.Languages.setSavedLanguage(s, true);
+						LocalizationMind.Languages.setIso(s, true);
 					}
 				}
 				GUILayout.EndHorizontal();
