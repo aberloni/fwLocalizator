@@ -33,7 +33,7 @@ namespace fwp.localizator.editor
 			UnityWebRequest uwr = UnityWebRequest.Get(ssheetUrl);
 			//uwr.url = ssheetUrl;
 
-			Debug.Log("<color=orange>query</color> : " + uwr.url);
+			Debug.Log("<color=orange>download.query</color> : " + uwr.url);
 
 			float time = Time.realtimeSinceStartup;
 
@@ -47,7 +47,7 @@ namespace fwp.localizator.editor
 				return string.Empty;
 			}
 
-			Debug.Log("<color=green>success</color> query took : " + (Time.realtimeSinceStartup - time) + " second(s)");
+			Debug.Log("<color=green>download.success</color> query took : " + (Time.realtimeSinceStartup - time) + " second(s)");
 
 			string txt = uwr.downloadHandler.text;
 

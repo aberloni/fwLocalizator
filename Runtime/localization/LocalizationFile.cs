@@ -3,6 +3,8 @@ using UnityEngine;
 using System.IO;
 using System;
 using System.Linq;
+using UnityEngine.SocialPlatforms;
+using UnityEngine.LightTransport;
 
 namespace fwp.localizator
 {
@@ -12,6 +14,8 @@ namespace fwp.localizator
 	/// </summary>
 	public class LocalizationFile
 	{
+		public const string pattern_missing = "missing";
+
 		const char KEY_VALUE_SPLIT = '=';
 		public const char SPREADSHEET_CELL_BREAK = ','; // spreadsheet cell separator
 
@@ -37,7 +41,20 @@ namespace fwp.localizator
 		string[] rawLines = null;
 		FileLine[] lines = null;
 
-		public struct FileLine
+		public class BuffAssoc
+		{
+			public string key;
+			public FileLine local;
+			public FileLine user;
+		}
+
+		/// <summary>
+		/// comparison with another language
+		/// </summary>
+		Dictionary<IsoLanguages, BuffAssoc[]> sanityDiffs = new();
+		public BuffAssoc[] GetDiffs(IsoLanguages user) => sanityDiffs[user];
+
+		public class FileLine
 		{
 			public override string ToString() => key + KEY_VALUE_SPLIT + value;
 
@@ -55,6 +72,30 @@ namespace fwp.localizator
 			/// =value
 			/// </summary>
 			public string value;
+
+			public bool IsMissing => keyRoot.Contains(LocalizationFile.pattern_missing);
+
+			public FileLine(string k, string v)
+			{
+				key = k;
+				keyRoot = k;
+				value = v;
+			}
+
+			public FileLine(string raw)
+			{
+				var kp = raw.Split(KEY_VALUE_SPLIT);
+				key = kp[0];
+				value = kp[1];
+
+				// key-num
+				int dashIndex = key.LastIndexOf("-");
+
+				// has "-" && last char is digit ?
+				if (dashIndex > 0 && char.IsDigit(key[^1])) keyRoot = key.Substring(0, dashIndex);
+				else keyRoot = key;
+
+			}
 		}
 
 		// public string[] GetRawLines() => rawLines;
@@ -63,10 +104,49 @@ namespace fwp.localizator
 
 		public bool IsLoaded => textAsset != null;
 
+		public bool HasLine(string key) => lines.Any(x => x.key == key);
+
 		public LocalizationFile(IsoLanguages lang)
 		{
 			iso = lang;
 			set();
+		}
+
+		public void generateComparison(IsoLanguages user)
+		{
+			List<BuffAssoc> diffs = new();
+
+			var _file = LocalizationMind.Sheets.getFileByLang(user);
+			foreach (var l in _file.GetLines())
+			{
+				if (!HasLine(l.key))
+				{
+					diffs.Add(new BuffAssoc()
+					{
+						key = l.key,
+						local = null,
+						user = l
+					});
+				}
+			}
+
+			sanityDiffs[user] = diffs.ToArray();
+
+			diffs.Clear();
+			foreach (var l in GetLines())
+			{
+				if (!_file.HasLine(l.key))
+				{
+					diffs.Add(new BuffAssoc()
+					{
+						key = l.key,
+						local = l,
+						user = null,
+					});
+				}
+			}
+
+			sanityDiffs[iso] = diffs.ToArray();
 		}
 
 		public void edRefresh() => set();
@@ -115,22 +195,9 @@ namespace fwp.localizator
 			List<FileLine> _lines = new();
 			foreach (var raw in rawLines)
 			{
-				var kp = raw.Split(KEY_VALUE_SPLIT);
 
-				var line = new FileLine()
-				{
-					key = kp[0],
-					value = kp[1]
-				};
 
-				// key-num
-				int dashIndex = line.key.LastIndexOf("-");
-
-				// has "-" && last char is digit ?
-				if (dashIndex > 0 && char.IsDigit(line.key[^1])) line.keyRoot = line.key.Substring(0, dashIndex);
-				else line.keyRoot = line.key;
-
-				_lines.Add(line);
+				_lines.Add(new FileLine(raw));
 			}
 			lines = _lines.ToArray();
 			//Debug.Log("  " + path + " | " + lines.Length + " lines");

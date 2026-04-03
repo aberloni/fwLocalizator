@@ -170,7 +170,7 @@ namespace fwp.localizator.editor
 
 		public void generateLocalization()
 		{
-			Debug.Log("		generate <b>localization</b> out of lines x" + lines.Count);
+			Debug.Log("CSV <b>fill localizations</b>		lines x" + lines.Count);
 
 			int _col = (int)tab.tabParams.uidColumn;
 
@@ -184,6 +184,9 @@ namespace fwp.localizator.editor
 				langColumns.Add(iso.ToString(), getLangColumnIndex(iso));
 			}
 
+			// within same document
+			List<string> duplicates = new();
+
 			foreach (var line in lines)
 			{
 				Debug.Assert(line != null);
@@ -195,6 +198,13 @@ namespace fwp.localizator.editor
 					Debug.LogWarning("line is : " + line.raw);
 					continue;
 				}
+
+				if (duplicates.Contains(key))
+				{
+					Debug.LogWarning("<color=red>already contains</color> : <b>" + key + "</b> tab:" + tab.tabName);
+				}
+
+				duplicates.Add(key);
 
 				CsvLineLang csvLang = new(key);
 				for (int i = 0; i < langs.Length; i++)
@@ -437,11 +447,22 @@ namespace fwp.localizator.editor
 			return raw;
 		}
 
+		public string[] extractKeys()
+		{
+			List<string> keys = new();
+			for (int i = 1; i < localizes.Count; i++)
+			{
+				keys.Add(localizes[i].key);
+			}
+			return keys.ToArray();
+		}
+
 		/// <summary>
 		/// key=value
 		/// key=value
+		/// ....
 		/// </summary>
-		public string getLangFileContent(IsoLanguages lang)
+		public string dumpLangFileContents(IsoLanguages lang)
 		{
 			StringBuilder output = new StringBuilder();
 
@@ -556,7 +577,7 @@ namespace fwp.localizator.editor
 						if (val.Contains(lineUid))
 						{
 							LocalizationMind.log("found " + lineUid + " cell in CSV:" + csv.tab.DisplayName + " => returning column #" + cell);
-							
+
 							return l.cells[cell];
 						}
 					}

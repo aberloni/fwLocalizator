@@ -32,7 +32,7 @@ namespace fwp.localizator.editor
 
             saveBytesToFile(path, bytes);
 
-            Debug.Log("saved csv @ " + path);
+            Debug.Log("CSV <b>saved</b>     @ " + path);
 
             CsvParser.refreshCache();
         }

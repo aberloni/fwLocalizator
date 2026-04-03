@@ -20,6 +20,7 @@ static public class GuiHelper
             textColor = Color.ghostWhite,
         },
         wordWrap = true,
+        alignment = TextAnchor.MiddleLeft,
     };
 
     static Dictionary<string, bool> edFoldout = new();
