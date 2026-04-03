@@ -34,11 +34,7 @@ namespace fwp.localizator.editor
 
             GUILayout.Label("langs files x" + _langs.Length);
 
-            if (GUILayout.Button("sanity"))
-            {
-                Debug.LogWarning("SANITY");
-                GenerateSheetUtils.sanity_duplicates();
-            }
+            // if (GUILayout.Button("sanity")) GenerateSheetUtils.sanity_duplicates();
 
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("clear csv cache(s)")) CsvParser.refreshCache();

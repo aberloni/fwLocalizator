@@ -82,7 +82,7 @@ namespace fwp.localizator.editor
 
 			EditorUtility.DisplayProgressBar("converting loca", "loading...", 0f);
 
-			sanity_duplicates();
+			// sanity_duplicates();
 
 			for (int i = 0; i < sups.Length; i++)
 			{
@@ -149,11 +149,11 @@ namespace fwp.localizator.editor
 				{
 					if (uKeys.ContainsKey(k))
 					{
-						Debug.LogError("<color=red>duplicate key</color> <b>" + k + "</b> @ " + csv.ParserFileName + " | first found in: " + uKeys[k]);
+						Debug.LogError("<color=red>duplicate key</color> <b>" + k + "</b> @ " + csv + " | first found in: " + uKeys[k]);
 					}
 					else
 					{
-						uKeys.Add(k, csv.ParserFileName);
+						uKeys.Add(k, csv.ToString());
 					}
 				}
 			}

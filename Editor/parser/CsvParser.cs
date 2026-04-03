@@ -5,7 +5,6 @@ using UnityEngine;
 namespace fwp.localizator.editor
 {
 	using System.IO;
-	using System.IO.IsolatedStorage;
 	using System.Text;
 
 	/// <summary>
@@ -48,6 +47,8 @@ namespace fwp.localizator.editor
 		/// sorted by languages
 		/// </summary>
 		public List<CsvLineLang> localizes = new();
+
+		public override string ToString() => tab.tabName + ":" + ParserFileName;
 
 		public void logRaw()
 		{
@@ -201,7 +202,7 @@ namespace fwp.localizator.editor
 
 				if (duplicates.Contains(key))
 				{
-					Debug.LogWarning("<color=red>already contains</color> : <b>" + key + "</b> tab:" + tab.tabName);
+					Debug.LogError("<color=red>already contains</color> : <b>" + key + "</b> tab:" + tab.tabName);
 				}
 
 				duplicates.Add(key);
@@ -219,8 +220,8 @@ namespace fwp.localizator.editor
 
 					if (langCol >= line.cells.Count)
 					{
-						Debug.LogWarning("line doesn't have enought cells (x" + line.cells.Count + ") for iso:" + iso + " (column:" + langCol + ")");
-						Debug.LogWarning("line	" + line);
+						Debug.LogWarning(ParserFileName + " line doesn't have enought cells (x" + line.cells.Count + ") for iso:" + iso + " (column:" + langCol + ")");
+						Debug.LogWarning(ParserFileName + " raw:" + line);
 						continue;
 					}
 
