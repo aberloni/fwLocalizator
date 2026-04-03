@@ -83,7 +83,7 @@ namespace fwp.localizator.editor
 			EditorUtility.DisplayProgressBar("converting loca", "loading...", 0f);
 
 			sanity_duplicates();
-			
+
 			for (int i = 0; i < sups.Length; i++)
 			{
 				IsoLanguages lang = sups[i];
@@ -107,7 +107,7 @@ namespace fwp.localizator.editor
 		{
 			var parsers = CsvParser.loadParsers();
 
-			StringBuilder output = new StringBuilder();
+			StringBuilder output = new();
 
 			LocalizationMind.log("<color=white>file : <b>" + lang.ToString().ToUpper() + "</b></color> | parsers x" + parsers.Length);
 
@@ -140,15 +140,21 @@ namespace fwp.localizator.editor
 		static public void sanity_duplicates()
 		{
 			var parsers = CsvParser.loadParsers();
-			List<string> uKeys = new();
+			Dictionary<string, string> uKeys = new();
 
 			foreach (var csv in parsers)
 			{
 				string[] keys = csv.extractKeys();
 				foreach (var k in keys)
 				{
-					if (uKeys.Contains(k)) Debug.LogError("<color=red>duplicate key</color> <b>" + k + "</b> @ " + csv.ParserFileName);
-					else uKeys.Add(k);
+					if (uKeys.ContainsKey(k))
+					{
+						Debug.LogError("<color=red>duplicate key</color> <b>" + k + "</b> @ " + csv.ParserFileName + " | first found in: " + uKeys[k]);
+					}
+					else
+					{
+						uKeys.Add(k, csv.ParserFileName);
+					}
 				}
 			}
 
