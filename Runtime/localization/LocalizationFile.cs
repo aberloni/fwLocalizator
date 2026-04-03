@@ -3,8 +3,6 @@ using UnityEngine;
 using System.IO;
 using System;
 using System.Linq;
-using UnityEngine.SocialPlatforms;
-using UnityEngine.LightTransport;
 
 namespace fwp.localizator
 {
