@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
-using System.Text.RegularExpressions;
-using UnityEngine.UI;
 
 namespace fwp.localizator.subtitles
 {
@@ -103,7 +101,7 @@ namespace fwp.localizator.subtitles
 			// NOTE: DO NOT REMOVE EMPTY LINES (separator)
 
 			//https://stackoverflow.com/questions/1508203/best-way-to-split-string-into-lines
-			string[] rawLines = Regex.Split(ta.text, regLineEnding);
+			string[] rawLines = System.Text.RegularExpressions.Regex.Split(ta.text, regLineEnding);
 
 			if (rawLines.Length <= 0) Debug.LogWarning("no lines from raw text");
 			else
@@ -165,11 +163,7 @@ namespace fwp.localizator.subtitles
 		public void assignTextfield(TMPro.TextMeshProUGUI txt)
 		{
 			this.txt = txt;
-
 			txt.text = string.Empty;
-			txt.enabled = true;
-
-			//Debug.Log("setupAndStart");
 		}
 
 		/// <summary>
@@ -205,8 +199,7 @@ namespace fwp.localizator.subtitles
 			}
 
 			if (verbose_deep) log($"timecode is oob");
-
-			txt.enabled = HasSubtitleSet;
+			
 			return HasSubtitleSet;
 		}
 
