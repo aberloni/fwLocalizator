@@ -42,12 +42,12 @@ namespace fwp.localizator.editor
 
 			LocalizationMind.log("import x" + tabs.Length + " tabs");
 
-			string barTitle = "fetching.." + sheet.url;
+			string barTitle = "[URL] " + sheet.url;
 			EditorUtility.DisplayProgressBar(barTitle, string.Empty, 0f);
 			for (int i = 0; i < sheet.tabs.Length; i++)
 			{
 				var tab = sheet.tabs[i];
-				EditorUtility.DisplayProgressBar(barTitle, "tab.." + tab.DisplayName, (1f * i) / (1f * tabs.Length));
+				EditorUtility.DisplayProgressBar(barTitle, "[TAB] " + tab.DisplayName, (1f * i) / (1f * tabs.Length));
 				tab_import(sheet, tab);
 			}
 
