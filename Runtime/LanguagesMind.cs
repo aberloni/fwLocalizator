@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.IO.IsolatedStorage;
 
 namespace fwp.localizator
 {
@@ -128,52 +127,45 @@ namespace fwp.localizator
 		}
 
 		/// <summary>
-		/// apply lang where it should be localy stored
+		/// apply: bubble to reacts
 		/// </summary>
-		virtual public void setLanguage(IsoLanguages iso, bool apply = false)
+		public void setLanguage(IsoLanguages iso, bool apply = false)
 		{
-			if (Application.isEditor)
-			{
-#if UNITY_EDITOR
-				UnityEditor.EditorPrefs.SetInt(ppref_iso_language, (int)iso);
-#endif
-			}
-			else
-			{
-				PlayerPrefs.SetInt(ppref_iso_language, (int)iso);
-			}
-
+			writeLanguage(iso);
 			if (apply) applyLanguage(iso); // apply
 		}
 
 		/// <summary>
-		/// [ISO]
-		/// extract lang from where it's stored
 		/// </summary>
-		virtual public IsoLanguages getLanguage()
+		public IsoLanguages getLanguage()
 		{
-			int idx = (int)getIsoSafeLanguage();
-			if (Application.isEditor)
-			{
-#if UNITY_EDITOR
-				idx = UnityEditor.EditorPrefs.GetInt(ppref_iso_language, -1);
-#endif
-			}
-			else
-			{
-				idx = PlayerPrefs.GetInt(ppref_iso_language, (int)LocalizatorMinds.Languages.getApplicatonLanguageFiltered());
-			}
-
-
-			IsoLanguages iso = (IsoLanguages)idx;
+			IsoLanguages iso = readLanguage();
 
 			if (!isIsoLanguageSupported(iso))
 			{
 				logw($"{iso} not supported, fallback to system default", this);
 				iso = SysToIso(getApplicatonLanguageFiltered());
+				writeLanguage(iso);
 			}
 
-			return (IsoLanguages)idx;
+			if (iso == IsoLanguages.unknown) Debug.LogError("unsupported context: unknown language ?");
+			return iso;
+		}
+
+		/// <summary>
+		/// write language
+		/// </summary>
+		virtual protected void writeLanguage(IsoLanguages iso)
+		{
+			PlayerPrefs.SetInt(ppref_iso_language, (int)iso);
+		}
+
+		/// <summary>
+		/// read language
+		/// </summary>
+		virtual protected IsoLanguages readLanguage()
+		{
+			return (IsoLanguages)PlayerPrefs.GetInt(ppref_iso_language, (int)LocalizatorMinds.Languages.getApplicatonLanguageFiltered());
 		}
 
 		/// <summary>
