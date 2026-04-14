@@ -41,27 +41,27 @@ namespace fwp.localizator.editor
 		protected override void drawHeader()
 		{
 			base.drawHeader();
-			drawLangSelector(LocalizationMind.Languages.getSupportedLanguages());
+			drawLangSelector(LocalizatorMinds.Languages.getSupportedLanguages());
 		}
 
 		void drawLangSelector(IsoLanguages[] supported)
 		{
 			if(LocalizationMind.Verbose)
 			{
-				GUILayout.Label(LocalizationMind.Languages.stringifySupported);
+				GUILayout.Label(LocalizatorMinds.Languages.StringifySupported);
 			}
 			
 			GUILayout.BeginHorizontal();
-			GUILayout.Label("SYS:" + Application.systemLanguage + " (" + LanguagesMind.SysToIso(Application.systemLanguage) + ")");
+			GUILayout.Label("SYS:" + Application.systemLanguage);
 
-			if (LocalizationMind.Languages != null)
+			if (LocalizatorMinds.Languages != null)
 			{
-				GUILayout.Label("SYS(filtered): " + LocalizationMind.Languages.getLanguageFiltered());
-				GUILayout.Label("USER: " + LocalizationMind.Languages.getIso());
+				GUILayout.Label("SYS(filtered): " + LocalizatorMinds.Languages.getApplicatonLanguageFiltered());
+				GUILayout.Label("CONF: " + LocalizatorMinds.Languages.getLanguage());
 			}
 			GUILayout.EndHorizontal();
 
-			if (LocalizationMind.Languages != null)
+			if (LocalizatorMinds.Languages != null)
 			{
 				GUILayout.BeginHorizontal();
 				GUILayout.Label("swap language");
@@ -69,7 +69,7 @@ namespace fwp.localizator.editor
 				{
 					if (GUILayout.Button(s.ToString()))
 					{
-						LocalizationMind.Languages.setIso(s, true);
+						LocalizatorMinds.Languages.setLanguage(s, true);
 					}
 				}
 				GUILayout.EndHorizontal();

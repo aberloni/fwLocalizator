@@ -17,7 +17,7 @@ namespace fwp.localizator.editor
 
         public void Draw()
         {
-            if (langs == null) langs = LocalizationMind.Sheets.lang_files;
+            if (langs == null) langs = LocalizatorMinds.Sheets.lang_files;
 
             drawSummary();
             if (fileSelect >= 0)
@@ -30,7 +30,7 @@ namespace fwp.localizator.editor
         {
             GUILayout.Space(10f);
 
-            var _langs = LocalizationMind.Sheets.lang_files;
+            var _langs = LocalizatorMinds.Sheets.lang_files;
 
             GUILayout.Label("langs files x" + _langs.Length);
 
@@ -42,7 +42,7 @@ namespace fwp.localizator.editor
             if (GUILayout.Button("(re)generate trad files"))
             {
                 CsvParser.refreshCache();
-                LocalizationMind.Sheets.reloadFiles();
+                LocalizatorMinds.Sheets.reloadFiles();
                 GenerateSheetUtils.trads_generate();
             }
             GUILayout.EndHorizontal();
@@ -73,7 +73,7 @@ namespace fwp.localizator.editor
                     // fileRefresh(LFile);
                     fileSelect = i; // focus this file (LFile getter)
 
-                    var iso = LocalizationMind.Languages.getIso();
+                    var iso = LocalizatorMinds.Languages.getLanguage();
 
                     if (iso != LFile.iso) Debug.LogWarning("language comparison: " + iso + " & " + LFile.iso);
                     LFile.generateComparison(iso);
@@ -88,7 +88,7 @@ namespace fwp.localizator.editor
         const string line_missing = "<color=red>missing</color>:";
         void drawFileDebug(LocalizationFile file)
         {
-            var user = LocalizationMind.Languages.getIso();
+            var user = LocalizatorMinds.Languages.getLanguage();
 
             GUILayout.Label("debug." + file.iso + " VS " + user);
 

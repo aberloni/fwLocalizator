@@ -26,7 +26,7 @@ namespace fwp.localizator.dialog
 			this.uid = uid;
 		}
 
-		public string getContent() => Localization.GetContent(uid);
+		public string getContent() => LocalizationQuery.GetContent(uid);
 
 #if UNITY_EDITOR
 		//FOR DEBUG ONLY
@@ -38,10 +38,10 @@ namespace fwp.localizator.dialog
 
 			LocalizationMind.log("log debug previews @ " + uid);
 
-			var sups = LocalizationMind.Languages.getSupportedLanguages();
+			var sups = LocalizatorMinds.Languages.getSupportedLanguages();
 			foreach (IsoLanguages sup in sups)
 			{
-				var val = Localization.GetContent(uid, sup);
+				var val = LocalizationQuery.GetContent(uid, sup);
 				tmp.Add(val);
 
 				if (verbose)

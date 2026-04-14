@@ -27,7 +27,7 @@ namespace fwp.localizator
 
         public DialogsMind() : base()
         {
-            LocalizationMind.ReplaceMind<DialogsMind>(this);
+            LocalizatorMinds.ReplaceMind<DialogsMind>(this);
         }
 
         public LocaDialogData getDialogInstance(string uid)

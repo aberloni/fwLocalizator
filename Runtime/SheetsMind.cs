@@ -27,7 +27,7 @@ namespace fwp.localizator
 		{
 
 			List<LocalizationFile> tmp = new List<LocalizationFile>();
-			var sups = Languages.getSupportedLanguages();
+			var sups = LocalizatorMinds.Languages.getSupportedLanguages();
 			for (int i = 0; i < sups.Length; i++)
 			{
 				LocalizationFile file = new LocalizationFile(sups[i]);
@@ -84,7 +84,7 @@ namespace fwp.localizator
 			loadFiles();
 #endif
 
-			string lang = Languages.getIso().ToString();
+			string lang = LocalizatorMinds.Languages.getLanguage().ToString();
 			LocalizationFile file = getLangFileByLangLabel(lang);
 
 			return file;

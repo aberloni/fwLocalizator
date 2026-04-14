@@ -114,7 +114,7 @@ namespace fwp.localizator
 		{
 			List<BuffAssoc> diffs = new();
 
-			var _file = LocalizationMind.Sheets.getFileByLang(user);
+			var _file = LocalizatorMinds.Sheets.getFileByLang(user);
 			foreach (var l in _file.GetLines())
 			{
 				if (!HasLine(l.key))

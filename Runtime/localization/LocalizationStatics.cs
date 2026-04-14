@@ -19,6 +19,8 @@ namespace fwp.localizator
     /// </summary>
     public enum IsoLanguages
     {
+        unknown,
+        
         en, fr, de, es, it, 
         pt, // portuguese
         ru, // russian

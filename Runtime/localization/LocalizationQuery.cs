@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO.IsolatedStorage;
 using UnityEngine;
 
 namespace fwp.localizator
@@ -12,7 +13,7 @@ namespace fwp.localizator
 	/// pour les espaces insécables : Alt+0160 pour l'écrire dans excel mais \u00A0 dans TMPro.
 	/// https://forum.unity.com/threads/why-there-is-no-setting-for-textmesh-pro-ugui-to-count-whitespace-at-the-end.676897/
 	/// </summary>
-	abstract public class Localization
+	abstract public class LocalizationQuery
 	{
 		/// for [MenuItem]
 		public const string _asset_menu_path = "Localizator/";
@@ -24,7 +25,7 @@ namespace fwp.localizator
 		/// fail : return content using fallback language
 		/// fallback fail : error
 		/// </summary>
-		static public string getContentSafe(string id)
+		static public string GetContentSafe(string id)
 		{
 			// normal get
 			string output = GetContent(id);
@@ -32,7 +33,7 @@ namespace fwp.localizator
 			// failed, try again with fallback
 			if (output.Length <= 0)
 			{
-				output = GetContent(id, LocalizationMind.Languages.getLanguageFallback());
+				output = GetContent(id, LocalizatorMinds.Languages.getIsoSafeLanguage());
 			}
 
 			if (output.Length <= 0)
@@ -48,7 +49,7 @@ namespace fwp.localizator
 		/// natural flow (using ppref ios)
 		/// </summary>
 		static public string GetContent(string id)
-			=> GetContent(id, LocalizationMind.Languages.getIso());
+			=> GetContent(id, LocalizatorMinds.Languages.getLanguage());
 
 		/// <summary>
 		/// with specific iso given
@@ -61,13 +62,13 @@ namespace fwp.localizator
 				return "[empty UID]";
 			}
 
-			if (LocalizationMind.Sheets == null)
+			if (LocalizatorMinds.Sheets == null)
 			{
 				LocalizationMind.logw("can't : no mind.sheets");
 				return null;
 			}
 
-			LocalizationFile file = LocalizationMind.Sheets.getFileByLang(iso);
+			LocalizationFile file = LocalizatorMinds.Sheets.getFileByLang(iso);
 			if (file == null)
 			{
 				LocalizationMind.logw("can't : no file for iso:" + iso);
@@ -81,10 +82,10 @@ namespace fwp.localizator
 		/// <summary>
 		/// check if localization file has matching key (strict comparison)
 		/// </summary>
-		static public bool HasKey(string key, bool ignoreDigits = true) => HasKey(key, LocalizationMind.Languages.getIso(), ignoreDigits);
+		static public bool HasKey(string key, bool ignoreDigits = true) => HasKey(key, LocalizatorMinds.Languages.getLanguage(), ignoreDigits);
 		static public bool HasKey(string key, IsoLanguages iso, bool ignoreDigits = true)
 		{
-			LocalizationFile file = LocalizationMind.Sheets.getFileByLang(iso);
+			LocalizationFile file = LocalizatorMinds.Sheets.getFileByLang(iso);
 			return file.hasId(key, ignoreDigits);
 		}
 

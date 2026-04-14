@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.IO.IsolatedStorage;
 
 namespace fwp.localizator
 {
@@ -9,9 +10,9 @@ namespace fwp.localizator
 	/// </summary>
 	public class LanguagesMind : LocalizationMind
 	{
-		public const string ppref_language = "ppref_language";
+		public const string ppref_iso_language = "ppref_iso_language";
 
-		public override string ToString() => base.ToString() + "|" + getLanguageFallback() + "|x" + getSupportedLanguages().Length;
+		public override string ToString() => base.ToString() + "|" + getIsoSafeLanguage() + "|x" + getSupportedLanguages().Length;
 
 		/// <summary>
 		/// list of reactor candidates to lang change
@@ -25,10 +26,29 @@ namespace fwp.localizator
 		}
 
 		/// <summary>
+		/// raw system language
+		/// additionnal rules to override sys language
+		/// 	like: #if loca_en 
+		/// </summary>
+		virtual public SystemLanguage getApplicatonLanguageFiltered()
+		{
+			SystemLanguage langDefault = GetApplicatonLanguage();
+
+#if loca_en
+			langDefault = SystemLanguage.English;
+#endif
+
+#if loca_fr
+			langDefault = SystemLanguage.French;
+#endif
+			return langDefault;
+		}
+
+		/// <summary>
 		/// fallback is when trying to get a safe localization
 		/// what language cannot fail ?
 		/// </summary>
-		virtual public IsoLanguages getLanguageFallback() => IsoLanguages.en;
+		virtual public IsoLanguages getIsoSafeLanguage() => IsoLanguages.en;
 
 		public bool isIsoLanguageSupported(IsoLanguages iso)
 		{
@@ -50,16 +70,17 @@ namespace fwp.localizator
 			return isos.ToArray();
 		}
 
-		public void applySavedLanguage() => applyLanguage(getIso());
+		/// <summary>
+		/// bubble to reacts current saved language
+		/// </summary>
+		public void applySavedLanguage() => applyLanguage(getLanguage());
 
 		/// <summary>
-		/// A apl quand on change la lang
+		/// when language changed, to bubble to reacts
 		/// </summary>
-		public void applyLanguage(IsoLanguages newLang)
+		void applyLanguage(IsoLanguages newLang)
 		{
 			Debug.Log("<color=cyan>applyLanguage</color> to <b>" + newLang + "</b>!");
-
-			IsoLanguages iso = getIso();
 
 			if (!Application.isPlaying)
 			{
@@ -67,18 +88,18 @@ namespace fwp.localizator
 				reacts.AddRange(fwp.appendix.AppendixUtils.getCandidates<iLanguageChangeReact>());
 			}
 
-			Debug.Log("applying new lang (" + iso + ") to x" + reacts.Count + " reacts");
+			Debug.Log("applying new lang (" + newLang + ") to x" + reacts.Count + " reacts");
 
 			for (int i = 0; i < reacts.Count; i++)
 			{
-				reacts[i].onLanguageChange(iso.ToString());
+				reacts[i].onLanguageChange(newLang.ToString());
 			}
 
 		}
 
 		public void nextLanguage()
 		{
-			IsoLanguages cur = getIso();
+			IsoLanguages cur = getLanguage();
 
 			int supportIndex = -1;
 			var sups = getSupportedLanguages();
@@ -103,104 +124,69 @@ namespace fwp.localizator
 
 			log("next language is : " + cur + " / " + sups.Length, this);
 
-			setIso(cur, true);
+			setLanguage(cur, true);
 		}
 
 		/// <summary>
 		/// apply lang where it should be localy stored
 		/// </summary>
-		virtual protected void setLanguage(IsoLanguages iso)
+		virtual public void setLanguage(IsoLanguages iso, bool apply = false)
 		{
 			if (Application.isEditor)
 			{
 #if UNITY_EDITOR
-				UnityEditor.EditorPrefs.SetInt(ppref_language, (int)iso);
+				UnityEditor.EditorPrefs.SetInt(ppref_iso_language, (int)iso);
 #endif
 			}
 			else
 			{
-				PlayerPrefs.SetInt(ppref_language, (int)iso);
+				PlayerPrefs.SetInt(ppref_iso_language, (int)iso);
 			}
+
+			if (apply) applyLanguage(iso); // apply
 		}
 
 		/// <summary>
+		/// [ISO]
 		/// extract lang from where it's stored
 		/// </summary>
-		virtual protected IsoLanguages getLanguage()
+		virtual public IsoLanguages getLanguage()
 		{
-			int idx = (int)getLanguageFallback();
+			int idx = (int)getIsoSafeLanguage();
 			if (Application.isEditor)
 			{
 #if UNITY_EDITOR
-				idx = UnityEditor.EditorPrefs.GetInt(ppref_language, -1);
+				idx = UnityEditor.EditorPrefs.GetInt(ppref_iso_language, -1);
 #endif
 			}
 			else
 			{
-				idx = PlayerPrefs.GetInt(ppref_language, (int)Languages.getLanguageFiltered());
+				idx = PlayerPrefs.GetInt(ppref_iso_language, (int)LocalizatorMinds.Languages.getApplicatonLanguageFiltered());
+			}
+
+
+			IsoLanguages iso = (IsoLanguages)idx;
+
+			if (!isIsoLanguageSupported(iso))
+			{
+				logw($"{iso} not supported, fallback to system default", this);
+				iso = SysToIso(getApplicatonLanguageFiltered());
 			}
 
 			return (IsoLanguages)idx;
 		}
 
-		public void setIso(IsoLanguages iso, bool applySwap = false)
-		{
-			setLanguage(iso);
-			if (applySwap) applyLanguage(iso); // apply
-		}
-
-		/// <summary>
-		/// uses sys language as default
-		/// </summary>
-		public IsoLanguages getIso()
-		{
-			//default value
-			IsoLanguages lang = getLanguage();
-
-			//how to load
-			//IsoLanguages lang = (IsoLanguages)LabySaveManager.getStream().getOption(LANG_PREFIX, (int)sysToIso(langDefault));
-
-			if (!isIsoLanguageSupported(lang))
-			{
-				logw($"{lang} not supported, fallback to system", this);
-
-				lang = getRawSystemLanguageToIso(); // sys OR fallback if sys is not supported
-			}
-
-			return lang;
-		}
-
-		/// <summary>
-		/// on SWITCH platform there is a specific setup for this to work
-		/// https://developer.nintendo.com/group/development/g1kr9vj6/forums/english/-/gts_message_boards/thread/269684575#636486
-		/// none defined language in player settings won't work
-		/// </summary>
-		static public IsoLanguages getRawSystemLanguageToIso() => SysToIso(getRawSystemLanguage());
-
 		/// <summary>
 		/// raw unity detection
+		/// best to don't use directly
+		/// use filtered version instead
 		/// </summary>
-		static public SystemLanguage getRawSystemLanguage() => Application.systemLanguage;
-
-		/// <summary>
-		/// potential additionnal rules to override sys language
-		/// #if loca_en 
-		/// </summary>
-		virtual public SystemLanguage getLanguageFiltered()
-		{
-			SystemLanguage langDefault = getRawSystemLanguage();
-
-#if loca_en
-			langDefault = SystemLanguage.English;
-#endif
-
-			return langDefault;
-		}
+		static public SystemLanguage GetApplicatonLanguage() => Application.systemLanguage;
 
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/api/system.globalization.cultureinfo.twoletterisolanguagename?view=net-5.0
 		/// </summary>
-		public static IsoLanguages SysToIso(SystemLanguage sys)
+		static IsoLanguages SysToIso(SystemLanguage sys)
 		{
 			switch (sys)
 			{
@@ -217,15 +203,17 @@ namespace fwp.localizator
 
 				case SystemLanguage.Portuguese: return IsoLanguages.pt;
 				case SystemLanguage.Spanish: return IsoLanguages.es;
+
 				default:
-					Debug.LogWarning("language " + sys + " is not supported ; returning system");
+					Debug.LogWarning("[ISO]	sys language " + sys + " is not supported");
 					break;
 			}
 
-			return getRawSystemLanguageToIso();
+			// raw system (to iso)
+			return IsoLanguages.unknown;
 		}
 
-		public string stringifySupported
+		public string StringifySupported
 		{
 			get
 			{

@@ -32,19 +32,19 @@ namespace fwp.localizator.editor
 
 		Vector2 scrollTabDialogs;
 
-		protected override string getWindowTitle() => LocalizationMind.Dialogs.GetType().Name;
+		protected override string getWindowTitle() => LocalizatorMinds.Dialogs.GetType().Name;
 
-		IsoLanguages Iso => LocalizationMind.Languages.getIso();
+		IsoLanguages Iso => LocalizatorMinds.Languages.getLanguage();
 
 		protected override void draw()
 		{
-			if (LocalizationMind.Dialogs == null)
+			if (LocalizatorMinds.Dialogs == null)
 			{
 				GUILayout.Label("need mind<Dialog>");
 				return;
 			}
 
-			if (LocalizationMind.Sheets == null)
+			if (LocalizatorMinds.Sheets == null)
 			{
 				GUILayout.Label("need mind<Sheets>");
 				return;
@@ -87,7 +87,7 @@ namespace fwp.localizator.editor
 			string _filter = filter != null && filter.HasFilter ? filter.filter : null;
 
 			// get french (default)
-			var file = LocalizationMind.Sheets.getFileByLang(Iso);
+			var file = LocalizatorMinds.Sheets.getFileByLang(Iso);
 			if (file == null)
 			{
 				Debug.LogWarning($"no {Iso} file ?");
@@ -193,7 +193,7 @@ namespace fwp.localizator.editor
 			bool fold = GuiHelper.DrawFoldout("loca dialogs UIDs x" + dialogs.Count, "dialog_locas");
 			if (!fold) return;
 
-			GUILayout.Label($"all DUID found in translation file {LocalizationMind.Languages.getIso()}");
+			GUILayout.Label($"all DUID found in translation file {LocalizatorMinds.Languages.getLanguage()}");
 
 			bool dirty = false;
 			foreach (var kp in dialogs)
@@ -209,7 +209,7 @@ namespace fwp.localizator.editor
 				{
 					if (GUILayout.Button("create", GuiHelper.wXL))
 					{
-						kp.Value.dialog = LocalizationMind.Dialogs.createDialog(kp.Key);
+						kp.Value.dialog = LocalizatorMinds.Dialogs.createDialog(kp.Key);
 
 						dirty = true;
 					}
@@ -276,7 +276,7 @@ namespace fwp.localizator.editor
 				}
 				else if (_generate)
 				{
-					d = LocalizationMind.Dialogs.createDialog(kp.Key);
+					d = LocalizatorMinds.Dialogs.createDialog(kp.Key);
 					dirty = true;
 				}
 

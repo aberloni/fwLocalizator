@@ -10,40 +10,7 @@ namespace fwp.localizator
     /// </summary>
     abstract public class LocalizationMind
     {
-        static public LanguagesMind Languages
-        {
-            private set;
-            get;
-        }
-
-        static public SheetsMind Sheets
-        {
-            private set;
-            get;
-        }
-
-        static public DialogsMind Dialogs
-        {
-            private set;
-            get;
-        }
-
-        static public void InitMinds()
-        {
-            if (Languages == null) Languages = new LanguagesMind();
-            if (Sheets == null) Sheets = new SheetsMind();
-            if (Dialogs == null) Dialogs = new DialogsMind();
-        }
-
-        static public void ReplaceMind<T>(T mind) where T : LocalizationMind
-        {
-            switch (typeof(T))
-            {
-                case Type t when t == typeof(LanguagesMind): Languages = mind as LanguagesMind; break;
-                case Type t when t == typeof(SheetsMind): Sheets = mind as SheetsMind; break;
-                case Type t when t == typeof(DialogsMind): Dialogs = mind as DialogsMind; break;
-            }
-        }
+        protected void ReplaceMind<T>(T mind) where T : LocalizationMind => LocalizatorMinds.ReplaceMind<T>(mind);
 
         static public bool Verbose
         {

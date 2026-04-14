@@ -76,7 +76,7 @@ namespace fwp.localizator.editor
 
 		static public void trads_generate()
 		{
-			var sups = LocalizationMind.Languages.getSupportedLanguages();
+			var sups = LocalizatorMinds.Languages.getSupportedLanguages();
 
 			Debug.Log("<b>generating exports</b>, for x" + sups.Length + " languages");
 

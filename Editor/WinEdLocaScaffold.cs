@@ -38,7 +38,7 @@ namespace fwp.localizator.editor
 		/// </summary>
 		void OnEnable()
 		{
-			LocalizationMind.InitMinds();
+			LocalizatorMinds.InitMinds();
 			ReplaceMinds();
 			onEnable();
 		}
@@ -111,9 +111,9 @@ namespace fwp.localizator.editor
 			LocalizationMind.Verbose = EditorGUILayout.Toggle("verbose", LocalizationMind.Verbose);
 			if (LocalizationMind.Verbose)
 			{
-				GUILayout.Label("Languages:" + LocalizationMind.Languages);
-				GUILayout.Label("Sheets:" + LocalizationMind.Sheets);
-				GUILayout.Label("Dialogs:" + LocalizationMind.Dialogs);
+				GUILayout.Label("Languages:" + LocalizatorMinds.Languages);
+				GUILayout.Label("Sheets:" + LocalizatorMinds.Sheets);
+				GUILayout.Label("Dialogs:" + LocalizatorMinds.Dialogs);
 			}
 
 		}
