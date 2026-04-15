@@ -148,7 +148,6 @@ namespace fwp.localizator
 				writeLanguage(iso);
 			}
 
-			if (iso == IsoLanguages.unknown) Debug.LogError("unsupported context: unknown language ?");
 			return iso;
 		}
 
@@ -195,14 +194,10 @@ namespace fwp.localizator
 
 				case SystemLanguage.Portuguese: return IsoLanguages.pt;
 				case SystemLanguage.Spanish: return IsoLanguages.es;
-
-				default:
-					Debug.LogWarning("[ISO]	sys language " + sys + " is not supported");
-					break;
 			}
 
-			// raw system (to iso)
-			return IsoLanguages.unknown;
+			Debug.LogWarning("[ISO]	sys language " + sys + " is not supported");
+			return IsoLanguages.en; // fallback
 		}
 
 		public string StringifySupported
