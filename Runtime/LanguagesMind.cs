@@ -143,7 +143,7 @@ namespace fwp.localizator
 
 			if (!isIsoLanguageSupported(iso))
 			{
-				logw($"{iso} not supported, fallback to system default", this);
+				logw($"get({iso}) not supported, fallback to system default", this);
 				iso = SysToIso(getApplicatonLanguageFiltered());
 				writeLanguage(iso);
 			}

@@ -10,8 +10,7 @@ namespace fwp.localizator.subtitles
 	/// search for file in Resources/localization/subtitles/
 	/// 
 	/// > load file
-	/// > assign text field (tmpro)
-	/// > update(timecode)
+	/// > update(timecode) returns the line
 	/// 
 	/// ONLY WORKS WITH .txt files (using <TextAsset>)
 	/// 
@@ -34,16 +33,6 @@ namespace fwp.localizator.subtitles
 		List<LocalizationSubtitleLine> lines = new List<LocalizationSubtitleLine>();
 
 		string _path;
-		TMPro.TextMeshProUGUI txt;
-
-		public bool HasSubtitleSet
-		{
-			get
-			{
-				if (txt == null) return false;
-				return txt.text.Length > 0;
-			}
-		}
 
 		/// <summary>
 		/// was setup and HAS LINES
@@ -160,19 +149,11 @@ namespace fwp.localizator.subtitles
 			return this;
 		}
 
-		public void assignTextfield(TMPro.TextMeshProUGUI txt)
-		{
-			this.txt = txt;
-			txt.text = string.Empty;
-		}
-
 		/// <summary>
-		/// true : some text is assigned
+		/// return : line to display
 		/// </summary>
-		public bool update(double timecode)
+		public string update(double timecode)
 		{
-			if (txt == null) return false;
-
 			// can't update invalid subtitle
 			if (IsValid)
 			{
@@ -189,18 +170,15 @@ namespace fwp.localizator.subtitles
 
 				if (line != null)
 				{
-					txt.SetText(line);
-					if (verbose_deep) log($"time?{timecode} > text:{txt.text}");
+					if (verbose_deep) log($"time?{timecode} > text:{line}");
 				}
-				else
-				{
-					txt.SetText(string.Empty);
-				}
+
+				return line;
 			}
 
 			if (verbose_deep) log($"timecode is oob");
-			
-			return HasSubtitleSet;
+
+			return string.Empty;
 		}
 
 		public string stringify()
