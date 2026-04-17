@@ -99,7 +99,7 @@ namespace fwp.localizator.editor
 			//FileStream stream = File.OpenRead(filePath);
 			//stream.Close();
 
-			Debug.Log("  saved : <b>" + fileName + "</b> ; chars saved in file : " + fileContent.Length);
+			LocalizationMind.log("saved : <b>" + fileName + "</b> ; chars saved in file : " + fileContent.Length);
 
 			return filePath;
 		}

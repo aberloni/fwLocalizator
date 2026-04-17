@@ -16,7 +16,11 @@ namespace fwp.localizator.editor
 
 		LocaDataSheet[] Sheets => LocalizatorUtilsEditor.getSheetsData();
 
-		public override iLocaTab[] GenerateTabs() => new iLocaTab[] { new TabSheets(), new TabLanguages(), };
+		public override iLocaTab[] GenerateTabs() => new iLocaTab[]
+		{ 
+			new TabSheets(), 
+			new TabLanguages(),
+		};
 
 		protected override void onFocus()
 		{
