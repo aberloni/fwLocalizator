@@ -149,7 +149,11 @@ namespace fwp.localizator
 				iso = IsoLanguages.en;
 
 				if (supp != null && supp.Length > 0)
+				{
 					iso = getSupportedLanguages()[0]; // first language possible
+				}
+
+				logw($"fallback.override => set({iso})");
 
 				writeLanguage(iso);
 			}
