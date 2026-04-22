@@ -144,7 +144,13 @@ namespace fwp.localizator
 			if (!isIsoLanguageSupported(iso))
 			{
 				logw($"get({iso}) not supported, fallback to system default", this);
-				iso = SysToIso(getApplicatonLanguageFiltered());
+
+				var supp = getSupportedLanguages();
+				iso = IsoLanguages.en;
+
+				if (supp != null && supp.Length > 0)
+					iso = getSupportedLanguages()[0]; // first language possible
+
 				writeLanguage(iso);
 			}
 
@@ -164,7 +170,9 @@ namespace fwp.localizator
 		/// </summary>
 		virtual protected IsoLanguages readLanguage()
 		{
-			return (IsoLanguages)PlayerPrefs.GetInt(ppref_iso_language, (int)LocalizatorMinds.Languages.getApplicatonLanguageFiltered());
+			return (IsoLanguages)PlayerPrefs.GetInt(
+				ppref_iso_language,
+				(int)LocalizatorMinds.Languages.getApplicatonLanguageFiltered());
 		}
 
 		/// <summary>
