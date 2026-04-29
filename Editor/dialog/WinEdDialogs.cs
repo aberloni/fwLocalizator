@@ -34,8 +34,6 @@ namespace fwp.localizator.editor
 
 		protected override string getWindowTitle() => LocalizatorMinds.Dialogs.GetType().Name;
 
-		IsoLanguages Iso => LocalizatorMinds.Languages.getLanguage();
-
 		protected override void draw()
 		{
 			if (LocalizatorMinds.Dialogs == null)
@@ -52,7 +50,8 @@ namespace fwp.localizator.editor
 
 			filter.drawFilterField();
 
-			GUILayout.Label($"using lang : {Iso}");
+			var _iso = LocalizatorMinds.Languages.getLanguage();
+			GUILayout.Label($"using lang : {_iso}");
 
 			scrollTabDialogs = GUILayout.BeginScrollView(scrollTabDialogs);
 
@@ -75,7 +74,6 @@ namespace fwp.localizator.editor
 		override protected void refresh(bool verbose = false)
 		{
 			base.refresh(verbose);
-
 			findDialogsUids(); // refresh
 		}
 
@@ -86,11 +84,13 @@ namespace fwp.localizator.editor
 		{
 			string _filter = filter != null && filter.HasFilter ? filter.filter : null;
 
+			var _iso = LocalizatorMinds.Languages.getLanguage();
+
 			// get french (default)
-			var file = LocalizatorMinds.Sheets.getFileByLang(Iso);
+			var file = LocalizatorMinds.Sheets.getFileByLang(_iso);
 			if (file == null)
 			{
-				Debug.LogWarning($"no {Iso} file ?");
+				Debug.LogWarning($"no {_iso} file ?");
 				return;
 			}
 
