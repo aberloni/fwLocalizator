@@ -61,6 +61,7 @@ namespace fwp.localizator
 
 		virtual public IsoLanguages[] getSupportedLanguages()
 		{
+			// transform Iso enum to array
 			List<IsoLanguages> isos = new();
 			for (int i = 0; i < System.Enum.GetValues(typeof(IsoLanguages)).Length; i++)
 			{
@@ -145,12 +146,14 @@ namespace fwp.localizator
 			{
 				logw($"get({iso}) not supported, fallback to system default", this);
 
-				var supp = getSupportedLanguages();
+				// default en
 				iso = IsoLanguages.en;
 
+				var supp = getSupportedLanguages();
 				if (supp != null && supp.Length > 0)
 				{
-					iso = getSupportedLanguages()[0]; // first language possible
+					// first language possible in enum (en)
+					iso = supp[0];
 				}
 
 				logw($"fallback.override => set({iso})");
@@ -171,6 +174,8 @@ namespace fwp.localizator
 
 		/// <summary>
 		/// read language
+		/// default is using playerprefs
+		/// can be override by another system
 		/// </summary>
 		virtual protected IsoLanguages readLanguage()
 		{
