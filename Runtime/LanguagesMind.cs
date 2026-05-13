@@ -25,21 +25,19 @@ namespace fwp.localizator
 		}
 
 		/// <summary>
+		/// raw unity detection
+		/// best to don't use directly
+		/// use filtered version instead
+		/// </summary>
+		static public SystemLanguage GetApplicatonLanguage() => Application.systemLanguage;
+
+		/// <summary>
 		/// raw system language
-		/// additionnal rules to override sys language
-		/// 	like: #if loca_en 
+		/// additionnal rules to override app.sys language
 		/// </summary>
 		virtual public SystemLanguage getApplicatonLanguageFiltered()
 		{
 			SystemLanguage langDefault = GetApplicatonLanguage();
-
-#if loca_en
-			langDefault = SystemLanguage.English;
-#endif
-
-#if loca_fr
-			langDefault = SystemLanguage.French;
-#endif
 			return langDefault;
 		}
 
@@ -59,6 +57,9 @@ namespace fwp.localizator
 			return false;
 		}
 
+		/// <summary>
+		/// default is full enum
+		/// </summary>
 		virtual public IsoLanguages[] getSupportedLanguages()
 		{
 			// transform Iso enum to array
@@ -144,17 +145,11 @@ namespace fwp.localizator
 
 			if (!isIsoLanguageSupported(iso))
 			{
-				logw($"get({iso}) not supported, fallback to system default", this);
-
-				// default en
-				iso = IsoLanguages.en;
+				logw($"get({iso}) is not supported, fallback to system default", this);
 
 				var supp = getSupportedLanguages();
-				if (supp != null && supp.Length > 0)
-				{
-					// first language possible in enum (en)
-					iso = supp[0];
-				}
+				if (supp != null && supp.Length > 0) iso = supp[0]; // first language possible in enum (en)
+				else iso = IsoLanguages.en; // fallback : en
 
 				logw($"fallback.override => set({iso})");
 
@@ -183,13 +178,6 @@ namespace fwp.localizator
 				ppref_iso_language,
 				(int)LocalizatorMinds.Languages.getApplicatonLanguageFiltered());
 		}
-
-		/// <summary>
-		/// raw unity detection
-		/// best to don't use directly
-		/// use filtered version instead
-		/// </summary>
-		static public SystemLanguage GetApplicatonLanguage() => Application.systemLanguage;
 
 		/// <summary>
 		/// https://docs.microsoft.com/en-us/dotnet/api/system.globalization.cultureinfo.twoletterisolanguagename?view=net-5.0

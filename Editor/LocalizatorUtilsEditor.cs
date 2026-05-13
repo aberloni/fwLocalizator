@@ -4,10 +4,30 @@ using UnityEngine;
 using UnityEditor;
 
 namespace fwp.localizator.editor
-
 {
+	using fwp.localizator;
+
     static public class LocalizatorUtilsEditor
 	{
+
+		[MenuItem(LocalizationVars.menupath_routines+"reset pprefs")]
+		static void routine_reset_prefs()
+		{
+			const string ppref_qst = "clear all player.prefs ?";
+			if(EditorUtility.DisplayDialog(ppref_qst, ppref_qst, "yes", "no"))
+			{
+				PlayerPrefs.DeleteAll();
+				PlayerPrefs.Save();
+			}
+			
+			const string pprefEd_qst = "clear all editor.prefs ?";
+			if(EditorUtility.DisplayDialog(pprefEd_qst, pprefEd_qst, "yes", "no"))
+			{
+				UnityEditor.EditorPrefs.DeleteAll();
+			}
+			
+		}
+
 		static public DataSheetTab tab_fetch(string tabUid)
 		{
 			var sheets = getSheetsData();
