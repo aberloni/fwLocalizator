@@ -145,7 +145,7 @@ namespace fwp.localizator
 
 			if (!isIsoLanguageSupported(iso))
 			{
-				logw($"get({iso}) is not supported, fallback to system default", this);
+				logw($"get({iso}) <color=orange>is not supported</color>, fallback to system default", this);
 
 				var supp = getSupportedLanguages();
 				if (supp != null && supp.Length > 0) iso = supp[0]; // first language possible in enum (en)
@@ -176,7 +176,7 @@ namespace fwp.localizator
 		{
 			return (IsoLanguages)PlayerPrefs.GetInt(
 				ppref_iso_language,
-				(int)LocalizatorMinds.Languages.getApplicatonLanguageFiltered());
+				(int)SysToIso(LocalizatorMinds.Languages.getApplicatonLanguageFiltered()));
 		}
 
 		/// <summary>
