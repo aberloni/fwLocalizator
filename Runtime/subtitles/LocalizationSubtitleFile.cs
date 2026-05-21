@@ -34,6 +34,9 @@ namespace fwp.localizator.subtitles
 
 		string _path;
 
+		int lastLineIndex;
+		string lastLineValue;
+
 		/// <summary>
 		/// was setup and HAS LINES
 		/// </summary>
@@ -150,35 +153,66 @@ namespace fwp.localizator.subtitles
 		}
 
 		/// <summary>
-		/// return : line to display
+		/// give timecode => return new line if any new found
+		/// keep track of last line of last timecode
 		/// </summary>
-		public string update(double timecode)
+		public string extractLastLine(double timecode)
+		{
+			if(IsValid)
+			{
+				int idx = getLineIndexByTimecode(timecode);
+				if(idx != lastLineIndex)
+				{
+					lastLineIndex = idx;
+
+					if(lastLineIndex > -1)
+					{
+						lastLineValue = lines[lastLineIndex].buffLine;
+						return lastLineValue;
+					}
+				}
+			}
+
+			// no change
+			return null;
+		}
+
+		/// <summary>
+		/// give a timecode => return subtitle line
+		/// </summary>
+		public string extractLine(double timecode)
 		{
 			// can't update invalid subtitle
 			if (IsValid)
 			{
-				string line = null;
-				for (int i = 0; i < lines.Count; i++)
+				int idx = getLineIndexByTimecode(timecode);
+				if(idx > -1)
 				{
-					if (lines[i].isWithingLineTimecodeRange(timecode))
+					string line = lines[idx].buffLine;
+					if(line != null)
 					{
-						line = lines[i].buffLine;
-						break;
+						if (verbose_deep) log($"time?{timecode} > text:{line}");
+						return line;
 					}
 				}
-
-
-				if (line != null)
-				{
-					if (verbose_deep) log($"time?{timecode} > text:{line}");
-				}
-
-				return line;
+				
 			}
 
 			if (verbose_deep) log($"timecode is oob");
 
 			return string.Empty;
+		}
+
+		int getLineIndexByTimecode(double timecode)
+		{
+			for (int i = 0; i < lines.Count; i++)
+			{
+				if (lines[i].isWithingLineTimecodeRange(timecode))
+				{
+					return i;
+				}
+			}
+			return -1;
 		}
 
 		public string stringify()
