@@ -21,7 +21,7 @@ namespace fwp.localizator
 
 		public LanguagesMind()
 		{
-			ReplaceMind<LanguagesMind>(this);
+			LocalizatorMinds.Languages = this;
 		}
 
 		/// <summary>

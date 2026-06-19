@@ -14,7 +14,7 @@ namespace fwp.localizator
 
 		public SheetsMind()
 		{
-			ReplaceMind<SheetsMind>(this);
+			LocalizatorMinds.Sheets = this;
 			loadFiles();
 		}
 

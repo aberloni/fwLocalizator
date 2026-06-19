@@ -8,8 +8,6 @@ namespace fwp.localizator
     /// </summary>
     abstract public class LocalizationMind
     {
-        protected void ReplaceMind<T>(T mind) where T : LocalizationMind => LocalizatorMinds.ReplaceMind<T>(mind);
-
         static public bool Verbose
         {
             get
