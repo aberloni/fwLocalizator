@@ -20,7 +20,7 @@ namespace fwp.localizator
         /// <summary>
         /// to be override byt children class
         /// </summary>
-        static Func<LocalizatorMinds> Factory = () => new LocalizatorMinds();
+        static protected Func<LocalizatorMinds> Factory = () => new LocalizatorMinds();
         
         public LocalizatorMinds()
         {
