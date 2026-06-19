@@ -82,7 +82,10 @@ namespace fwp.localizator
 		/// <summary>
 		/// check if localization file has matching key (strict comparison)
 		/// </summary>
-		static public bool HasKey(string key, bool ignoreDigits = true) => HasKey(key, LocalizatorMinds.Languages.getLanguage(), ignoreDigits);
+		static public bool HasKey(string key, bool ignoreDigits = true)
+		{
+			return HasKey(key, LocalizatorMinds.Languages.getLanguage(), ignoreDigits);
+		}
 		static public bool HasKey(string key, IsoLanguages iso, bool ignoreDigits = true)
 		{
 			LocalizationFile file = LocalizatorMinds.Sheets.getFileByLang(iso);

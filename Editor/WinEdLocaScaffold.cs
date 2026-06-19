@@ -38,7 +38,7 @@ namespace fwp.localizator.editor
 		/// </summary>
 		void OnEnable()
 		{
-			LocalizatorMinds.InitMinds();
+			LocalizatorMinds.InitDefaultMinds();
 			ReplaceMinds();
 			onEnable();
 		}
