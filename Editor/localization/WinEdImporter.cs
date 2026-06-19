@@ -12,13 +12,16 @@ namespace fwp.localizator.editor
 	/// </summary>
 	abstract public class WinEdImporter : WinEdLocaScaffold
 	{
-		protected override string getWindowTitle() => typeof(SheetsMind).ToString();
+		protected override string getWindowTitle()
+		{
+			return fwp.localizator.LocalizatorMinds.Instance.GetType().FullName;
+		}
 
 		LocaDataSheet[] Sheets => LocalizatorUtilsEditor.getSheetsData();
 
 		public override iLocaTab[] GenerateTabs() => new iLocaTab[]
-		{ 
-			new TabSheets(), 
+		{
+			new TabSheets(),
 			new TabLanguages(),
 		};
 
@@ -50,11 +53,11 @@ namespace fwp.localizator.editor
 
 		void drawLangSelector(IsoLanguages[] supported)
 		{
-			if(LocalizationMind.Verbose)
+			if (LocalizationMind.Verbose)
 			{
 				GUILayout.Label(LocalizatorMinds.Languages.StringifySupported);
 			}
-			
+
 			GUILayout.BeginHorizontal();
 			GUILayout.Label("SYS:" + Application.systemLanguage);
 

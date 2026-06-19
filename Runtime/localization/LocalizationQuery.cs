@@ -49,13 +49,24 @@ namespace fwp.localizator
 		/// natural flow (using ppref ios)
 		/// </summary>
 		static public string GetContent(string id)
-			=> GetContent(id, LocalizatorMinds.Languages.getLanguage());
+		{
+			LocalizatorMinds.Presence();
+
+			if (LocalizatorMinds.Languages == null)
+			{
+				LocalizationMind.logw("can't : no mind.lang");
+				return null;
+			}
+			return GetContent(id, LocalizatorMinds.Languages.getLanguage());
+		}
 
 		/// <summary>
 		/// with specific iso given
 		/// </summary>
 		static public string GetContent(string id, IsoLanguages iso)
 		{
+			LocalizatorMinds.Presence();
+
 			if (string.IsNullOrEmpty(id))
 			{
 				LocalizationMind.logw("empty id given to get content");
@@ -84,6 +95,12 @@ namespace fwp.localizator
 		/// </summary>
 		static public bool HasKey(string key, bool ignoreDigits = true)
 		{
+			LocalizatorMinds.Presence();
+			if (LocalizatorMinds.Languages == null)
+			{
+				LocalizationMind.logw("can't : no mind.lang");
+				return false;
+			}
 			return HasKey(key, LocalizatorMinds.Languages.getLanguage(), ignoreDigits);
 		}
 		static public bool HasKey(string key, IsoLanguages iso, bool ignoreDigits = true)
