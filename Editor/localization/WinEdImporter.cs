@@ -14,7 +14,11 @@ namespace fwp.localizator.editor
 	{
 		protected override string getWindowTitle()
 		{
-			return fwp.localizator.LocalizatorMinds.Instance.GetType().FullName;
+			if (LocalizatorMinds.Languages != null)
+			{
+				return LocalizatorMinds.Languages.GetType().FullName;
+			}
+			return typeof(LocalizatorMinds).FullName;
 		}
 
 		LocaDataSheet[] Sheets => LocalizatorUtilsEditor.getSheetsData();

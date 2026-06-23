@@ -17,7 +17,7 @@ namespace fwp.localizator
 		/// list of reactor candidates to lang change
 		/// interface should sub/unsub to this to get reaction event
 		/// </summary>
-		static public List<iLanguageChangeReact> reacts = new List<iLanguageChangeReact>();
+		static public List<iLanguageChangeReact> reacts = new();
 
 		public LanguagesMind()
 		{

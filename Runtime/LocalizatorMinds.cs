@@ -1,40 +1,49 @@
-using System;
-using UnityEngine;
 
 namespace fwp.localizator
 {
-
-    public class LocalizatorMinds
+    /// <summary>
+    /// no auto-init
+    /// context must create what is needed
+    /// </summary>
+    static public class LocalizatorMinds
     {
+        static public bool CanLocalize()
+        {
+            if (Languages == null) return false;
+            if (Sheets == null) return false;
+            return true;
+        }
+
+        static public bool CanDialogs()
+        {
+            if (Dialogs == null) return false;
+            return CanLocalize();
+        }
+
+        /// <summary>
+        /// basic setup
+        /// </summary>
+        static public void Presence()
+        {
+            Languages = new();
+            Sheets = new();
+            Dialogs = new();
+        }
+
+        /// <summary>
+        /// supported languages
+        /// </summary>
         static public LanguagesMind Languages;
+
+        /// <summary>
+        /// loca files
+        /// </summary>
         static public SheetsMind Sheets;
+
+        /// <summary>
+        /// dialogs
+        /// </summary>
         static public DialogsMind Dialogs;
-
-        /// <summary>
-        /// isntance creation need to be explicit
-        /// </summary>
-        static LocalizatorMinds _instance;
-        static public LocalizatorMinds Instance => Presence();
-        static LocalizatorMinds Create() => Factory();
-
-        /// <summary>
-        /// to be override byt children class
-        /// </summary>
-        static protected Func<LocalizatorMinds> Factory = () => new LocalizatorMinds();
-        
-        static public LocalizatorMinds Presence()
-        {
-            _instance ??= Create();
-            return _instance;
-        }
-
-        public LocalizatorMinds()
-        {
-            if (Languages == null) new LanguagesMind();
-            if (Sheets == null) new SheetsMind();
-            if (Dialogs == null) new DialogsMind();
-        }
-
     }
 
 }

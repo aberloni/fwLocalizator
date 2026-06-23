@@ -27,6 +27,8 @@ namespace fwp.localizator
 		/// </summary>
 		static public string GetContentSafe(string id)
 		{
+			if (!LocalizatorMinds.CanLocalize()) return null;
+
 			// normal get
 			string output = GetContent(id);
 
@@ -50,13 +52,8 @@ namespace fwp.localizator
 		/// </summary>
 		static public string GetContent(string id)
 		{
-			LocalizatorMinds.Presence();
+			if (!LocalizatorMinds.CanLocalize()) return null;
 
-			if (LocalizatorMinds.Languages == null)
-			{
-				LocalizationMind.logw("can't : no mind.lang");
-				return null;
-			}
 			return GetContent(id, LocalizatorMinds.Languages.getLanguage());
 		}
 
@@ -65,7 +62,7 @@ namespace fwp.localizator
 		/// </summary>
 		static public string GetContent(string id, IsoLanguages iso)
 		{
-			LocalizatorMinds.Presence();
+			if (!LocalizatorMinds.CanLocalize()) return null;
 
 			if (string.IsNullOrEmpty(id))
 			{
@@ -95,16 +92,19 @@ namespace fwp.localizator
 		/// </summary>
 		static public bool HasKey(string key, bool ignoreDigits = true)
 		{
-			LocalizatorMinds.Presence();
+			if (!LocalizatorMinds.CanLocalize()) return false;
+
 			if (LocalizatorMinds.Languages == null)
 			{
 				LocalizationMind.logw("can't : no mind.lang");
 				return false;
 			}
-			return HasKey(key, LocalizatorMinds.Languages.getLanguage(), ignoreDigits);
+			return HasKeyByLanguage(key, LocalizatorMinds.Languages.getLanguage(), ignoreDigits);
 		}
-		static public bool HasKey(string key, IsoLanguages iso, bool ignoreDigits = true)
+
+		static public bool HasKeyByLanguage(string key, IsoLanguages iso, bool ignoreDigits = true)
 		{
+			if (!LocalizatorMinds.CanLocalize()) return false;
 			LocalizationFile file = LocalizatorMinds.Sheets.getFileByLang(iso);
 			return file.hasId(key, ignoreDigits);
 		}
