@@ -26,8 +26,9 @@ namespace fwp.localizator
         static public void Presence()
         {
             Languages = new();
-            Sheets = new();
-            Dialogs = new();
+            
+            Sheets = new(); // need languages
+            Dialogs = new(); // need sheets
         }
 
         /// <summary>
