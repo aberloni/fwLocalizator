@@ -83,13 +83,14 @@ namespace fwp.localizator
 		{
 			Debug.Log("<color=cyan>applyLanguage</color> to <b>" + newLang + "</b>!");
 
+			//refetch context
 			if (!Application.isPlaying)
 			{
 				reacts.Clear();
 				reacts.AddRange(fwp.appendix.AppendixUtils.getCandidates<iLanguageChangeReact>());
 			}
 
-			Debug.Log("applying new lang (" + newLang + ") to x" + reacts.Count + " reacts");
+			// Debug.Log("applying new lang (" + newLang + ") to x" + reacts.Count + " reacts");
 
 			for (int i = 0; i < reacts.Count; i++)
 			{
