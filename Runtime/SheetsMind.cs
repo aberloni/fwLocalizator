@@ -9,7 +9,6 @@ namespace fwp.localizator
 	/// </summary>
 	public class SheetsMind : LocalizationMind
 	{
-
 		public LocalizationFile[] lang_files;
 
 		public SheetsMind()
@@ -26,7 +25,7 @@ namespace fwp.localizator
 		protected void loadFiles()
 		{
 
-			List<LocalizationFile> tmp = new List<LocalizationFile>();
+			List<LocalizationFile> tmp = new();
 			var sups = LocalizatorMinds.Languages.getSupportedLanguages();
 			for (int i = 0; i < sups.Length; i++)
 			{
