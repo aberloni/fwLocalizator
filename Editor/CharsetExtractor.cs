@@ -25,6 +25,13 @@ namespace fwp.localizator.editor
 		const string file_prefix = "charset_";
 		const string file_all = file_prefix + "all";
 
+		/// <summary>
+		/// hand-written file, never overwritten
+		/// its characters are merged into "all"
+		/// </summary>
+		const string file_custom = file_prefix + "custom";
+		static public string sysCustom => sysCharsets + file_custom + ".txt";
+
 		[MenuItem(menu_path + "extract")]
 		static void menuExtract() => extract();
 
@@ -62,6 +69,7 @@ namespace fwp.localizator.editor
 			if (!Directory.Exists(sysCharsets)) Directory.CreateDirectory(sysCharsets);
 
 			StringBuilder report = new();
+			report.AppendLine(file_custom + " x" + solveCustom().Count + " (merged in " + file_all + ")");
 			foreach (var kp in sets)
 			{
 				string path = Path.Combine(sysCharsets, kp.Key + ".txt");
@@ -91,9 +99,33 @@ namespace fwp.localizator.editor
 				all.UnionWith(set);
 			}
 
+			all.UnionWith(solveCustom());
+
 			output.Add(file_all, all);
 
 			return output;
+		}
+
+		/// <summary>
+		/// characters from custom file
+		/// generates an empty one if missing
+		/// </summary>
+		static SortedSet<int> solveCustom()
+		{
+			SortedSet<int> set = new();
+
+			if (!File.Exists(sysCustom))
+			{
+				if (!Directory.Exists(sysCharsets)) Directory.CreateDirectory(sysCharsets);
+				File.WriteAllText(sysCustom, string.Empty, new UTF8Encoding(false));
+				AssetDatabase.Refresh();
+
+				Debug.Log("Loca> generated empty custom charset @ " + sysCustom);
+				return set;
+			}
+
+			addCodepoints(File.ReadAllText(sysCustom, Encoding.UTF8), set);
+			return set;
 		}
 
 		/// <summary>
